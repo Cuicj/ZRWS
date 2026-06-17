@@ -4,12 +4,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>智壤卫士 - 前端原型</title>
+<title>智壤卫士 - 前端原型 v2.0</title>
 <style>
-:root{--bg:#faf9f6;--bg2:#f0ede6;--ink:#2c2416;--muted:#7a6e5d;--rule:#d9d2c4;--accent:#b8651a;--accent2:#3a7d44;--blue:#2c5f8a;--red:#b83a3a;--yellow:#c49a2a;--purple:#7b4daa}
+:root{--bg:#faf9f6;--bg2:#f0ede6;--ink:#2c2416;--muted:#7a6e5d;--rule:#d9d2c4;--accent:#b8651a;--accent2:#3a7d44;--blue:#2c5f8a;--red:#b83a3a;--yellow:#c49a2a;--purple:#7b4daa;--cad-bg:#1e1e1e;--cad-grid:#333;--cad-line:#e0e0e0;--cad-accent:#4fc3f7}
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;color:var(--ink);background:var(--bg);line-height:1.6;font-size:14px}
-.page{max-width:1000px;margin:0 auto;padding:0 1rem}
+.page{max-width:1100px;margin:0 auto;padding:0 1rem}
 
 /* Header */
 .hdr{background:var(--ink);color:#fff;padding:0.8rem 1.2rem;display:flex;align-items:center;gap:0.6rem}
@@ -46,7 +46,7 @@ body{font-family:'PingFang SC','Microsoft YaHei',sans-serif;color:var(--ink);bac
 
 /* Badge */
 .badge{display:inline-block;padding:0.1rem 0.4rem;border-radius:3px;font-size:0.65rem;font-weight:600;color:#fff}
-.b-green{background:var(--accent2)}.b-red{background:var(--red)}.b-blue{background:var(--blue)}.b-orange{background:var(--accent)}.b-purple{background:var(--purple)}
+.b-green{background:var(--accent2)}.b-red{background:var(--red)}.b-blue{background:var(--blue)}.b-orange{background:var(--accent)}.b-purple{background:var(--purple)}.b-yellow{background:var(--yellow);color:var(--ink)}
 
 /* Button */
 .btn{padding:0.45rem 0.9rem;border:none;border-radius:5px;font-size:0.78rem;font-weight:600;cursor:pointer;margin-right:0.3rem;margin-bottom:0.3rem;color:#fff}
@@ -93,8 +93,61 @@ tr:nth-child(even){background:var(--bg2)}
 .map-dot{position:absolute;width:6px;height:6px;border-radius:50%;background:var(--accent);transform:translate(-50%,-50%)}
 .map-dot::after{content:attr(data-label);position:absolute;top:-16px;left:50%;transform:translateX(-50%);font-size:0.6rem;color:var(--ink);white-space:nowrap;font-weight:600}
 
+/* ===== CAD Viewer ===== */
+.cad-viewer{width:100%;height:320px;background:var(--cad-bg);border-radius:6px;border:1px solid var(--rule);position:relative;overflow:hidden;cursor:crosshair}
+.cad-viewer svg{width:100%;height:100%}
+.cad-grid{stroke:var(--cad-grid);stroke-width:0.5}
+.cad-line{stroke:var(--cad-line);stroke-width:1;fill:none}
+.cad-line-red{stroke:var(--red);stroke-width:1.5;fill:none}
+.cad-line-green{stroke:var(--accent2);stroke-width:1.5;fill:none}
+.cad-line-blue{stroke:var(--blue);stroke-width:1.5;fill:none}
+.cad-line-yellow{stroke:var(--yellow);stroke-width:1.5;fill:none}
+.cad-text{fill:var(--cad-line);font-family:monospace;font-size:10px}
+.cad-dim{fill:var(--cad-accent);font-family:monospace;font-size:9px}
+.cad-point{fill:var(--accent);r:3}
+.cad-point-sel{fill:var(--red);r:4;stroke:#fff;stroke-width:1}
+.cad-hatch{fill:url(#hatch);opacity:0.3}
+.cad-toolbar{display:flex;gap:0.3rem;padding:0.4rem;background:var(--bg2);border-radius:6px;margin-bottom:0.4rem;flex-wrap:wrap}
+.cad-tool{padding:0.3rem 0.6rem;border:1px solid var(--rule);border-radius:4px;background:#fff;font-size:0.72rem;cursor:pointer;transition:all 0.2s}
+.cad-tool:hover{border-color:var(--accent)}
+.cad-tool.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cad-info{position:absolute;bottom:4px;left:4px;background:rgba(0,0,0,0.7);color:#fff;padding:2px 6px;border-radius:3px;font-size:0.65rem;font-family:monospace}
+
+/* ===== Approval Flow Diagram ===== */
+.approval-flow{display:flex;align-items:flex-start;gap:0.5rem;padding:1rem 0;overflow-x:auto}
+.approval-node{flex:none;width:120px;text-align:center;position:relative}
+.approval-box{padding:0.5rem;border-radius:6px;border:2px solid var(--rule);background:#fff;font-size:0.72rem;transition:all 0.3s}
+.approval-box.done{border-color:var(--accent2);background:#e8f5e9}
+.approval-box.active{border-color:var(--accent);background:#fff3e0;box-shadow:0 0 8px rgba(184,101,26,0.3)}
+.approval-box.rejected{border-color:var(--red);background:#ffebee}
+.approval-box .role{font-weight:600;color:var(--ink);margin-bottom:0.2rem}
+.approval-box .name{font-size:0.65rem;color:var(--muted)}
+.approval-box .time{font-size:0.6rem;color:var(--muted);margin-top:0.2rem}
+.approval-box .status{font-size:0.6rem;font-weight:600;margin-top:0.2rem}
+.approval-arrow{flex:none;width:30px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:1rem;margin-top:1rem}
+.approval-arrow.done{color:var(--accent2)}
+
+/* ===== Flight Track Canvas ===== */
+.track-canvas{width:100%;height:200px;background:var(--bg2);border-radius:6px;border:1px solid var(--rule);position:relative;overflow:hidden}
+.track-canvas canvas{width:100%;height:100%}
+
+/* ===== 3D Preview ===== */
+.preview-3d{width:100%;height:220px;background:var(--cad-bg);border-radius:6px;border:1px solid var(--rule);position:relative;overflow:hidden}
+.preview-3d canvas{width:100%;height:100%}
+
+/* ===== Chart container ===== */
+.chart-box{width:100%;height:180px;background:#fff;border-radius:6px;border:1px solid var(--rule);padding:0.5rem}
+
+/* Toggle tabs */
+.tabs{display:flex;gap:0.3rem;margin-bottom:0.5rem;border-bottom:1px solid var(--rule);padding-bottom:0.3rem}
+.tab{padding:0.3rem 0.7rem;border-radius:4px;font-size:0.72rem;cursor:pointer;background:var(--bg2);border:1px solid transparent}
+.tab:hover{background:var(--rule)}
+.tab.active{background:var(--accent);color:#fff}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
 footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-align:center;color:var(--muted);font-size:0.72rem}
-@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}.steps{gap:0}}
+@media(max-width:600px){.g2,.g3,.g4{grid-template-columns:1fr}.steps{gap:0}.approval-flow{flex-direction:column;align-items:center}.approval-arrow{transform:rotate(90deg);margin:0}}
 </style>
 </head>
 <body>
@@ -103,7 +156,7 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
 <div class="hdr">
   <div class="logo">&#x1F6F8;</div>
   <div><h1>智壤卫士 x CAD协同审批</h1></div>
-  <div class="ver">前端原型 v1.0</div>
+  <div class="ver">前端原型 v2.0</div>
 </div>
 
 <!-- Step Bar -->
@@ -148,6 +201,20 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
     <div style="margin-top:0.5rem">
       <button class="btn btn-p" id="btn1" onclick="startPhase1()">&#x25B6; 开始采集任务</button>
       <button class="btn btn-s" onclick="resetPhase1()">&#x21BA; 重置</button>
+    </div>
+  </div>
+
+  <!-- 新增：飞行轨迹实时可视化 -->
+  <div class="card">
+    <h4>飞行轨迹实时回显</h4>
+    <div class="track-canvas" id="trackCanvas">
+      <canvas id="trackMap"></canvas>
+    </div>
+    <div style="display:flex;gap:0.5rem;margin-top:0.3rem;flex-wrap:wrap">
+      <span class="badge b-green">&#x25CF; 已飞轨迹</span>
+      <span class="badge b-blue">&#x25CF; 当前位置</span>
+      <span class="badge b-orange">&#x25CF; 航点</span>
+      <span class="badge b-purple">&#x25CF; 采样点</span>
     </div>
   </div>
 
@@ -228,6 +295,71 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
         <tr><td>重叠率</td><td>--</td><td>--</td><td>--</td><td><span class="badge b-green">78.3%</span></td></tr>
       </tbody>
     </table>
+  </div>
+
+  <!-- 新增：3D点云预览 + CAD图纸回显 -->
+  <div class="card" id="p2-preview" style="display:none">
+    <h4>成果预览</h4>
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(this,'tab-3d')">3D点云预览</div>
+      <div class="tab" onclick="switchTab(this,'tab-cad')">CAD图纸回显</div>
+      <div class="tab" onclick="switchTab(this,'tab-dom')">DOM正射影像</div>
+    </div>
+    <div class="tab-content active" id="tab-3d">
+      <div class="preview-3d" id="preview3d">
+        <canvas id="cloud3d"></canvas>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem">点云数：2.86亿 | 密度：285点/m&#x00B2; | 颜色：高程着色</div>
+    </div>
+    <div class="tab-content" id="tab-cad">
+      <div class="cad-viewer" id="cadViewer1">
+        <svg id="cadSvg1" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+          <defs>
+            <pattern id="hatch" patternUnits="userSpaceOnUse" width="8" height="8">
+              <path d="M0,8 L8,0" stroke="#4fc3f7" stroke-width="0.5" opacity="0.5"/>
+            </pattern>
+            <pattern id="grid" patternUnits="userSpaceOnUse" width="20" height="20">
+              <path d="M20,0 L0,0 L0,20" fill="none" stroke="#333" stroke-width="0.5"/>
+            </pattern>
+          </defs>
+          <rect width="800" height="400" fill="#1e1e1e"/>
+          <rect width="800" height="400" fill="url(#grid)"/>
+          <!-- 地块边界 -->
+          <polygon points="100,200 200,100 400,80 600,120 700,250 650,350 400,380 150,320" class="cad-line-green" fill="none"/>
+          <polygon points="100,200 200,100 400,80 600,120 700,250 650,350 400,380 150,320" class="cad-hatch"/>
+          <!-- 内部道路 -->
+          <line x1="200" y1="100" x2="400" y2="380" class="cad-line-yellow"/>
+          <line x1="400" y1="80" x2="150" y2="320" class="cad-line-yellow"/>
+          <!-- 水系 -->
+          <polyline points="50,280 150,260 250,300 350,280 450,320" class="cad-line-blue" fill="none"/>
+          <!-- 高程点 -->
+          <circle cx="200" cy="200" r="3" fill="#b8651a"/>
+          <text x="205" y="195" class="cad-dim">H=42.5m</text>
+          <circle cx="400" cy="200" r="3" fill="#b8651a"/>
+          <text x="405" y="195" class="cad-dim">H=38.2m</text>
+          <circle cx="550" cy="250" r="3" fill="#b8651a"/>
+          <text x="555" y="245" class="cad-dim">H=35.8m</text>
+          <!-- 尺寸标注 -->
+          <line x1="100" y1="400" x2="700" y2="400" class="cad-line" stroke-dasharray="2,2"/>
+          <text x="380" y="395" class="cad-dim" text-anchor="middle">L=856.32m</text>
+          <line x1="750" y1="100" x2="750" y2="350" class="cad-line" stroke-dasharray="2,2"/>
+          <text x="755" y="230" class="cad-dim" text-anchor="start">W=623.15m</text>
+          <!-- 标题 -->
+          <text x="400" y="30" class="cad-text" text-anchor="middle" font-size="14" font-weight="bold">望城区乔口镇高标准农田建设项目 - 地形图</text>
+          <text x="400" y="50" class="cad-text" text-anchor="middle" font-size="10">比例尺 1:1000 | 坐标系 CGCS2000 | 高程基准 1985国家高程</text>
+        </svg>
+        <div class="cad-info" id="cadInfo1">X: -- Y: -- | 比例: 1:1000</div>
+      </div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem">等高线DXF已生成 | 图层：地形/水系/道路/边界/高程点</div>
+    </div>
+    <div class="tab-content" id="tab-dom">
+      <div class="preview-3d" style="background:linear-gradient(135deg,#4a7c59 0%,#8b9a46 30%,#c4a35a 60%,#5a7c4a 100%);display:flex;align-items:center;justify-content:center">
+        <div style="text-align:center;color:#fff">
+          <div style="font-size:1.2rem;font-weight:700">DOM正射影像</div>
+          <div style="font-size:0.75rem;opacity:0.8">分辨率 2cm/pixel | 面积 860亩</div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="card" id="p2-output" style="display:none">
@@ -334,6 +466,61 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
     <button class="btn btn-s" onclick="resetPhase4()">&#x21BA; 重置</button>
   </div>
 
+  <!-- 新增：审批流程可视化图 -->
+  <div class="card" id="p4-approval-flow" style="display:none">
+    <h4>审批流程可视化</h4>
+    <div class="approval-flow" id="approvalFlow">
+      <div class="approval-node" id="a-node-0">
+        <div class="approval-box" id="a-box-0">
+          <div class="role">设计提交</div>
+          <div class="name">王工</div>
+          <div class="time">06-15 14:30</div>
+          <div class="status" style="color:var(--accent2)">&#x2705; 已通过</div>
+        </div>
+      </div>
+      <div class="approval-arrow" id="a-arrow-0">&#x2192;</div>
+      <div class="approval-node" id="a-node-1">
+        <div class="approval-box" id="a-box-1">
+          <div class="role">校核</div>
+          <div class="name">李工</div>
+          <div class="time">06-15 16:45</div>
+          <div class="status" style="color:var(--accent2)">&#x2705; 已通过</div>
+        </div>
+      </div>
+      <div class="approval-arrow" id="a-arrow-1">&#x2192;</div>
+      <div class="approval-node" id="a-node-2">
+        <div class="approval-box active" id="a-box-2">
+          <div class="role">审核</div>
+          <div class="name">张总工</div>
+          <div class="time">06-17 09:00</div>
+          <div class="status" style="color:var(--accent)">&#x23F3; 审核中</div>
+        </div>
+      </div>
+      <div class="approval-arrow" id="a-arrow-2">&#x2192;</div>
+      <div class="approval-node" id="a-node-3">
+        <div class="approval-box" id="a-box-3">
+          <div class="role">批准</div>
+          <div class="name">陈局长</div>
+          <div class="time">--</div>
+          <div class="status" style="color:var(--red)">&#x23F3; 待处理</div>
+        </div>
+      </div>
+      <div class="approval-arrow" id="a-arrow-3">&#x2192;</div>
+      <div class="approval-node" id="a-node-4">
+        <div class="approval-box" id="a-box-4">
+          <div class="role">归档</div>
+          <div class="name">系统自动</div>
+          <div class="time">--</div>
+          <div class="status" style="color:var(--muted)">&#x23F3; 等待中</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:0.5rem">
+      <button class="btn btn-g" id="btn-approve" onclick="approveOA()">&#x2705; 审核通过</button>
+      <button class="btn btn-r" onclick="rejectOA()">&#x274C; 驳回修改</button>
+    </div>
+  </div>
+
   <div class="card" id="p4-diff" style="display:none">
     <h4>图纸差异比对结果</h4>
     <div class="g4">
@@ -344,8 +531,56 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
     </div>
   </div>
 
+  <!-- 新增：CAD在线编辑器 -->
+  <div class="card" id="p4-cad-edit" style="display:none">
+    <h4>CAD图纸在线编辑</h4>
+    <div class="cad-toolbar">
+      <div class="cad-tool active" onclick="setCadTool('select')" id="tool-select">&#x1F446; 选择</div>
+      <div class="cad-tool" onclick="setCadTool('line')" id="tool-line">&#x1F4CF; 画线</div>
+      <div class="cad-tool" onclick="setCadTool('rect')" id="tool-rect">&#x25A1; 矩形</div>
+      <div class="cad-tool" onclick="setCadTool('circle')" id="tool-circle">&#x25CB; 圆</div>
+      <div class="cad-tool" onclick="setCadTool('text')" id="tool-text">&#x1F520; 标注</div>
+      <div class="cad-tool" onclick="setCadTool('measure')" id="tool-measure">&#x1F4CA; 测距</div>
+      <div class="cad-tool" onclick="clearCad()" id="tool-clear">&#x1F5D1; 清空</div>
+      <div class="cad-tool" onclick="saveCad()" id="tool-save">&#x1F4BE; 保存</div>
+    </div>
+    <div class="cad-viewer" id="cadEditor">
+      <svg id="cadSvgEdit" viewBox="0 0 800 400" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <pattern id="hatch2" patternUnits="userSpaceOnUse" width="8" height="8">
+            <path d="M0,8 L8,0" stroke="#4fc3f7" stroke-width="0.5" opacity="0.5"/>
+          </pattern>
+          <pattern id="grid2" patternUnits="userSpaceOnUse" width="20" height="20">
+            <path d="M20,0 L0,0 L0,20" fill="none" stroke="#333" stroke-width="0.5"/>
+          </pattern>
+        </defs>
+        <rect width="800" height="400" fill="#1e1e1e"/>
+        <rect width="800" height="400" fill="url(#grid2)"/>
+        <!-- 原始图纸 -->
+        <polygon points="100,200 200,100 400,80 600,120 700,250 650,350 400,380 150,320" class="cad-line-green" fill="none" id="cad-boundary"/>
+        <polygon points="100,200 200,100 400,80 600,120 700,250 650,350 400,380 150,320" fill="url(#hatch2)" opacity="0.3"/>
+        <line x1="200" y1="100" x2="400" y2="380" class="cad-line-yellow"/>
+        <line x1="400" y1="80" x2="150" y2="320" class="cad-line-yellow"/>
+        <polyline points="50,280 150,260 250,300 350,280 450,320" class="cad-line-blue" fill="none"/>
+        <circle cx="200" cy="200" r="3" fill="#b8651a"/>
+        <text x="205" y="195" class="cad-dim">H=42.5m</text>
+        <circle cx="400" cy="200" r="3" fill="#b8651a"/>
+        <text x="405" y="195" class="cad-dim">H=38.2m</text>
+        <circle cx="550" cy="250" r="3" fill="#b8651a"/>
+        <text x="555" y="245" class="cad-dim">H=35.8m</text>
+        <text x="400" y="30" class="cad-text" text-anchor="middle" font-size="14" font-weight="bold">望城区乔口镇 - 编辑中</text>
+        <!-- 动态绘制层 -->
+        <g id="cad-draw-layer"></g>
+        <!-- 选中框 -->
+        <rect id="cad-sel-rect" x="0" y="0" width="0" height="0" fill="none" stroke="#4fc3f7" stroke-width="1" stroke-dasharray="4,2" style="display:none"/>
+      </svg>
+      <div class="cad-info" id="cadInfoEdit">工具: 选择 | 点击图纸进行操作</div>
+    </div>
+    <div style="font-size:0.7rem;color:var(--muted);margin-top:0.3rem">支持：选择/画线/矩形/圆/标注/测距 | 所有操作实时保存</div>
+  </div>
+
   <div class="card" id="p4-oa" style="display:none">
-    <h4>OA审批流程</h4>
+    <h4>OA审批记录</h4>
     <table>
       <thead><tr><th>节点</th><th>审批人</th><th>状态</th><th>时间</th></tr></thead>
       <tbody id="oa-tb">
@@ -355,10 +590,6 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
         <tr><td>批准</td><td>陈局长</td><td><span class="badge b-red">待处理</span></td><td>--</td></tr>
       </tbody>
     </table>
-    <div style="margin-top:0.5rem">
-      <button class="btn btn-g" id="btn-approve" onclick="approveOA()">&#x2705; 审核通过</button>
-      <button class="btn btn-r" onclick="rejectOA()">&#x274C; 驳回修改</button>
-    </div>
   </div>
 
   <div class="card" id="p4-field" style="display:none">
@@ -390,7 +621,7 @@ footer{margin-top:1.5rem;padding-top:1rem;border-top:1px solid var(--rule);text-
 </div>
 
 <footer>
-  <p>智壤卫士 x CAD协同审批 前端原型 | Generated by TRAE Work</p>
+  <p>智壤卫士 x CAD协同审批 前端原型 v2.0 | Generated by TRAE Work</p>
 </footer>
 
 </div>
@@ -429,6 +660,267 @@ function setFlow(flowId,activeIdx){
   }
 }
 
+function switchTab(tabEl, contentId){
+  var parent = tabEl.parentElement;
+  parent.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  tabEl.classList.add('active');
+  var contents = parent.parentElement.querySelectorAll('.tab-content');
+  contents.forEach(function(c){c.classList.remove('active');});
+  document.getElementById(contentId).classList.add('active');
+}
+
+// ===== 飞行轨迹 Canvas 绘制 =====
+var trackCtx, trackCanvas, trackW, trackH;
+var trackPoints = [];
+var trackWaypoints = [
+  {x:0.15,y:0.5},{x:0.25,y:0.25},{x:0.5,y:0.2},{x:0.75,y:0.3},
+  {x:0.85,y:0.55},{x:0.8,y:0.8},{x:0.5,y:0.9},{x:0.2,y:0.75}
+];
+var samplePoints = [
+  {x:0.3,y:0.4},{x:0.5,y:0.5},{x:0.65,y:0.6},{x:0.4,y:0.7}
+];
+
+function initTrackCanvas(){
+  trackCanvas = document.getElementById('trackMap');
+  if(!trackCanvas) return;
+  var rect = trackCanvas.parentElement.getBoundingClientRect();
+  trackCanvas.width = rect.width;
+  trackCanvas.height = rect.height;
+  trackW = trackCanvas.width;
+  trackH = trackCanvas.height;
+  trackCtx = trackCanvas.getContext('2d');
+  drawTrack();
+}
+
+function drawTrack(){
+  if(!trackCtx) return;
+  trackCtx.clearRect(0,0,trackW,trackH);
+  // 背景网格
+  trackCtx.strokeStyle = '#d9d2c4';
+  trackCtx.lineWidth = 0.5;
+  for(var i=0;i<trackW;i+=20){trackCtx.beginPath();trackCtx.moveTo(i,0);trackCtx.lineTo(i,trackH);trackCtx.stroke();}
+  for(var i=0;i<trackH;i+=20){trackCtx.beginPath();trackCtx.moveTo(0,i);trackCtx.lineTo(trackW,i);trackCtx.stroke();}
+  // 地块边界
+  trackCtx.strokeStyle = '#3a7d44';
+  trackCtx.lineWidth = 2;
+  trackCtx.beginPath();
+  trackWaypoints.forEach(function(p,i){
+    var px=p.x*trackW, py=p.y*trackH;
+    if(i===0) trackCtx.moveTo(px,py); else trackCtx.lineTo(px,py);
+  });
+  trackCtx.closePath();
+  trackCtx.stroke();
+  // 航点
+  trackWaypoints.forEach(function(p,i){
+    var px=p.x*trackW, py=p.y*trackH;
+    trackCtx.fillStyle = '#c49a2a';
+    trackCtx.beginPath();trackCtx.arc(px,py,4,0,Math.PI*2);trackCtx.fill();
+    trackCtx.fillStyle = '#2c2416';
+    trackCtx.font = '10px monospace';
+    trackCtx.fillText('W'+(i+1),px+6,py-6);
+  });
+  // 采样点
+  samplePoints.forEach(function(p,i){
+    var px=p.x*trackW, py=p.y*trackH;
+    trackCtx.fillStyle = '#7b4daa';
+    trackCtx.beginPath();trackCtx.arc(px,py,5,0,Math.PI*2);trackCtx.fill();
+    trackCtx.fillStyle = '#fff';
+    trackCtx.beginPath();trackCtx.arc(px,py,2,0,Math.PI*2);trackCtx.fill();
+    trackCtx.fillStyle = '#2c2416';
+    trackCtx.font = '10px monospace';
+    trackCtx.fillText('S'+(i+1),px+6,py+12);
+  });
+  // 已飞轨迹
+  if(trackPoints.length>1){
+    trackCtx.strokeStyle = '#b8651a';
+    trackCtx.lineWidth = 2;
+    trackCtx.beginPath();
+    trackPoints.forEach(function(p,i){
+      if(i===0) trackCtx.moveTo(p.x,p.y); else trackCtx.lineTo(p.x,p.y);
+    });
+    trackCtx.stroke();
+  }
+  // 当前位置
+  if(trackPoints.length>0){
+    var cur = trackPoints[trackPoints.length-1];
+    trackCtx.fillStyle = '#2c5f8a';
+    trackCtx.beginPath();trackCtx.arc(cur.x,cur.y,6,0,Math.PI*2);trackCtx.fill();
+    trackCtx.strokeStyle = '#fff';
+    trackCtx.lineWidth = 2;
+    trackCtx.beginPath();trackCtx.arc(cur.x,cur.y,6,0,Math.PI*2);trackCtx.stroke();
+    // 脉冲效果
+    trackCtx.strokeStyle = 'rgba(44,95,138,0.3)';
+    trackCtx.lineWidth = 1;
+    trackCtx.beginPath();trackCtx.arc(cur.x,cur.y,12+Math.sin(Date.now()/200)*4,0,Math.PI*2);trackCtx.stroke();
+  }
+}
+
+function animateTrack(){
+  if(!phaseRunning[0]) return;
+  drawTrack();
+  requestAnimationFrame(animateTrack);
+}
+
+// ===== 3D点云预览 =====
+var cloud3dCtx, cloud3dCanvas, cloud3dW, cloud3dH;
+var cloudPoints = [];
+
+function initCloud3d(){
+  cloud3dCanvas = document.getElementById('cloud3d');
+  if(!cloud3dCanvas) return;
+  var rect = cloud3dCanvas.parentElement.getBoundingClientRect();
+  cloud3dCanvas.width = rect.width;
+  cloud3dCanvas.height = rect.height;
+  cloud3dW = cloud3dCanvas.width;
+  cloud3dH = cloud3dCanvas.height;
+  cloud3dCtx = cloud3dCanvas.getContext('2d');
+  // 生成模拟点云
+  for(var i=0;i<800;i++){
+    var x = Math.random()*cloud3dW;
+    var y = Math.random()*cloud3dH;
+    var z = Math.sin(x/50)*Math.cos(y/50)*30 + Math.random()*10;
+    var brightness = Math.floor(100 + z*3);
+    cloudPoints.push({x:x,y:y,z:z,color:'rgb('+brightness+','+(brightness+20)+','+(brightness+40)+')'});
+  }
+  drawCloud3d();
+}
+
+function drawCloud3d(){
+  if(!cloud3dCtx) return;
+  cloud3dCtx.fillStyle = '#1e1e1e';
+  cloud3dCtx.fillRect(0,0,cloud3dW,cloud3dH);
+  // 按z排序
+  cloudPoints.sort(function(a,b){return a.z-b.z;});
+  cloudPoints.forEach(function(p){
+    var size = 1 + (p.z+30)/20;
+    cloud3dCtx.fillStyle = p.color;
+    cloud3dCtx.beginPath();
+    cloud3dCtx.arc(p.x,p.y,size,0,Math.PI*2);
+    cloud3dCtx.fill();
+  });
+}
+
+// ===== CAD 编辑器 =====
+var cadTool = 'select';
+var cadDrawing = false;
+var cadStart = null;
+var cadSvg, cadLayer, cadSelRect, cadInfo;
+
+function initCadEditor(){
+  cadSvg = document.getElementById('cadSvgEdit');
+  cadLayer = document.getElementById('cad-draw-layer');
+  cadSelRect = document.getElementById('cad-sel-rect');
+  cadInfo = document.getElementById('cadInfoEdit');
+  if(!cadSvg) return;
+  cadSvg.addEventListener('mousedown', onCadMouseDown);
+  cadSvg.addEventListener('mousemove', onCadMouseMove);
+  cadSvg.addEventListener('mouseup', onCadMouseUp);
+  cadSvg.addEventListener('mouseleave', onCadMouseUp);
+}
+
+function setCadTool(tool){
+  cadTool = tool;
+  document.querySelectorAll('.cad-tool').forEach(function(t){t.classList.remove('active');});
+  var el = document.getElementById('tool-'+tool);
+  if(el) el.classList.add('active');
+  if(cadInfo) cadInfo.textContent = '工具: '+tool+' | 点击图纸进行操作';
+}
+
+function getCadCoords(e){
+  var rect = cadSvg.getBoundingClientRect();
+  var scaleX = 800 / rect.width;
+  var scaleY = 400 / rect.height;
+  return {x:(e.clientX-rect.left)*scaleX, y:(e.clientY-rect.top)*scaleY};
+}
+
+function onCadMouseDown(e){
+  if(cadTool === 'select') return;
+  cadDrawing = true;
+  cadStart = getCadCoords(e);
+  if(cadTool === 'line' || cadTool === 'rect'){
+    // 开始绘制
+  }
+}
+
+function onCadMouseMove(e){
+  if(!cadDrawing || !cadStart) return;
+  var cur = getCadCoords(e);
+  if(cadTool === 'rect'){
+    cadSelRect.style.display = 'block';
+    cadSelRect.setAttribute('x', Math.min(cadStart.x, cur.x));
+    cadSelRect.setAttribute('y', Math.min(cadStart.y, cur.y));
+    cadSelRect.setAttribute('width', Math.abs(cur.x - cadStart.x));
+    cadSelRect.setAttribute('height', Math.abs(cur.y - cadStart.y));
+  }
+  if(cadInfo) cadInfo.textContent = '绘制中: ('+Math.round(cadStart.x)+','+Math.round(cadStart.y)+') -> ('+Math.round(cur.x)+','+Math.round(cur.y)+')';
+}
+
+function onCadMouseUp(e){
+  if(!cadDrawing || !cadStart) return;
+  var cur = getCadCoords(e);
+  cadDrawing = false;
+  cadSelRect.style.display = 'none';
+  if(cadTool === 'line'){
+    var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cadStart.x);line.setAttribute('y1',cadStart.y);
+    line.setAttribute('x2',cur.x);line.setAttribute('y2',cur.y);
+    line.setAttribute('class','cad-line-red');
+    cadLayer.appendChild(line);
+    logMsg('log4','绘制线段: ('+Math.round(cadStart.x)+','+Math.round(cadStart.y)+') -> ('+Math.round(cur.x)+','+Math.round(cur.y)+')','i');
+  }else if(cadTool === 'rect'){
+    var rect = document.createElementNS('http://www.w3.org/2000/svg','rect');
+    rect.setAttribute('x',Math.min(cadStart.x,cur.x));
+    rect.setAttribute('y',Math.min(cadStart.y,cur.y));
+    rect.setAttribute('width',Math.abs(cur.x-cadStart.x));
+    rect.setAttribute('height',Math.abs(cur.y-cadStart.y));
+    rect.setAttribute('fill','none');
+    rect.setAttribute('class','cad-line-red');
+    cadLayer.appendChild(rect);
+    logMsg('log4','绘制矩形: '+Math.round(Math.abs(cur.x-cadStart.x))+'x'+Math.round(Math.abs(cur.y-cadStart.y)),'i');
+  }else if(cadTool === 'circle'){
+    var r = Math.sqrt(Math.pow(cur.x-cadStart.x,2)+Math.pow(cur.y-cadStart.y,2));
+    var circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',cadStart.x);circle.setAttribute('cy',cadStart.y);circle.setAttribute('r',r);
+    circle.setAttribute('fill','none');
+    circle.setAttribute('class','cad-line-red');
+    cadLayer.appendChild(circle);
+    logMsg('log4','绘制圆: 半径'+Math.round(r),'i');
+  }else if(cadTool === 'text'){
+    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',cur.x);text.setAttribute('y',cur.y);
+    text.setAttribute('class','cad-dim');
+    text.textContent = '标注'+(cadLayer.children.length+1);
+    cadLayer.appendChild(text);
+    logMsg('log4','添加标注: 标注'+(cadLayer.children.length),'i');
+  }else if(cadTool === 'measure'){
+    var dist = Math.sqrt(Math.pow(cur.x-cadStart.x,2)+Math.pow(cur.y-cadStart.y,2));
+    var line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1',cadStart.x);line.setAttribute('y1',cadStart.y);
+    line.setAttribute('x2',cur.x);line.setAttribute('y2',cur.y);
+    line.setAttribute('class','cad-line-yellow');
+    line.setAttribute('stroke-dasharray','4,2');
+    cadLayer.appendChild(line);
+    var text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('x',(cadStart.x+cur.x)/2);
+    text.setAttribute('y',(cadStart.y+cur.y)/2-5);
+    text.setAttribute('class','cad-dim');
+    text.setAttribute('text-anchor','middle');
+    text.textContent = Math.round(dist/10)+'m';
+    cadLayer.appendChild(text);
+    logMsg('log4','测量距离: '+Math.round(dist/10)+'m','i');
+  }
+  cadStart = null;
+}
+
+function clearCad(){
+  if(cadLayer) cadLayer.innerHTML = '';
+  logMsg('log4','已清空所有绘制内容','w');
+}
+
+function saveCad(){
+  logMsg('log4','CAD图纸已保存至服务器','ok');
+}
+
 // ===== Phase 1 =====
 var p1Timer=null, p1Data={cover:0,photos:0,samples:0,soilRows:[],photoRows:[]};
 
@@ -439,6 +931,9 @@ function startPhase1(){
   document.getElementById('fly-st').innerHTML='<span class="badge b-green">飞行中</span>';
   logMsg('log1','无人机起飞，开始采集任务...','ok');
   setFlow('f1',0);
+  trackPoints = [];
+  initTrackCanvas();
+  animateTrack();
 
   p1Timer=setInterval(function(){
     p1Data.cover+=Math.floor(Math.random()*30)+10;
@@ -456,6 +951,13 @@ function startPhase1(){
     document.getElementById('gps-lng').textContent=lng.toFixed(6);
     document.getElementById('gps-lat').textContent=lat.toFixed(6);
     document.getElementById('gps-acc').textContent='±1.2cm';
+
+    // 轨迹点
+    if(trackCanvas){
+      var tx = (lng-112.833)*trackW/0.003;
+      var ty = trackH - (lat-28.455)*trackH/0.003;
+      trackPoints.push({x:tx,y:ty});
+    }
 
     // Soil sample
     if(p1Data.soilRows.length<p1Data.samples){
@@ -493,7 +995,7 @@ function startPhase1(){
       logMsg('log1','采集任务完成！覆盖860亩，拍摄'+p1Data.photos+'张，采样'+p1Data.samples+'个','ok');
       logMsg('log1','数据已通过4G/卫星通道回传至云平台','i');
       phaseRunning[0]=false;
-      go(1); // 自动跳转下一阶段
+      go(1);
     }
 
     if(Math.random()>0.8){
@@ -507,6 +1009,7 @@ function resetPhase1(){
   clearInterval(p1Timer);
   phaseRunning[0]=false;
   p1Data={cover:0,photos:0,samples:0,soilRows:[],photoRows:[]};
+  trackPoints = [];
   document.getElementById('s1-cover').textContent='0';
   document.getElementById('s1-photos').textContent='0';
   document.getElementById('s1-samples').textContent='0';
@@ -520,6 +1023,7 @@ function resetPhase1(){
   document.getElementById('log1').innerHTML='<span class="t">[阶段一]</span> 系统就绪，等待采集指令...';
   document.getElementById('btn1').disabled=false;
   for(var i=0;i<=4;i++){var el=document.getElementById('f1-'+i);if(el)el.className='flow-node'+(i===0?' active':'');}
+  if(trackCtx) drawTrack();
 }
 
 // ===== Phase 2 =====
@@ -544,12 +1048,14 @@ function startPhase2(){
   function nextStep(){
     if(idx>=5){
       document.getElementById('p2-quality').style.display='block';
+      document.getElementById('p2-preview').style.display='block';
       document.getElementById('p2-output').style.display='block';
       document.getElementById('s2-valid').textContent='1198';
       document.getElementById('s2-points').textContent='28600';
       document.getElementById('s2-coord').textContent='CGCS2000';
       logMsg('log2','数据处理全部完成！输出：DOM/DEM/等高线DXF/3D模型/点云','ok');
       phaseRunning[1]=false;
+      initCloud3d();
       return;
     }
     setFlow('f2',idx);
@@ -575,6 +1081,7 @@ function resetPhase2(){
   phaseRunning[1]=false;
   for(var i=0;i<5;i++)document.getElementById('p2b-'+i).style.width='0%';
   document.getElementById('p2-quality').style.display='none';
+  document.getElementById('p2-preview').style.display='none';
   document.getElementById('p2-output').style.display='none';
   document.getElementById('s2-valid').textContent='--';
   document.getElementById('s2-points').textContent='--';
@@ -619,18 +1126,26 @@ function resetPhase3(){
 }
 
 // ===== Phase 4 =====
+var approvalState = 2; // 0=设计 1=校核 2=审核 3=批准 4=归档
+
 function startPhase4(){
   if(phaseRunning[3])return;
   phaseRunning[3]=true;
   document.getElementById('btn4').disabled=true;
   logMsg('log4','启动审批流程...','ok');
+  approvalState = 2;
 
   var steps=[
+    function(){
+      document.getElementById('p4-cad-edit').style.display='block';
+      document.getElementById('p4-approval-flow').style.display='block';
+      initCadEditor();
+      logMsg('log4','CAD编辑界面已加载，支持在线绘图和标注','ok');
+    },
     function(){document.getElementById('p4-diff').style.display='block';logMsg('log4','差异比对完成：新增12处，删除3处，修改8处，变更2处','ok');},
-    function(){document.getElementById('p4-oa').style.display='block';logMsg('log4','OA审批流程已启动，当前节点：审核（张总工）','i');},
-    function(){document.getElementById('p4-field').style.display='block';logMsg('log4','现场核验任务已下发至赵工（RTK ±1.5cm）','i');},
-    function(){logMsg('log4','现场核验完成，数据已同步','ok');},
-    function(){document.getElementById('p4-done').style.display='block';logMsg('log4','项目验收通过，报告已归档！','ok');phaseRunning[3]=false;}
+    function(){document.getElementById('p4-oa').style.display='block';logMsg('log4','OA审批流程已启动，当前节点：审核（张总工）','i');updateApprovalFlow(2);},
+    function(){document.getElementById('p4-field').style.display='block';logMsg('log4','现场核验任务已下发至赵工（RTK ±1.5cm）','i');updateApprovalFlow(3);},
+    function(){document.getElementById('p4-done').style.display='block';logMsg('log4','项目验收通过，报告已归档！','ok');phaseRunning[3]=false;updateApprovalFlow(4);}
   ];
 
   var idx=0;
@@ -642,13 +1157,35 @@ function startPhase4(){
   next();
 }
 
+function updateApprovalFlow(state){
+  for(var i=0;i<5;i++){
+    var box = document.getElementById('a-box-'+i);
+    var arrow = document.getElementById('a-arrow-'+i);
+    if(!box) continue;
+    box.className = 'approval-box';
+    if(i < state){
+      box.classList.add('done');
+      if(arrow) arrow.classList.add('done');
+    }else if(i === state){
+      box.classList.add('active');
+    }
+  }
+}
+
 function resetPhase4(){
   phaseRunning[3]=false;
-  ['p4-diff','p4-oa','p4-field','p4-done'].forEach(function(id){document.getElementById(id).style.display='none';});
+  ['p4-diff','p4-oa','p4-field','p4-done','p4-cad-edit','p4-approval-flow'].forEach(function(id){var el=document.getElementById(id);if(el)el.style.display='none';});
   document.getElementById('log4').innerHTML='<span class="t">[阶段四]</span> 等待审批指令...';
   document.getElementById('btn4').disabled=false;
   document.getElementById('btn-approve').disabled=false;
   for(var i=0;i<=4;i++){var el=document.getElementById('f4-'+i);if(el)el.className='flow-node'+(i===0?' active':'');}
+  for(var i=0;i<5;i++){
+    var box = document.getElementById('a-box-'+i);
+    if(box) box.className = 'approval-box';
+    var arrow = document.getElementById('a-arrow-'+i);
+    if(arrow) arrow.className = 'approval-arrow';
+  }
+  if(cadLayer) cadLayer.innerHTML = '';
 }
 
 function approveOA(){
@@ -659,11 +1196,14 @@ function approveOA(){
   document.getElementById('oa-tb').rows[3].cells[2].innerHTML='<span class="badge b-orange">审核中</span>';
   document.getElementById('oa-tb').rows[3].cells[3].textContent=new Date().toLocaleTimeString('zh-CN',{hour12:false});
   document.getElementById('btn-approve').disabled=true;
+  updateApprovalFlow(3);
 }
 
 function rejectOA(){
   logMsg('log4','张总工驳回修改，已退回设计提交节点','e');
   document.getElementById('oa-tb').rows[2].cells[2].innerHTML='<span class="badge b-red">已驳回</span>';
+  var box = document.getElementById('a-box-2');
+  if(box) box.classList.add('rejected');
 }
 
 function startFieldVerify(){
@@ -689,6 +1229,15 @@ function runStep1(n){setFlow('f1',n);logMsg('log1','跳转至步骤：'+['起飞
 function runStep2(n){setFlow('f2',n);logMsg('log2','跳转至步骤：'+['数据导入','质量校验','空三解算','3D重建','坐标转换'][n],'i');}
 function runStep3(n){setFlow('f3',n);logMsg('log3','跳转至步骤：'+['土质分类','灾害评估','面积计算','生成报告','导入CAD'][n],'i');}
 function runStep4(n){setFlow('f4',n);logMsg('log4','跳转至步骤：'+['CAD编辑','差异比对','OA审批','现场核验','验收归档'][n],'i');}
+
+// 初始化
+window.addEventListener('load', function(){
+  initTrackCanvas();
+  window.addEventListener('resize', function(){
+    initTrackCanvas();
+    if(cloud3dCanvas) initCloud3d();
+  });
+});
 </script>
 
 </body>
