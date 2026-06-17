@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智能分析 | 智壤卫士</title>
+<style>
+body { font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif; }
+.redirect-info { text-align: center; padding: 2rem; }
+</style>
+</head>
+<body>
+<div class="redirect-info">
+  <div style="font-size:2rem;margin-bottom:1rem">&#x23EF;</div>
+  <div style="color:#7a6e5d">正在跳转到主控制台...</div>
+</div>
+<script>
+window.addEventListener('load', function() {
+  const user = sessionStorage.getItem('zrsUser');
+  if (!user) {
+    window.location.href = '../login.html';
+  } else {
+    window.location.href = '../index.html#soil-analysis';
+  }
+});
+</script>
+</body>
+</html>

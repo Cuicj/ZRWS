@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>智壤卫士 - 登录</title>
+<style>
+:root {
+  --bg: #faf9f6;
+  --bg2: #f0ede6;
+  --ink: #2c2416;
+  --muted: #7a6e5d;
+  --rule: #d9d2c4;
+  --accent: #b8651a;
+  --accent2: #3a7d44;
+  --blue: #2c5f8a;
+  --red: #b83a3a;
+  --yellow: #c49a2a;
+  --purple: #7b4daa;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.6;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Background */
+.login-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, #e8e4db 100%);
+  z-index: -1;
+}
+.login-bg::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(184, 101, 26, 0.05) 0%, transparent 50%);
+  animation: pulse 15s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.1); opacity: 0.8; }
+}
+
+/* Container */
+.login-container {
+  width: 100%;
+  max-width: 420px;
+  padding: 1.5rem;
+}
+
+/* Card */
+.login-card {
+  background: #fff;
+  border: 1px solid var(--rule);
+  border-radius: 12px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 20px rgba(44, 36, 22, 0.08);
+}
+
+/* Logo */
+.login-logo {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+.login-logo .icon {
+  width: 56px;
+  height: 56px;
+  background: var(--accent);
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8rem;
+  color: #fff;
+  margin-bottom: 0.75rem;
+}
+.login-logo h1 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.login-logo p {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+/* Form */
+.login-form { }
+.form-group {
+  margin-bottom: 1.2rem;
+}
+.form-group label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.35rem;
+}
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--ink);
+  background: var(--bg);
+  transition: all 0.2s;
+}
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(184, 101, 26, 0.1);
+}
+.form-group input::placeholder {
+  color: var(--muted);
+}
+
+/* Checkbox */
+.form-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin-bottom: 1.2rem;
+}
+.form-checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--accent);
+}
+.form-checkbox label {
+  font-size: 0.75rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+/* Button */
+.btn-login {
+  width: 100%;
+  padding: 0.75rem;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-login:hover {
+  background: #9a5215;
+}
+.btn-login:active {
+  transform: scale(0.98);
+}
+.btn-login:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 1.2rem 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--rule);
+}
+
+/* Footer Links */
+.login-footer {
+  text-align: center;
+  margin-top: 1.2rem;
+}
+.login-footer a {
+  font-size: 0.75rem;
+  color: var(--blue);
+  text-decoration: none;
+  margin: 0 0.4rem;
+}
+.login-footer a:hover {
+  text-decoration: underline;
+}
+
+/* Alert */
+.alert {
+  padding: 0.65rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  margin-bottom: 1rem;
+  display: none;
+}
+.alert-error {
+  background: rgba(184, 58, 58, 0.1);
+  border: 1px solid rgba(184, 58, 58, 0.3);
+  color: var(--red);
+}
+.alert-success {
+  background: rgba(58, 125, 68, 0.1);
+  border: 1px solid rgba(58, 125, 68, 0.3);
+  color: var(--accent2);
+}
+
+/* Demo hint */
+.demo-hint {
+  background: var(--bg2);
+  border-radius: 6px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+.demo-hint strong {
+  color: var(--ink);
+}
+
+/* Version */
+.login-version {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+<div class="login-bg"></div>
+
+<div class="login-container">
+  <div class="login-card">
+    <!-- Logo -->
+    <div class="login-logo">
+      <div class="icon">&#x1F6F8;</div>
+      <h1>智壤卫士</h1>
+      <p>无人机地形数据采集与土质分析平台</p>
+    </div>
+
+    <!-- Alert -->
+    <div class="alert alert-error" id="alertError">
+      用户名或密码错误，请重试
+    </div>
+    <div class="alert alert-success" id="alertSuccess">
+      登录成功，正在跳转...
+    </div>
+
+    <!-- Form -->
+    <form class="login-form" id="loginForm" onsubmit="return handleLogin(event)">
+      <div class="form-group">
+        <label for="username">用户名</label>
+        <input type="text" id="username" name="username" placeholder="请输入用户名" required value="admin">
+      </div>
+      <div class="form-group">
+        <label for="password">密码</label>
+        <input type="password" id="password" name="password" placeholder="请输入密码" required value="admin123">
+      </div>
+      <div class="form-group">
+        <label for="role">登录角色</label>
+        <select id="role" name="role">
+          <option value="operator">飞行操作员</option>
+          <option value="analyst">数据分析师</option>
+          <option value="reviewer">审核员</option>
+          <option value="admin" selected>系统管理员</option>
+        </select>
+      </div>
+      <div class="form-checkbox">
+        <input type="checkbox" id="remember" name="remember">
+        <label for="remember">记住登录状态</label>
+      </div>
+      <button type="submit" class="btn-login" id="btnLogin">登 录</button>
+    </form>
+
+    <!-- Demo Hint -->
+    <div class="demo-hint">
+      <strong>演示账号：</strong>admin / admin123<br>
+      点击登录按钮即可进入系统
+    </div>
+
+    <!-- Divider -->
+    <div class="login-divider">其他登录方式</div>
+
+    <!-- Footer Links -->
+    <div class="login-footer">
+      <a href="javascript:void(0)" onclick="alert('暂不支持')">企业微信</a>
+      <a href="javascript:void(0)" onclick="alert('暂不支持')">钉钉</a>
+      <a href="javascript:void(0)" onclick="alert('暂不支持')">短信验证码</a>
+    </div>
+  </div>
+
+  <div class="login-version">
+    智壤卫士 v1.0 | 2026 版权所有
+  </div>
+</div>
+
+<script>
+// 模拟用户数据
+const users = {
+  admin: { password: 'admin123', name: '王工', role: '系统管理员', dept: '技术部' },
+  operator: { password: 'operator123', name: '李工', role: '飞行操作员', dept: '外业采集部' },
+  analyst: { password: 'analyst123', name: '张工', role: '数据分析师', dept: '数据分析部' },
+  reviewer: { password: 'reviewer123', name: '陈总', role: '审核员', dept: '技术部' }
+};
+
+function handleLogin(event) {
+  event.preventDefault();
+  
+  const username = document.getElementById('username').value.trim();
+  const password = document.getElementById('password').value;
+  const role = document.getElementById('role').value;
+  const btnLogin = document.getElementById('btnLogin');
+  const alertError = document.getElementById('alertError');
+  const alertSuccess = document.getElementById('alertSuccess');
+  
+  // 隐藏之前的提示
+  alertError.style.display = 'none';
+  alertSuccess.style.display = 'none';
+  
+  // 禁用按钮
+  btnLogin.disabled = true;
+  btnLogin.textContent = '登录中...';
+  
+  // 模拟登录请求
+  setTimeout(() => {
+    // 验证登录（这里使用简化验证）
+    if (password.length >= 4) {
+      // 登录成功
+      alertSuccess.style.display = 'block';
+      alertSuccess.textContent = '登录成功，正在跳转...';
+      
+      // 保存用户信息到sessionStorage
+      const userInfo = {
+        username: username,
+        name: users[username]?.name || username,
+        role: role,
+        loginTime: new Date().toISOString()
+      };
+      sessionStorage.setItem('zrsUser', JSON.stringify(userInfo));
+      
+      // 跳转到首页
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 800);
+    } else {
+      // 登录失败
+      alertError.style.display = 'block';
+      btnLogin.disabled = false;
+      btnLogin.textContent = '登 录';
+    }
+  }, 800);
+  
+  return false;
+}
+
+// 页面加载时检查是否已登录
+window.addEventListener('load', function() {
+  const savedUser = sessionStorage.getItem('zrsUser');
+  if (savedUser) {
+    // 已登录，直接跳转
+    window.location.href = 'index.html';
+  }
+});
+</script>
+</body>
+</html>
