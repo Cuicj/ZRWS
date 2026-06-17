@@ -1,0 +1,56 @@
+﻿@startuml
+title 审批流程引擎（复杂度 O(n³)）
+
+actor 提交人 as op
+actor 审核人 as checker
+actor 审批人 as approver
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-approval" as svc
+participant "bpmn-js 引擎" as bpmn
+database "MySQL" as db
+queue "RabbitMQ" as mq
+
+== 提交审批 ==
+op -> front: 提交审核申请
+front -> gw: POST /api/v1/approval/submit
+gw -> svc: 转发
+svc -> db: [SQL] INSERT t_approval_task
+svc -> bpmn: 启动流程实例
+bpmn -> svc: 下一节点：审核
+svc -> mq: 发送 approval.node.incoming
+mq -> svc: 通知审核人
+
+== 审核节点 ==
+checker -> front: 查看待办
+front -> gw: GET /api/v1/approval/todo
+gw -> svc: 查询待办列表
+checker -> front: 通过/驳回
+front -> gw: PUT /api/v1/approval/{id}/review
+gw -> svc: 提交审核意见
+svc -> bpmn: 节点完成 → 下一节点
+bpmn -> svc: 审批人节点
+svc -> mq: 发送 approval.node.incoming
+
+== 审批节点 ==
+approver -> front: 查看待办 + 附件
+approver -> front: 批准/退回
+front -> gw: PUT /api/v1/approval/{id}/approve
+gw -> svc: 最终审批
+svc -> bpmn: 流程结束
+svc -> db: [SQL] UPDATE t_approval_task SET status='APPROVED'
+svc -> mq: 发送 approval.finalized
+
+== 异常流程 ==
+alt 驳回
+    checker -> front: 填写驳回原因
+    svc -> bpmn: 退回提交人
+    svc -> mq: 发送 approval.returned
+    op -> front: 修改后重新提交
+else 超时未处理
+    svc -> svc: 定时任务扫描 48h 未处理
+    svc -> mq: 发送 approval.escalation
+    mq -> svc: 通知上级审批人
+end
+
+@enduml

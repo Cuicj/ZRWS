@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:o="object" xmlns:c="collection" xmlns:a="attribute">
+  <o:RootObject Id="3776D7EC-EC8B-4CBE-B1C7-99F7F3D3647C">
+    <c:Children>
+      <o:Model Id="285A62CB-C6B4-4E52-9F83-2FF6E428CF75" Name="智壤卫士 全局物理数据模型" Code="ZRWS">
+        <a:ObjectID>285A62CB-C6B4-4E52-9F83-2FF6E428CF75</a:ObjectID>
+        <a:Name>智壤卫士 全局物理数据模型</a:Name>
+        <a:Code>ZRWS</a:Code>
+        <a:Comment>智壤卫士 全局物理数据模型 — ZRWS 物理数据模型</a:Comment>
+        <c:Tables/>
+        <c:References/>
+        <c:Domains/>
+      </o:Model>
+    </c:Children>
+  </o:RootObject>
+</Model>

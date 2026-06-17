@@ -1,0 +1,37 @@
+﻿@startuml
+title 点云渲染管线（复杂度 O(n³)）
+
+actor 质检员 as user
+participant "Three.js 前端" as front
+participant "Gateway" as gw
+participant "zrws-process" as svc
+database "MySQL" as db
+database "Redis" as cache
+
+== 点云加载与渲染 ==
+user -> front: 打开点云视图
+front -> gw: GET /api/v1/pointcloud/{id}/tiles
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_point_cloud WHERE mission_id=1024
+svc -> svc: Potree 八叉树分片
+svc --> gw: 分片索引 JSON
+gw --> front: tile manifest
+front -> front: Three.js + Potree-core 渐进加载
+front -> front: 百万点云 @ ≥30FPS
+
+== 实时交互 ==
+user -> front: 旋转/缩放/测量
+front -> front: GPU 拾取 + 距离计算
+front -> svc: STOMP /queue/pointcloud.annotations
+svc -> db: [SQL] INSERT t_annotation
+
+== 异常流程 ==
+alt 显存不足
+    front -> front: 降级 LOD 策略
+    front -> user: 自动切换低精度
+else 分片加载超时
+    front -> svc: 重试 3 次
+    front -> user: 加载失败，检查网络
+end
+
+@enduml

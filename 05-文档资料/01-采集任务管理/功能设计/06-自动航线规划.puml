@@ -1,0 +1,51 @@
+﻿@startuml
+title 自动航线规划（复杂度 O(n³)）
+
+actor 操作员 as op
+participant "前端 Map" as front
+participant "Gateway" as gw
+participant "zrws-collect" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+database "Redis" as cache
+
+== 航线生成 ==
+op -> front: 框选区域 + 设置参数（航高/重叠率/分辨率）
+front -> gw: POST /api/v1/missions/{id}/flight-plan
+gw -> svc: 转发
+svc -> db: [SQL] SELECT sys_region_config WHERE id={regionId}
+svc -> ai: [gRPC] generateRoute(region, params)
+ai -> ai: 1. 区域多边形分解
+ai -> ai: 2. 蛇形航线覆盖计算（航向重叠率≥70%）
+ai -> ai: 3. 地形跟随高度补偿
+ai -> ai: 4. 禁飞区/障碍物避让
+ai -> ai: 5. 路径优化（最短总航程）
+ai --> svc: FlightPlan{ waypoints[], totalDistance, estimatedDuration, batteryRequired }
+svc -> db: [SQL] INSERT t_flight_plan (waypoints JSON)
+svc -> db: [SQL] UPDATE t_mission SET flight_plan_id={id}
+svc --> gw: R<FlightPlanVO>
+gw --> front: 航线坐标点 + 预估参数
+front -> front: Three.js 航线预览渲染
+
+== 异常流程 ==
+alt 区域面积过小
+    svc --> gw: 400 最小区域面积需≥0.1km²
+    gw --> front: 提示扩大区域
+else 电池不足
+    ai --> svc: batteryRequired > 单次续航
+    svc --> gw: 400 建议拆分任务或更换长续航机型
+    gw --> front: 弹出多段方案选择
+else 禁飞区冲突
+    ai --> svc: 区域与禁飞区重叠
+    svc --> gw: 409 重叠禁飞区列表
+    gw --> front: 红色区域高亮
+end
+
+== 航线执行监控 ==
+svc -> svc: 实时对比实际 GPS vs 计划航线
+svc -> cache: [Redis] PUBLISH flight:deviation:{missionId}
+svc -> gw: STOMP /topic/mission.{id}.flight-deviation
+gw -> front: 偏离告警
+front -> op: 偏离标注 + 自动纠偏建议
+
+@enduml

@@ -1,0 +1,35 @@
+﻿@startuml
+title 设备分配与调度（复杂度 O(n³)）
+
+actor 管理员 as admin
+participant "设备管理页" as front
+participant "Gateway" as gw
+participant "zrws-collect" as svc
+database "MySQL" as db
+queue "RabbitMQ" as mq
+
+== 分配设备 ==
+admin -> front: 选择任务 + 设备
+front -> gw: POST /api/v1/missions/{id}/devices
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_device WHERE status='IDLE'
+svc -> svc: 冲突检测（时间/区域/设备三维匹配）
+svc -> db: [SQL] INSERT t_mission_device (批量)
+svc -> db: [SQL] UPDATE t_device SET status='ASSIGNED'
+svc -> mq: 发送 device.assigned
+svc --> gw: R<DeviceAssignVO>
+gw --> front: 分配成功
+front --> admin: UI 更新
+
+== 异常流程 ==
+alt 设备冲突
+    svc --> gw: 409 同设备同时间段已分配
+    gw --> front: 冲突设备列表
+    front --> admin: 红色高亮冲突项
+else 设备离线
+    svc -> db: [SQL] SELECT heartbeat < NOW() - 5min
+    svc --> gw: 400 设备不可用
+    gw --> front: 提示重新选择
+end
+
+@enduml

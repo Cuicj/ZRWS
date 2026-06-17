@@ -1,0 +1,34 @@
+﻿@startuml
+title GPS实时追踪（复杂度 O(n³)）
+
+actor 操作员 as op
+participant "前端 Map" as front
+participant "Gateway\nWebSocket" as gw
+participant "zrws-collect" as svc
+database "Redis" as cache
+database "MySQL" as db
+
+== 实时位置上报 ==
+op -> front: 启动追踪
+front -> gw: STOMP CONNECT
+gw -> gw: JWT 鉴权
+front -> gw: SUBSCRIBE /topic/mission.1024.gps
+svc -> cache: [Redis] PUBLISH gps:1024 {lat,lng,alt,speed,heading}
+gw -> front: STOMP MESSAGE {droneId,lat,lng,alt,speed,heading}
+front -> front: Three.js 轨迹更新
+svc -> db: [SQL] INSERT t_mission_gps (批量 100条/次)
+
+== 异常流程 ==
+alt 信号丢失
+    svc -> cache: [Redis] SET gps:1024:last_seen
+    svc -> gw: STOMP /topic/mission.1024.alerts
+    gw -> front: 信号丢失告警
+    front -> op: 弹窗提示
+else 偏离航线
+    svc -> svc: 实时计算偏离距离 > 50m
+    svc -> gw: STOMP /queue/errors
+    gw -> front: 偏离航线告警
+    front -> op: 红色轨迹标注
+end
+
+@enduml

@@ -1,0 +1,38 @@
+﻿@startuml
+title 土质分类检测（复杂度 O(n³)）
+
+actor 分析员 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-analyze" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+database "Redis" as cache
+queue "RabbitMQ" as mq
+
+== AI 推理流程 ==
+user -> front: 提交分析请求
+front -> gw: POST /api/v1/analysis/soil
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_soil_sample WHERE mission_id=1024
+svc -> ai: [gRPC] classifySoil(spectral_data)
+ai -> ai: 光谱特征提取 + CNN 分类
+ai --> svc: SoilClassificationResult
+svc -> db: [SQL] INSERT t_analysis_result
+svc -> mq: 发送 analysis.completed
+svc --> gw: R<AnalysisResultVO>
+gw --> front: 分类结果 + 置信度
+front -> front: ECharts 饼图 + 热力图
+
+== 异常流程 ==
+alt AI 超时
+    ai -[#red]-> svc: 30s 超时
+    svc -> svc: Sentinel 熔断降级
+    svc --> gw: 503 FALLBACK
+    gw --> front: 系统繁忙，稍后重试
+else 样本不足
+    svc --> gw: 400 样本数量不足（需≥10）
+    gw --> front: 提示补充样本
+end
+
+@enduml

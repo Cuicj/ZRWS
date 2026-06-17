@@ -1,0 +1,42 @@
+﻿@startuml
+title 多期变化检测（复杂度 O(n³))
+
+actor 监测员 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-process" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+
+== 提交对比任务 ==
+user -> front: 选择两期正射影像/DSM
+front -> gw: POST /api/v1/processing/change-detection
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_orthophoto_task WHERE id IN ({id1}, {id2})
+svc -> ai: [gRPC] detectChange(raster1, raster2, params)
+ai -> ai: 1. 影像配准对齐
+ai -> ai: 2. 逐像素差值计算
+ai -> ai: 3. 变化阈值分割（新增/消失/变化）
+ai -> ai: 4. 连通域分析 → 变化斑块
+ai -> ai: 5. 斑块属性计算（面积/周长/变化类型）
+ai -> ai: 6. 变化矢量图生成（GeoJSON）
+ai --> svc: ChangeDetectionResult{ patches[], geojsonUrl, changeMapUrl, statistics }
+svc -> db: [SQL] INSERT t_change_detection
+svc --> gw: R<ChangeDetectionVO>
+gw --> front: 变化斑块 + 统计
+
+== 前端展示 ==
+front -> front: 滑块对比（左旧右新）
+front -> front: 变化区域红色高亮叠加
+front -> front: 点击斑块查看变化详情
+
+== 异常流程 ==
+alt 两期分辨率差异过大
+    ai -> svc: 无法对齐，GSD 差 > 3x
+    svc --> gw: 400 两期数据分辨率差异过大
+else 无显著变化
+    ai -> svc: 变化面积 < 总面积的 1%
+    svc --> gw: 200 未检测到显著变化
+end
+
+@enduml

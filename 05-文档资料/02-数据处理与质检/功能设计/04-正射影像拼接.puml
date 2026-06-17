@@ -1,0 +1,61 @@
+﻿@startuml
+title 正射影像拼接 DOM（复杂度 O(n³))
+
+actor 质检员 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-process" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+database "Redis" as cache
+queue "RabbitMQ" as mq
+
+== 提交拼接任务 ==
+user -> front: 选择航拍照片集
+front -> gw: POST /api/v1/processing/orthophoto
+gw -> svc: 转发
+svc -> db: [SQL] INSERT t_orthophoto_task
+svc -> mq: 发送 orthophoto.task.created
+mq -> svc: 消费任务
+
+== 拼接管线 ==
+svc -> db: [SQL] SELECT t_aerial_photo WHERE mission_id={id}
+svc -> ai: [gRPC] stitchOrtho(photos[], cameraParams)
+ai -> ai: 1. SIFT 特征提取与匹配
+ai -> ai: 2. 相机位姿估计（SfM）
+ai -> ai: 3. 稀疏点云 → 稠密点云
+ai -> ai: 4. 网格重建 + 纹理映射
+ai -> ai: 5. 正射校正 + 地理配准（GeoTIFF）
+ai -> ai: 6. 瓦片金字塔生成
+ai -> svc: 分块完成回调
+svc -> svc: MinIO 存储拼接成果
+
+== 进度推送 ==
+loop 拼接进行中
+    ai -> svc: 进度百分比 (每5%)
+    svc -> cache: [Redis] PUBLISH stitch:progress:{taskId}
+    svc -> gw: STOMP /topic/processing.progress
+    gw -> front: 进度条更新
+end
+
+== 生成结果 ==
+ai --> svc: StitchResult{ tifUrl, bounds, resolution, gsdCm }
+svc -> db: [SQL] UPDATE t_orthophoto_task SET status='COMPLETED'
+svc -> mq: 发送 orthophoto.completed
+svc --> gw: R<OrthophotoResultVO>
+gw --> front: 瓦片URL + 元数据
+front -> front: Leaflet 加载正射影像底图
+
+== 异常流程 ==
+alt 照片不足
+    svc --> gw: 400 最少需要 5 张有效照片
+else SIFT 特征不足
+    ai -> svc: 匹配点对 < 阈值
+    svc --> gw: 400 重叠率不足，建议补拍
+else 内存溢出
+    ai -[#red]-> svc: OOM
+    svc -> db: [SQL] UPDATE SET status='FAILED'
+    svc --> gw: 500 数据量过大，请联系管理员
+end
+
+@enduml

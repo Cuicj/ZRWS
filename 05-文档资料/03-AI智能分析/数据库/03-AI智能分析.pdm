@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:a="attribute" xmlns:c="collection" xmlns:o="object">
+  <o:Root>
+    <c:Children>
+      <o:Table Name="t_soil_sample" Code="t_soil_sample" Comment="土质样本表">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="latitude" Code="latitude" DataType="DECIMAL(10,7)" Mandatory="1" Comment="纬度"/>
+          <o:Column Name="longitude" Code="longitude" DataType="DECIMAL(10,7)" Mandatory="1" Comment="经度"/>
+          <o:Column Name="image_url" Code="image_url" DataType="VARCHAR(500)" Comment="样本图像URL"/>
+          <o:Column Name="classification" Code="classification" DataType="VARCHAR(50)" Comment="AI分类结果"/>
+          <o:Column Name="confidence" Code="confidence" DataType="DECIMAL(3,2)" Comment="置信度"/>
+          <o:Column Name="verified" Code="verified" DataType="TINYINT" DefaultValue="0" Comment="是否人工核验"/>
+          <o:Column Name="remark" Code="remark" DataType="TEXT" Comment="备注"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_analysis_result" Code="t_analysis_result" Comment="分析结果表">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="type" Code="type" DataType="VARCHAR(30)" Mandatory="1" Comment="分析类型"/>
+          <o:Column Name="param" Code="param" DataType="TEXT" Comment="分析参数JSON"/>
+          <o:Column Name="result" Code="result" DataType="TEXT" Comment="分析结果JSON"/>
+          <o:Column Name="report_url" Code="report_url" DataType="VARCHAR(500)" Comment="报告文件URL"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="duration_ms" Code="duration_ms" DataType="BIGINT" Comment="分析耗时(ms)"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <!-- P1新增 -->
+      <o:Table Name="t_ndvi_analysis" Code="t_ndvi_analysis" Comment="NDVI植被指数分析表(P1新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="orthophoto_id" Code="orthophoto_id" DataType="BIGINT" Comment="源多光谱影像ID"/>
+          <o:Column Name="ndvi_raster_url" Code="ndvi_raster_url" DataType="VARCHAR(500)" Comment="NDVI栅格URL"/>
+          <o:Column Name="zones" Code="zones" DataType="TEXT" Comment="分区结果JSON"/>
+          <o:Column Name="min_ndvi" Code="min_ndvi" DataType="DECIMAL(4,3)" Comment="最小NDVI值"/>
+          <o:Column Name="max_ndvi" Code="max_ndvi" DataType="DECIMAL(4,3)" Comment="最大NDVI值"/>
+          <o:Column Name="mean_ndvi" Code="mean_ndvi" DataType="DECIMAL(4,3)" Comment="平均NDVI值"/>
+          <o:Column Name="veg_coverage" Code="veg_coverage" DataType="DECIMAL(5,2)" Comment="植被覆盖率(%)"/>
+          <o:Column Name="prescription_url" Code="prescription_url" DataType="VARCHAR(500)" Comment="处方图URL"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+    </c:Children>
+  </o:Root>
+</Model>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:o="object" xmlns:c="collection" xmlns:a="attribute">
+  <o:RootObject Id="2CE1E810-D11D-4748-9E56-7A6342F48339">
+    <c:Children>
+      <o:Model Id="16294EF4-F714-4D93-A938-D32B8B47DE8F" Name="04-审批与工作流" Code="ZRWS_APPROVAL">
+        <a:ObjectID>16294EF4-F714-4D93-A938-D32B8B47DE8F</a:ObjectID>
+        <a:Name>04-审批与工作流</a:Name>
+        <a:Code>ZRWS_APPROVAL</a:Code>
+        <a:Comment>04-审批与工作流 — ZRWS 物理数据模型</a:Comment>
+        <c:Tables/>
+        <c:References/>
+        <c:Domains/>
+      </o:Model>
+    </c:Children>
+  </o:RootObject>
+</Model>

@@ -1,0 +1,46 @@
+﻿@startuml
+title NDVI 植被指数分析（复杂度 O(n²))
+
+actor 农艺师 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-analyze" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+
+== NDVI 计算 ==
+user -> front: 选择多光谱影像 → NDVI分析
+front -> gw: POST /api/v1/analysis/ndvi
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_orthophoto_task WHERE sensor='multispectral'
+svc -> ai: [gRPC] calculateNDVI(multispectralRaster, bands)
+ai -> ai: 1. 波段分离（NIR / RED）
+ai -> ai: 2. NDVI = (NIR - RED) / (NIR + RED)
+ai -> ai: 3. 逐像素计算 → NDVI 栅格
+ai -> ai: 4. NDVI 分级着色（-1 蓝 → 0 黄 → +1 绿）
+ai --> svc: NdviResult{ ndviRasterUrl, statistics }
+
+== 地块分区统计 ==
+svc -> ai: [gRPC] segmentNDVI(ndviRaster)
+ai -> ai: 按 NDVI 阈值自动分区
+ai -> ai: 计算每块区域：平均NDVI / 面积 / 植被覆盖率
+ai --> svc: NdviZoneResult{ zones[], prescriptionMapUrl }
+svc -> db: [SQL] INSERT t_ndvi_analysis
+svc --> gw: R<NdviVO>
+gw --> front: NDVI 热力图 + 分区统计
+
+== 前端展示 ==
+front -> front: Leaflet + NDVI 图层叠加
+front -> front: 绘制分区边界 + 标签
+front -> front: ECharts 柱状图（各区 NDVI 均值）
+front -> user: 处方图 → 精准施肥建议
+
+== 异常流程 ==
+alt 缺少多光谱波段
+    svc --> gw: 400 影像缺少 NIR 波段，请使用多光谱相机采集
+else 云层遮挡
+    ai -> svc: 有效像素 < 70%
+    svc --> gw: 400 影像云层覆盖过多，建议重新采集
+end
+
+@enduml

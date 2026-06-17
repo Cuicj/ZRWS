@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:a="attribute" xmlns:c="collection" xmlns:o="object">
+  <o:Root>
+    <c:Children>
+      <o:Table Name="t_mission" Code="t_mission" Comment="采集任务主表">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="title" Code="title" DataType="VARCHAR(200)" Mandatory="1" Comment="任务标题"/>
+          <o:Column Name="description" Code="description" DataType="TEXT" Comment="任务描述"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Mandatory="1" Comment="任务状态"/>
+          <o:Column Name="priority" Code="priority" DataType="INT" DefaultValue="0" Comment="优先级"/>
+          <o:Column Name="region" Code="region" DataType="TEXT" Comment="采集区域GeoJSON"/>
+          <o:Column Name="start_time" Code="start_time" DataType="DATETIME" Comment="计划开始时间"/>
+          <o:Column Name="end_time" Code="end_time" DataType="DATETIME" Comment="计划结束时间"/>
+          <o:Column Name="actual_start" Code="actual_start" DataType="DATETIME" Comment="实际开始时间"/>
+          <o:Column Name="actual_end" Code="actual_end" DataType="DATETIME" Comment="实际结束时间"/>
+          <o:Column Name="flight_plan_id" Code="flight_plan_id" DataType="BIGINT" Comment="关联航线计划ID(P2新增)"/>
+          <o:Column Name="result_url" Code="result_url" DataType="VARCHAR(500)" Comment="采集成果URL"/>
+          <o:Column Name="remark" Code="remark" DataType="TEXT" Comment="备注"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_mission_gps" Code="t_mission_gps" Comment="GPS追踪数据">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="device_id" Code="device_id" DataType="BIGINT" Comment="设备ID"/>
+          <o:Column Name="latitude" Code="latitude" DataType="DECIMAL(10,7)" Mandatory="1" Comment="纬度"/>
+          <o:Column Name="longitude" Code="longitude" DataType="DECIMAL(10,7)" Mandatory="1" Comment="经度"/>
+          <o:Column Name="altitude" Code="altitude" DataType="DECIMAL(8,2)" Comment="海拔(m)"/>
+          <o:Column Name="speed" Code="speed" DataType="DECIMAL(6,2)" Comment="速度(m/s)"/>
+          <o:Column Name="record_time" Code="record_time" DataType="DATETIME" Mandatory="1" Comment="定位时间"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_mission_device" Code="t_mission_device" Comment="任务设备关联">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="任务ID"/>
+          <o:Column Name="device_id" Code="device_id" DataType="BIGINT" Mandatory="1" Comment="设备ID"/>
+          <o:Column Name="role" Code="role" DataType="VARCHAR(30)" Comment="设备角色"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="设备状态"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_device" Code="t_device" Comment="设备注册表">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="name" Code="name" DataType="VARCHAR(100)" Mandatory="1" Comment="设备名称"/>
+          <o:Column Name="type" Code="type" DataType="VARCHAR(30)" Mandatory="1" Comment="设备类型"/>
+          <o:Column Name="model" Code="model" DataType="VARCHAR(50)" Comment="设备型号"/>
+          <o:Column Name="serial_no" Code="serial_no" DataType="VARCHAR(100)" Comment="序列号"/>
+          <o:Column Name="max_flight_time" Code="max_flight_time" DataType="INT" Comment="最长续航(min)"/>
+          <o:Column Name="sensors" Code="sensors" DataType="TEXT" Comment="传感器配置JSON"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Mandatory="1" Comment="设备状态"/>
+          <o:Column Name="last_maintenance" Code="last_maintenance" DataType="DATE" Comment="上次维护日期"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <!-- P2新增 -->
+      <o:Table Name="t_flight_plan" Code="t_flight_plan" Comment="航线计划表(P2新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="region_id" Code="region_id" DataType="BIGINT" Mandatory="1" Comment="区域配置ID"/>
+          <o:Column Name="waypoints" Code="waypoints" DataType="TEXT" Mandatory="1" Comment="航点列表JSON"/>
+          <o:Column Name="overlap" Code="overlap" DataType="DECIMAL(3,2)" Comment="航向重叠率"/>
+          <o:Column Name="side_overlap" Code="side_overlap" DataType="DECIMAL(3,2)" Comment="旁向重叠率"/>
+          <o:Column Name="altitude" Code="altitude" DataType="DECIMAL(8,2)" Comment="飞行高度(m)"/>
+          <o:Column Name="total_distance" Code="total_distance" DataType="DECIMAL(10,2)" Comment="总航程(m)"/>
+          <o:Column Name="estimated_duration" Code="estimated_duration" DataType="INT" Comment="预计耗时(秒)"/>
+          <o:Column Name="battery_required" Code="battery_required" DataType="INT" Comment="所需电池数"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+    </c:Children>
+  </o:Root>
+</Model>

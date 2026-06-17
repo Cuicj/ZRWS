@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Model xmlns:a="attribute" xmlns:c="collection" xmlns:o="object">
+  <o:Root>
+    <c:Children>
+      <!-- ========== 已有表 ========== -->
+      <o:Table Name="t_point_cloud" Code="t_point_cloud" Comment="点云数据表">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID（雪花算法）"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="point_cloud_url" Code="point_cloud_url" DataType="VARCHAR(500)" Comment="点云文件存储URL"/>
+          <o:Column Name="point_count" Code="point_count" DataType="BIGINT" Comment="点云数量"/>
+          <o:Column Name="resolution_cm" Code="resolution_cm" DataType="DECIMAL(5,2)" Comment="分辨率(厘米)"/>
+          <o:Column Name="crs" Code="crs" DataType="VARCHAR(50)" Comment="坐标参考系"/>
+          <o:Column Name="bounds" Code="bounds" DataType="TEXT" Comment="边界坐标JSON"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1" Comment="创建时间"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1" Comment="更新时间"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1" Comment="创建人"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1" Comment="更新人"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1" Comment="逻辑删除"/>
+        </c:Columns>
+      </o:Table>
+      <!-- ========== P0新增 ========== -->
+      <o:Table Name="t_aerial_photo" Code="t_aerial_photo" Comment="航拍照片表(P0新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="photo_url" Code="photo_url" DataType="VARCHAR(500)" Comment="照片存储URL"/>
+          <o:Column Name="latitude" Code="latitude" DataType="DECIMAL(10,7)" Comment="纬度"/>
+          <o:Column Name="longitude" Code="longitude" DataType="DECIMAL(10,7)" Comment="经度"/>
+          <o:Column Name="altitude" Code="altitude" DataType="DECIMAL(8,2)" Comment="飞行高度"/>
+          <o:Column Name="yaw" Code="yaw" DataType="DECIMAL(5,2)" Comment="偏航角"/>
+          <o:Column Name="pitch" Code="pitch" DataType="DECIMAL(5,2)" Comment="俯仰角"/>
+          <o:Column Name="roll" Code="roll" DataType="DECIMAL(5,2)" Comment="横滚角"/>
+          <o:Column Name="sensor_type" Code="sensor_type" DataType="VARCHAR(30)" Comment="传感器类型"/>
+          <o:Column Name="exif" Code="exif" DataType="TEXT" Comment="EXIF元数据JSON"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_orthophoto_task" Code="t_orthophoto_task" Comment="正射影像拼接任务表(P0新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="photo_ids" Code="photo_ids" DataType="TEXT" Comment="关联照片ID列表JSON"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="PENDING|PROCESSING|COMPLETED|FAILED"/>
+          <o:Column Name="progress" Code="progress" DataType="INT" DefaultValue="0" Comment="进度0-100"/>
+          <o:Column Name="tif_url" Code="tif_url" DataType="VARCHAR(500)" Comment="拼接结果GeoTIFF"/>
+          <o:Column Name="tiles_url" Code="tiles_url" DataType="VARCHAR(500)" Comment="瓦片目录URL"/>
+          <o:Column Name="bounds" Code="bounds" DataType="TEXT" Comment="成果边界坐标JSON"/>
+          <o:Column Name="resolution_cm" Code="resolution_cm" DataType="DECIMAL(5,2)" Comment="分辨率(cm)"/>
+          <o:Column Name="gsd_cm" Code="gsd_cm" DataType="DECIMAL(5,2)" Comment="地面采样距离(cm)"/>
+          <o:Column Name="error_message" Code="error_message" DataType="TEXT" Comment="失败原因"/>
+          <o:Column Name="crs" Code="crs" DataType="VARCHAR(50)" Comment="坐标参考系"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <o:Table Name="t_elevation_result" Code="t_elevation_result" Comment="数字高程结果表(P0新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="point_cloud_id" Code="point_cloud_id" DataType="BIGINT" Comment="源点云数据ID"/>
+          <o:Column Name="dem_url" Code="dem_url" DataType="VARCHAR(500)" Comment="DEM栅格URL"/>
+          <o:Column Name="dsm_url" Code="dsm_url" DataType="VARCHAR(500)" Comment="DSM栅格URL"/>
+          <o:Column Name="contour_url" Code="contour_url" DataType="VARCHAR(500)" Comment="等高线文件URL"/>
+          <o:Column Name="min_elevation" Code="min_elevation" DataType="DECIMAL(8,2)" Comment="最低高程(m)"/>
+          <o:Column Name="max_elevation" Code="max_elevation" DataType="DECIMAL(8,2)" Comment="最高高程(m)"/>
+          <o:Column Name="resolution_cm" Code="resolution_cm" DataType="DECIMAL(5,2)" Comment="栅格分辨率(cm)"/>
+          <o:Column Name="bounds" Code="bounds" DataType="TEXT" Comment="边界坐标JSON"/>
+          <o:Column Name="crs" Code="crs" DataType="VARCHAR(50)" Comment="坐标参考系"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <!-- ========== P1新增 ========== -->
+      <o:Table Name="t_volume_calc" Code="t_volume_calc" Comment="体积/土方量计算结果表(P1新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="elevation_id" Code="elevation_id" DataType="BIGINT" Comment="源DSM结果ID"/>
+          <o:Column Name="roi" Code="roi" DataType="TEXT" Comment="ROI多边形GeoJSON"/>
+          <o:Column Name="base_elevation" Code="base_elevation" DataType="DECIMAL(8,2)" Comment="基准面高程(m)"/>
+          <o:Column Name="cut_volume" Code="cut_volume" DataType="DECIMAL(15,4)" Comment="挖方体积(m³)"/>
+          <o:Column Name="fill_volume" Code="fill_volume" DataType="DECIMAL(15,4)" Comment="填方体积(m³)"/>
+          <o:Column Name="net_volume" Code="net_volume" DataType="DECIMAL(15,4)" Comment="净方量(m³)"/>
+          <o:Column Name="accuracy_pct" Code="accuracy_pct" DataType="DECIMAL(5,2)" Comment="精度百分比"/>
+          <o:Column Name="profile_image" Code="profile_image" DataType="VARCHAR(500)" Comment="剖面图URL"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+      <!-- ========== P2新增 ========== -->
+      <o:Table Name="t_change_detection" Code="t_change_detection" Comment="变化检测结果表(P2新增)">
+        <c:Columns>
+          <o:Column Name="id" Code="id" DataType="BIGINT" Mandatory="1" Comment="主键ID"/>
+          <o:Column Name="mission_id" Code="mission_id" DataType="BIGINT" Mandatory="1" Comment="关联任务ID"/>
+          <o:Column Name="before_id" Code="before_id" DataType="BIGINT" Mandatory="1" Comment="前期正射影像任务ID"/>
+          <o:Column Name="after_id" Code="after_id" DataType="BIGINT" Mandatory="1" Comment="后期正射影像任务ID"/>
+          <o:Column Name="change_map_url" Code="change_map_url" DataType="VARCHAR(500)" Comment="变化热力图URL"/>
+          <o:Column Name="geojson_url" Code="geojson_url" DataType="VARCHAR(500)" Comment="变化斑块矢量"/>
+          <o:Column Name="patch_count" Code="patch_count" DataType="INT" Comment="变化斑块数量"/>
+          <o:Column Name="total_change_area" Code="total_change_area" DataType="DECIMAL(12,4)" Comment="总变化面积(m²)"/>
+          <o:Column Name="statistics" Code="statistics" DataType="TEXT" Comment="统计JSON(分类面积)"/>
+          <o:Column Name="threshold" Code="threshold" DataType="DECIMAL(4,2)" Comment="变化阈值"/>
+          <o:Column Name="status" Code="status" DataType="VARCHAR(20)" Comment="状态"/>
+          <o:Column Name="error_message" Code="error_message" DataType="TEXT" Comment="失败原因"/>
+          <o:Column Name="create_time" Code="create_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="update_time" Code="update_time" DataType="DATETIME" Mandatory="1"/>
+          <o:Column Name="create_by" Code="create_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="update_by" Code="update_by" DataType="BIGINT" Mandatory="1"/>
+          <o:Column Name="is_deleted" Code="is_deleted" DataType="TINYINT" DefaultValue="0" Mandatory="1"/>
+        </c:Columns>
+      </o:Table>
+    </c:Children>
+  </o:Root>
+</Model>

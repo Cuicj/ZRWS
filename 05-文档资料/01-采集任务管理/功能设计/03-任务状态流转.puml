@@ -1,0 +1,15 @@
+﻿@startuml
+title 采集任务状态流转
+
+[*] --> PENDING : 创建任务
+PENDING --> ACTIVE : 分配设备 + 操作员确认
+PENDING --> CANCELLED : 取消任务
+ACTIVE --> PAUSED : 暂停采集
+PAUSED --> ACTIVE : 恢复采集
+ACTIVE --> COMPLETED : 采集完成
+COMPLETED --> [*]
+CANCELLED --> [*]
+
+note right of ACTIVE : GPS 实时推送中
+note right of PAUSED : WebSocket 心跳保持
+@enduml

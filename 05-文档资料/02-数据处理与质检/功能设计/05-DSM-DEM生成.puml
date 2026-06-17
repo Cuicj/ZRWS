@@ -1,0 +1,41 @@
+﻿@startuml
+title DSM/DEM 数字高程模型生成（复杂度 O(n³))
+
+actor 质检员 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-process" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+
+== 提交生成任务 ==
+user -> front: 选择点云数据 → 生成DSM
+front -> gw: POST /api/v1/processing/dsm
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_point_cloud WHERE mission_id={id}
+svc -> ai: [gRPC] generateElevation(pointCloud, params)
+ai -> ai: 1. 点云滤波（地面点 / 非地面点分类）
+ai -> ai: 2. 地面点插值 → DEM 栅格
+ai -> ai: 3. 全点插值 → DSM 栅格
+ai -> ai: 4. 生成等高线（可选间隔）
+ai -> ai: 5. 山体阴影渲染
+ai -> ai: 6. 导出 GeoTIFF / ASC
+ai --> svc: ElevationResult{ demUrl, dsmUrl, contourUrl, minElevation, maxElevation }
+svc -> db: [SQL] INSERT t_elevation_result
+svc --> gw: R<ElevationResultVO>
+gw --> front: DEM/DSM 图层URL
+
+== 前端渲染 ==
+front -> front: Cesium.js 加载 DEM 地形
+front -> front: 叠加正射影像纹理
+front -> user: 3D 地形浏览 + 等高线叠加
+
+== 异常流程 ==
+alt 点云密度不足
+    ai -> svc: pts/m² < 10
+    svc --> gw: 400 建议降低分辨率或增加采集密度
+else 地面点提取失败
+    svc --> gw: 400 植被覆盖过密，地面点不足
+end
+
+@enduml

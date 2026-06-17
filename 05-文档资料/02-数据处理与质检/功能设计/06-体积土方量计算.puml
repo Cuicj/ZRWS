@@ -1,0 +1,38 @@
+﻿@startuml
+title 体积与土方量计算（复杂度 O(n²))
+
+actor 工程师 as user
+participant "前端" as front
+participant "Gateway" as gw
+participant "zrws-process" as svc
+participant "Python AI" as ai
+database "MySQL" as db
+
+== 体积计算 ==
+user -> front: 框选目标区域 + 设置基准面
+front -> gw: POST /api/v1/processing/volume
+gw -> svc: 转发
+svc -> db: [SQL] SELECT t_elevation_result WHERE mission_id={id}
+svc -> ai: [gRPC] calculateVolume(dsm, roi, baseElevation)
+ai -> ai: 1. ROI 裁剪 DSM
+ai -> ai: 2. 基准面以上 → 挖方体积
+ai -> ai: 3. 基准面以下 → 填方体积
+ai -> ai: 4. 网格积分法精度估算
+ai -> ai: 5. 生成截面剖面图
+ai --> svc: VolumeResult{ cutVolume, fillVolume, netVolume, accuracyPercent, profileImageUrl }
+svc -> db: [SQL] INSERT t_volume_calc
+svc --> gw: R<VolumeResultVO>
+gw --> front: 挖方/填方/净方量 + 剖面图
+
+== 两期对比 ==
+user -> front: 选择两期 DSM 对比
+front -> gw: POST /api/v1/processing/volume/diff
+gw -> svc: 转发
+svc -> ai: [gRPC] diffVolume(dsm1, dsm2)
+ai -> ai: 两期 DSM 逐像素差值
+ai -> ai: 差值积分 → 总变化体积
+ai --> svc: DiffVolumeResult{ changeVolume, changeHeatmapUrl }
+svc --> gw: R<DiffVolumeResultVO>
+gw --> front: 变化热力图 + 体积变化量
+
+@enduml
