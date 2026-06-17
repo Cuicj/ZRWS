@@ -1,0 +1,92 @@
+@startuml
+title 物资申领审批流程
+
+actor 申领人 as applicant
+actor 部门负责人 as dept_head
+actor 设备管理员 as asset_admin
+participant "工作流引擎\n(zrws-approval)" as wf
+participant "物资管理服务\n(zrws-asset)" as asset_svc
+database "MySQL" as db
+queue "RabbitMQ" as mq
+database "Redis" as redis
+
+== 提交申领申请 ==
+申领人 -> 申领人: 填写申请单\n(物资清单+用途+紧急程度)
+申领人 -> wf: POST /api/asset/apply/submit
+activate wf
+wf -> asset_svc: RPC: 校验物资是否存在
+asset_svc -> db: [SQL] SELECT * FROM t_asset\nWHERE asset_id IN (...)
+asset_svc --> wf: 物资列表 + 库存状态
+
+alt 物资不存在
+    wf --> 申领人: 400 物资不存在
+else 物资库存不足
+    wf --> 申领人: 409 物资已被他人申领
+    note right: 提示排队等待，推送归还通知
+else 校验通过
+    wf -> db: [SQL] INSERT INTO t_asset_apply\n(apply_type='领用', status='待审批')
+    wf -> mq: 发送 approval.node.incoming
+    mq -> wf: 通知部门负责人
+    wf --> 申领人: 200 申请已提交，等待审批
+end
+
+== 部门负责人审批 ==
+dept_head -> wf: 查看待办
+wf -> db: [SQL] SELECT * FROM t_asset_apply\nWHERE status='待审批'
+dept_head -> wf: POST /api/asset/apply/approve\n(通过/驳回 + 意见)
+wf -> db: [SQL] UPDATE t_asset_apply\nSET status=?
+
+alt 审批驳回
+    wf -> db: [SQL] UPDATE t_asset_apply\nSET reject_reason=?, status='已驳回'
+    wf -> mq: 发送 approval.returned
+    mq -> wf: 通知申领人
+    wf --> dept_head: 200 已驳回
+    note right: 驳回时强制填写\n原因分类：安全风险/库存不足/\n资质不符/预算超限/其他
+else 审批通过
+    wf -> mq: 发送 approval.node.incoming
+    mq -> wf: 通知设备管理员
+end
+
+== 设备管理员核实库存 ==
+asset_admin -> wf: 查看待核实申领
+asset_admin -> asset_svc: RPC: 查询实时库存
+asset_svc -> db: [SQL] SELECT * FROM t_asset\nWHERE asset_id IN (...) AND status='在库'
+asset_svc --> asset_admin: 库存明细
+
+alt 库存充足
+    asset_admin -> wf: 确认发放
+    wf -> asset_svc: RPC: 锁定物资
+    asset_svc -> db: [SQL] UPDATE t_asset\nSET status='待领取'
+    asset_svc -> redis: SET asset:lock:{asset_id}=apply_id EX 3600
+    wf -> mq: 发送 asset.ready_for_pickup
+    mq -> wf: 通知申领人领取
+    wf --> asset_admin: 200 已通知申领人领取
+    
+    == 申领人签收 ==
+    申领人 -> asset_svc: POST /api/asset/apply/receive
+    asset_svc -> db: [SQL] UPDATE t_asset\nSET status='使用中', current_location=?
+    asset_svc -> db: [SQL] INSERT INTO t_asset_usage_log\n(check_out_time=now())
+    asset_svc -> redis: DEL asset:lock:{asset_id}
+    asset_svc -> db: [SQL] UPDATE t_asset_apply\nSET status='已归还'
+    asset_svc -> mq: 发送 asset.check_out
+    asset_svc --> 申领人: 200 签收完成
+
+else 库存不足
+    asset_admin -> asset_svc: 触发采购建议
+    asset_svc -> asset_svc: 生成采购建议清单
+    asset_svc -> mq: 发送 asset.purchase_required
+    note right: 走采购审批流程\n→ 入库 → 发放
+    wf --> asset_admin: 200 已触发采购建议
+end
+
+== 超时异常处理 ==
+alt 审批超时72h
+    wf -> wf: 定时任务扫描超时审批
+    wf -> mq: 发送 approval.escalation
+    mq -> wf: 自动提醒审批人 + 通知上级
+    note right: 累计超时上报管理员
+end
+
+deactivate wf
+
+@enduml

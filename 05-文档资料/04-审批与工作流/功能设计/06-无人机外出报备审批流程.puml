@@ -1,0 +1,131 @@
+@startuml
+title 无人机外出报备审批流程
+
+actor 外业人员 as field_staff
+actor 设备管理员 as asset_admin
+actor 部门负责人 as dept_head
+actor 空域审核员 as airspace_auditor
+participant "工作流引擎\n(zrws-approval)" as wf
+participant "物资管理服务\n(zrws-asset)" as asset_svc
+participant "GIS服务\n(zrws-gis)" as gis
+database "MySQL" as db
+queue "RabbitMQ" as mq
+database "Redis" as redis
+
+== 提交外出报备 ==
+外业人员 -> wf: POST /api/asset/out-apply/submit\n(设备清单+目的地+时间段+任务说明)
+activate wf
+
+wf -> asset_svc: RPC: 检查设备状态
+asset_svc -> db: [SQL] SELECT status, battery_cycles,\nflight_hours, firmware_version\nFROM t_asset WHERE asset_id IN (...)
+asset_svc --> wf: 设备状态列表
+
+alt 设备已报废
+    wf --> 外业人员: 400 设备已报废，不可出库
+else 设备被他人锁定
+    wf --> 外业人员: 409 设备外出中，请等待归还
+    note right: Redis 锁定 key:\nasset:lock:{asset_id}
+else 设备维护到期
+    wf --> 外业人员: 403 设备待维护，已禁用申领
+    note right: 需先完成维护保养\n才可恢复申领资格
+else 设备状态正常
+    wf -> gis: RPC: 查询目的地空域信息
+    gis -> gis: 检查禁飞区/管制空域
+    gis --> wf: 空域合规性结果
+    
+    alt 目的地为禁飞区
+        wf -> db: [SQL] INSERT INTO t_asset_apply\n(apply_type='外出报备', status='已驳回')\nreject_reason='目的地与禁飞区冲突'
+        wf --> 外业人员: 400 自动驳回：目的地与禁飞区冲突
+        note right: 强制驳回，不可重新提交\n相同目的地
+    else 空域合规
+        wf -> db: [SQL] INSERT INTO t_asset_apply\n(apply_type='外出报备', status='待审批')
+        wf -> mq: 发送 approval.node.incoming
+        mq -> wf: 通知设备管理员
+        wf --> 外业人员: 200 报备已提交，等待审批
+    end
+end
+
+== 设备管理员检查 ==
+asset_admin -> wf: 查看待审核报备
+asset_admin -> asset_svc: RPC: 获取设备详细维护/校准状态
+asset_svc -> db: [SQL] SELECT maintenance_date,\nnext_maintenance_date, calibration_status\nFROM t_asset_maintenance\nWHERE asset_id IN (...)
+asset_svc --> asset_admin: 维护校准记录
+
+alt 维护/校准过期
+    asset_admin -> wf: 驳回：设备需维护
+    wf -> db: [SQL] UPDATE t_asset_apply\nSET status='已驳回', reject_reason='设备维护到期'
+    wf -> mq: 发送 approval.returned
+    mq -> wf: 通知外业人员
+else 设备状态合格
+    asset_admin -> wf: 通过：设备状态合格
+    wf -> mq: 发送 approval.node.incoming
+    mq -> wf: 通知空域审核员
+end
+
+== 空域审核员审核（涉密区域） ==
+airspace_auditor -> wf: 查看报备详情
+airspace_auditor -> gis: 验证空域安全级别
+gis --> airspace_auditor: 空域定级信息
+
+alt 涉密区域需额外审批
+    airspace_auditor -> wf: 通过 + 标记"需安全保密审批"
+    wf -> mq: 发送 approval.node.incoming
+    mq -> wf: 通知安全保密审批人
+    note right: 涉密设备需多人会签
+else 普通区域
+    airspace_auditor -> wf: 通过
+end
+
+== 部门负责人审批 ==
+dept_head -> wf: 查看完整报备链
+dept_head -> wf: 批准/驳回
+
+alt 驳回
+    wf -> db: [SQL] UPDATE t_asset_apply\nSET status='已驳回'
+    wf -> mq: 发送 approval.returned
+    mq -> wf: 通知外业人员
+else 批准
+    wf -> asset_svc: RPC: 批准出库
+    asset_svc -> db: [SQL] UPDATE t_asset\nSET status='外出中'
+    asset_svc -> redis: SET asset:out:{asset_id}=apply_id\nEX 86400
+    asset_svc -> db: [SQL] INSERT INTO t_asset_usage_log\n(check_out_time=now(), pre_check_status=?)
+    asset_svc -> mq: 发送 asset.check_out.notify
+    wf -> db: [SQL] UPDATE t_asset_apply\nSET status='执行中'
+    wf --> dept_head: 200 出库批准完成
+end
+
+== 归还提醒与检查 ==
+asset_svc -> asset_svc: 定时任务：检查 expected_return_time
+asset_svc -> mq: 发送 asset.return.reminder\n(到期前24h)
+
+alt 超期未归还
+    asset_svc -> asset_svc: 超期触发
+    asset_svc -> mq: 发送 asset.overdue.alert
+    asset_svc -> db: [SQL] UPDATE t_asset_apply\nSET status='超期中'
+    mq -> asset_svc: 通知管理员 + 自动升级工单
+    note right: 归还超期升级工单\n通知管理员处理
+end
+
+== 归还核验 ==
+外业人员 -> asset_svc: POST /api/asset/return/check
+asset_svc -> db: [SQL] UPDATE t_asset_usage_log\nSET check_in_time=now()
+asset_svc -> db: [SQL] UPDATE t_asset\nSET status='在库'
+
+外业人员 -> asset_svc: 提交飞行数据回传
+
+alt 设备完好
+    asset_svc -> db: [SQL] UPDATE t_asset_usage_log\nSET post_check_status=?\ndamage_found=0
+    asset_svc -> db: [SQL] UPDATE t_asset\nSET flight_hours=flight_hours+?\nbattery_cycles=battery_cycles+?
+    asset_svc -> redis: DEL asset:out:{asset_id}
+    asset_svc -> db: [SQL] UPDATE t_asset_apply\nSET actual_return_time=now()\nstatus='已完成'
+    asset_svc --> 外业人员: 200 归还核验完成，设备恢复在库
+else 设备损坏
+    asset_svc -> db: [SQL] UPDATE t_asset_usage_log\nSET damage_found=1
+    asset_svc -> mq: 发送 asset.damage.report
+    note right: 触发维修流程\n→ 故障维修工单
+    asset_svc --> 外业人员: 200 已记录损坏情况，触发维修流程
+end
+
+deactivate wf
+
+@enduml
