@@ -1,0 +1,13 @@
+﻿{
+  "name": "smart-soil-guardian",
+  "version": "1.0.0",
+  "description": "智壤卫士 - 无人机地形数据采集与土质分析社会服务平台",
+  "main": "code/main.js",
+  "scripts": {
+    "start": "node code/main.js",
+    "demo": "node -e \"const App = require('./code/main'); new App().init('UAV-001').then(a => console.log('系统就绪'))\""
+  },
+  "keywords": ["drone", "soil-analysis", "terrain-mapping", "GPS", "social-service"],
+  "author": "智壤卫士团队",
+  "license": "MIT"
+}

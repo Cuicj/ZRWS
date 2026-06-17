@@ -1,0 +1,30 @@
+﻿# 编译产物
+*.pyc
+*.pyo
+__pycache__/
+*.class
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+/dist/
+/build/
+
+# IDE & 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# 系统文件
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# 临时文件
+*.tmp
+*.log
+*.cache
+/temp/
