@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://zrws.com/process/material">
+
+    <!-- 物资申领流程（5步：申领→部门审批→仓库分配→领导审批→签收确认） -->
+    <process id="MATERIAL" name="物资申领" isExecutable="true">
+
+        <startEvent id="start"/>
+
+        <!-- 第一步：部门审批 -->
+        <userTask id="dept_approve" name="部门审批" flowable:assignee="${deptManager}"/>
+
+        <!-- 第二步：仓库分配（条件路由） -->
+        <userTask id="warehouse_check" name="库存核验" flowable:assignee="${warehouse}"/>
+
+        <!-- 条件网关：库存是否充足 -->
+        <exclusiveGateway id="stock_gateway" name="库存判断"/>
+
+        <!-- 充足分支：领导审批 -->
+        <userTask id="leader_approve" name="领导审批" flowable:assignee="${leader}"/>
+
+        <!-- 不足分支：触发采购（Service Task） -->
+        <serviceTask id="trigger_purchase" name="触发采购申请"
+                     flowable:class="com.zrws.approval.engine.delegate.TriggerPurchaseDelegate"/>
+
+        <!-- 最终：签收确认（仅充足分支走到此处） -->
+        <userTask id="signoff" name="签收确认" flowable:assignee="${applicant}"/>
+
+        <endEvent id="end_normal" name="完成"/>
+        <endEvent id="end_purchase" name="转采购"/>
+
+        <!-- 连线 -->
+        <sequenceFlow sourceRef="start" targetRef="dept_approve"/>
+        <sequenceFlow sourceRef="dept_approve" targetRef="warehouse_check"/>
+        <sequenceFlow sourceRef="warehouse_check" targetRef="stock_gateway"/>
+
+        <!-- 条件表达式：stockStatus = SUFFICIENT / INSUFFICIENT -->
+        <sequenceFlow sourceRef="stock_gateway" targetRef="leader_approve">
+            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'SUFFICIENT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow sourceRef="stock_gateway" targetRef="trigger_purchase">
+            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'INSUFFICIENT'}</conditionExpression>
+        </sequenceFlow>
+
+        <sequenceFlow sourceRef="leader_approve" targetRef="signoff"/>
+        <sequenceFlow sourceRef="signoff" targetRef="end_normal"/>
+        <sequenceFlow sourceRef="trigger_purchase" targetRef="end_purchase"/>
+
+    </process>
+
+</definitions>

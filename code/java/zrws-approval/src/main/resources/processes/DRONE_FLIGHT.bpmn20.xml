@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://zrws.com/process/drone-flight">
+
+    <!-- 无人机外出报备流程（4步：报备→空域申请→安全审批→主管批准） -->
+    <process id="DRONE_FLIGHT" name="无人机外出报备" isExecutable="true">
+
+        <startEvent id="start"/>
+
+        <!-- 第一步：空域申请 (24h SLA) -->
+        <userTask id="airspace" name="空域申请" flowable:assignee="${airspaceAdmin}"
+                  flowable:dueDate="${dueDateAirspace}"/>
+
+        <!-- 第二步：安全审批 (4h SLA) -->
+        <userTask id="safety" name="安全审批" flowable:assignee="${safetyOfficer}"
+                  flowable:dueDate="${dueDateSafety}"/>
+
+        <!-- 第三步：主管批准 (2h SLA) -->
+        <userTask id="leader" name="主管批准" flowable:assignee="${leader}"
+                  flowable:dueDate="${dueDateLeader}"/>
+
+        <!-- 第四步：执行确认（可选） -->
+        <userTask id="execute" name="执行确认" flowable:assignee="${applicant}"/>
+
+        <endEvent id="end"/>
+
+        <!-- 连线 -->
+        <sequenceFlow sourceRef="start" targetRef="airspace"/>
+        <sequenceFlow sourceRef="airspace" targetRef="safety"/>
+        <sequenceFlow sourceRef="safety" targetRef="leader"/>
+        <sequenceFlow sourceRef="leader" targetRef="execute"/>
+        <sequenceFlow sourceRef="execute" targetRef="end"/>
+
+    </process>
+
+</definitions>

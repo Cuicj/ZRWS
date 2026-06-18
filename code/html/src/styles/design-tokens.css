@@ -1,0 +1,153 @@
+/* ============================================
+   智壤卫士 / 设计代币 Design Tokens
+   极简测绘美学：墨黑 + 沙金 + 信号白
+   ============================================ */
+
+:root {
+  /* 颜色系统 */
+  --ink-900: #0A0E14;
+  --ink-800: #131922;
+  --ink-700: #1C222E;
+  --ink-600: #2A303D;
+  --ink-500: #3D4452;
+  --ink-400: #5C6371;
+  
+  --sand-500: #C9A45C;
+  --sand-400: #D4B47A;
+  --sand-600: #A88742;
+  
+  --signal: #E8E6E1;
+  --signal-dim: #B8B6B0;
+  
+  --danger: #D14D3A;
+  --info: #4A7C9E;
+  --ok: #6B8E5A;
+  --warn: #B8860B;
+
+  /* 字体 */
+  --font-display: 'Fraunces', 'Source Han Serif SC', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+  --font-body: 'Noto Sans SC', -apple-system, sans-serif;
+
+  /* 间距 */
+  --s-1: 4px;
+  --s-2: 8px;
+  --s-3: 12px;
+  --s-4: 16px;
+  --s-5: 24px;
+  --s-6: 32px;
+  --s-7: 48px;
+  --s-8: 64px;
+
+  /* 边框 */
+  --line: 1px solid var(--ink-600);
+  --line-soft: 1px solid var(--ink-700);
+  --line-accent: 2px solid var(--sand-500);
+
+  /* 圆角 */
+  --radius-sm: 2px;
+  --radius-md: 4px;
+
+  /* 阴影 */
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.4);
+
+  /* 过渡 */
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s ease;
+  --transition-slow: 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* 全局基础 */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  background: var(--ink-900);
+  color: var(--signal);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 背景纹理 */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 1;
+  opacity: 0.4;
+}
+
+/* 字体类 */
+.mono { font-family: var(--font-mono); }
+.display { font-family: var(--font-display); font-weight: 300; letter-spacing: -0.02em; }
+.label { font-family: var(--font-mono); font-size: 10px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--signal-dim); }
+
+/* 链接 */
+a { color: var(--sand-500); text-decoration: none; transition: color var(--transition-fast); }
+a:hover { color: var(--sand-400); }
+
+/* 按钮 */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 10px 20px;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  letter-spacing: 0.05em;
+  border: none;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn-primary { background: var(--sand-500); color: var(--ink-900); }
+.btn-primary:hover { background: var(--sand-400); transform: translateY(-1px); }
+.btn-ghost { background: transparent; border: var(--line); color: var(--signal); }
+.btn-ghost:hover { border-color: var(--sand-500); color: var(--sand-500); }
+.btn-sm { padding: 6px 12px; font-size: 11px; }
+
+/* 表格 */
+table { width: 100%; border-collapse: collapse; }
+th { 
+  text-align: left; 
+  padding: 10px; 
+  font-family: var(--font-mono); 
+  font-size: 11px; 
+  color: var(--signal-dim); 
+  letter-spacing: 0.1em; 
+  border-bottom: var(--line); 
+}
+td { padding: 12px 10px; border-bottom: var(--line-soft); }
+
+/* 状态徽章 */
+.status-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  border-radius: var(--radius-sm);
+}
+.status-ok { color: var(--ok); border: 1px solid var(--ok); }
+.status-proc { color: var(--info); border: 1px solid var(--info); }
+.status-err { color: var(--danger); border: 1px solid var(--danger); }
+.status-warn { color: var(--warn); border: 1px solid var(--warn); }
+.status-dim { color: var(--signal-dim); border: 1px solid var(--ink-500); }
+
+/* 滚动条 */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--ink-800); }
+::-webkit-scrollbar-thumb { background: var(--ink-500); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+
+/* Vue 过渡 */
+.fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }
+.fade-enter-from, .fade-leave-to { opacity: 0; }
+
+.slide-enter-active, .slide-leave-active { transition: transform 0.3s ease, opacity 0.3s ease; }
+.slide-enter-from { transform: translateX(-20px); opacity: 0; }
+.slide-leave-to { transform: translateX(20px); opacity: 0; }

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://zrws.com/process/standard">
+
+    <!-- 标准审批流程（5步：提交→校核→审核→批准→归档） -->
+    <process id="STANDARD" name="标准审批" isExecutable="true">
+
+        <startEvent id="start"/>
+
+        <!-- 第一步：校核 (checker)，时限 8h -->
+        <userTask id="checker" name="校核" flowable:assignee="${checker}"
+                  flowable:dueDate="${dueDateChecker}">
+        </userTask>
+
+        <!-- 第二步：审核 (reviewer)，时限 24h -->
+        <userTask id="reviewer" name="审核" flowable:assignee="${reviewer}"
+                  flowable:dueDate="${dueDateReviewer}"/>
+
+        <!-- 第三步：批准 (approver)，时限 48h -->
+        <userTask id="approver" name="批准" flowable:assignee="${approver}"
+                  flowable:dueDate="${dueDateApprover}"/>
+
+        <!-- 第四步：归档 (archiver) -->
+        <userTask id="archiver" name="归档" flowable:assignee="${archiver}"/>
+
+        <endEvent id="end"/>
+
+        <!-- 连线 -->
+        <sequenceFlow sourceRef="start" targetRef="checker"/>
+        <sequenceFlow sourceRef="checker" targetRef="reviewer"/>
+        <sequenceFlow sourceRef="reviewer" targetRef="approver"/>
+        <sequenceFlow sourceRef="approver" targetRef="archiver"/>
+        <sequenceFlow sourceRef="archiver" targetRef="end"/>
+
+    </process>
+
+</definitions>

@@ -1,0 +1,63 @@
+server:
+  port: 8083
+  servlet:
+    context-path: /approval
+
+spring:
+  application:
+    name: zrws-approval
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/zrws_approval?useUnicode=true&characterEncoding=utf8&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&nullCatalogMeansCurrent=true
+    username: zrws
+    password: zrws@2026
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+# -------- Flowable 6.8.1 流程引擎配置 --------
+# 只保留一套 Flowable starter，避免与 flowable5 兼容配置重复
+flowable:
+  # 自动建表策略 true / false
+  database-schema-update: true
+  # 流程历史等级 none/activity/audit/full
+  history-level: audit
+  # 流程定义资源路径（classpath）
+  process-definition-location-prefix: classpath*:/processes/
+  process-definition-location-suffixes: >-
+    **/*.bpmn20.xml,**/*.bpmn
+
+  # 任务/作业配置
+  async-executor-activate: true
+  job-executor:
+    core-pool-size: 4
+    max-pool-size: 16
+    queue-size: 128
+
+  # 表单/规则等子引擎默认关闭，按需启用
+  form-enabled: false
+  case-enabled: false
+  cmmn-enabled: false
+  decision-enabled: false
+  dmn-enabled: false
+
+# -------- MyBatis-Plus 业务扩展表 --------
+mybatis-plus:
+  mapper-locations: classpath:/mapper/**/*.xml
+  type-aliases-package: com.zrws.approval.domain.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: ASSIGN_ID
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+# -------- 日志 --------
+logging:
+  level:
+    root: info
+    com.zrws: debug
+    org.flowable: info

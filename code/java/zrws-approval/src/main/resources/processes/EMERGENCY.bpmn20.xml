@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xmlns:flowable="http://flowable.org/bpmn"
+             typeLanguage="http://www.w3.org/2001/XMLSchema"
+             expressionLanguage="http://www.w3.org/1999/XPath"
+             targetNamespace="http://zrws.com/process/emergency">
+
+    <!-- 应急快速通道流程（2步：快速提交 → 指挥员批准） -->
+    <process id="EMERGENCY" name="应急快速通道" isExecutable="true">
+
+        <startEvent id="start"/>
+
+        <!-- 第一步：应急提交 -->
+        <userTask id="emergency_submit" name="应急提交" flowable:assignee="${applicant}"/>
+
+        <!-- 第二步：指挥员批准（30min 响应） -->
+        <userTask id="commander" name="指挥员批准" flowable:assignee="${commander}"
+                  flowable:dueDate="${dueDateCommander}"/>
+
+        <endEvent id="end"/>
+
+        <!-- 连线 -->
+        <sequenceFlow sourceRef="start" targetRef="emergency_submit"/>
+        <sequenceFlow sourceRef="emergency_submit" targetRef="commander"/>
+        <sequenceFlow sourceRef="commander" targetRef="end"/>
+
+    </process>
+
+</definitions>

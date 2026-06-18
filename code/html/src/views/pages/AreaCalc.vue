@@ -1,0 +1,53 @@
+<template>
+  <div class="page-container">
+    <div class="page-head">
+      <h1 class="page-title display">面积计算</h1>
+      <div class="page-meta mono">AREA CALC · GPS vs 登记面积</div>
+    </div>
+
+    <div class="stat-row">
+      <StatCard label="总地块" :value="stats.totalPlots" icon="◭" variant="accent" />
+      <StatCard label="总面积" :value="stats.totalArea" unit="亩" icon="□" />
+      <StatCard label="差异地块" :value="stats.diffPlots" icon="!" variant="warn" />
+      <StatCard label="平均精度" :value="stats.avgAccuracy" unit="cm" icon="◎" />
+    </div>
+
+    <Panel title="地块测量记录">
+      <table>
+        <thead><tr><th>ID</th><th>名称</th><th>GPS面积</th><th>登记面积</th><th>差异</th><th>精度</th><th>时间</th></tr></thead>
+        <tbody>
+          <tr v-for="p in plots" :key="p.id">
+            <td class="mono">{{ p.id }}</td>
+            <td>{{ p.name }}</td>
+            <td>{{ p.gpsArea }} 亩</td>
+            <td>{{ p.regArea }} 亩</td>
+            <td :style="{ color: Math.abs(p.diff) > 5 ? 'var(--danger)' : 'var(--sand-500)' }">{{ p.diff > 0 ? '+' : '' }}{{ p.diff }}%</td>
+            <td>{{ stats.avgAccuracy }} cm</td>
+            <td class="mono">{{ p.measureTime }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </Panel>
+  </div>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+import Panel from '@/components/common/Panel.vue';
+import StatCard from '@/components/common/StatCard.vue';
+
+const stats = ref({ totalPlots: 28, totalArea: 4560, diffPlots: 5, avgAccuracy: 1.2 });
+const plots = ref([
+  { id: 'PLOT-001', name: '乔口镇 1号', gpsArea: 125.6, regArea: 124.8, diff: 0.64, measureTime: '2026-06-17 14:00' },
+  { id: 'PLOT-002', name: '乔口镇 2号', gpsArea: 98.3, regArea: 100.0, diff: -1.7, measureTime: '2026-06-17 14:30' },
+  { id: 'PLOT-003', name: '莲花镇 A区', gpsArea: 256.8, regArea: 250.0, diff: 2.72, measureTime: '2026-06-16 10:00' }
+]);
+</script>
+
+<style scoped>
+.page-container { padding: var(--s-5); }
+.page-head { padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
+.page-title { font-size: 28px; font-weight: 200; }
+.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
+.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+</style>
