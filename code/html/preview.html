@@ -209,7 +209,41 @@
 
     /* 国标对比高亮 */
     .td-match { background: rgba(45,106,79,0.08); font-weight: 500; }
+
+    /* Cesium 地图容器 */
+    #cesiumContainer { width: 100%; height: 640px; background: #0a0e1a; border-radius: 8px; overflow: hidden; }
+    .cesium-viewer-bottom { display: none !important; }
+    .map-panel { position: relative; }
+    .map-toolbar {
+      position: absolute; top: 16px; left: 16px; z-index: 10;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+      border-radius: 8px; padding: 12px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .map-toolbar .title { font-weight: 600; color: var(--accent); margin-right: 8px; font-size: 13px; }
+    .map-toolbar button {
+      padding: 6px 14px; font-size: 12px; border: 1px solid var(--line-strong);
+      background: var(--paper); color: var(--ink-soft); border-radius: 4px; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .map-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+    .map-toolbar button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+    .map-stat-bar {
+      position: absolute; bottom: 16px; left: 16px; right: 16px; z-index: 10;
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+      border-radius: 8px; padding: 10px 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px;
+    }
+    .map-stat-bar .item { text-align: center; padding: 4px 0; }
+    .map-stat-bar .label { font-size: 11px; color: var(--ink-faint); margin-bottom: 4px; }
+    .map-stat-bar .value { font-size: 18px; font-weight: 600; color: var(--accent); font-family: 'JetBrains Mono', monospace; }
+    .map-stat-bar .value.gold { color: var(--sand-gold); }
+    .map-stat-bar .value.blue { color: var(--info); }
+    .map-stat-bar .value.red { color: var(--danger); }
+    .map-stat-bar .value.warn { color: var(--warning); }
   </style>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.118/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.118/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
 </head>
 <body>
   <div id="app">
@@ -323,6 +357,11 @@
         </div>
         <div class="nav-item" :class="{active: page==='compare'}" @click="go('compare')">
           <span class="ico">⚖</span><span>对比分析中心</span>
+        </div>
+
+        <div class="nav-group-title">GIS中心</div>
+        <div class="nav-item" :class="{active: page==='gis'}" @click="go('gis')">
+          <span class="ico">🌍</span><span>三维地图(GIS)</span>
         </div>
 
         <div class="nav-group-title">运维与审批</div>
@@ -1761,6 +1800,108 @@
             </div>
           </div>
         </div>
+
+        <!-- GIS 三维地图 -->
+        <div v-if="page==='gis'">
+          <div class="page-title">
+            <h2>三维地图 GIS <span class="tag">CESIUM · 3D GEO</span></h2>
+            <div class="crumb">HOME / GIS中心 / 三维地图</div>
+          </div>
+
+          <div class="card-grid">
+            <div class="stat-card"><div class="label">采样区域</div><div class="value">南湖示范区</div><div class="trend">广东·清远</div></div>
+            <div class="stat-card"><div class="label">中心点坐标</div><div class="value">113.15°E</div><div class="trend">23.68°N</div></div>
+            <div class="stat-card"><div class="label">采样点数</div><div class="value">248</div><div class="trend">覆盖全域</div></div>
+            <div class="stat-card"><div class="label">飞行轨迹</div><div class="value">12<span class="unit">条</span></div><div class="trend">总航程 68km</div></div>
+          </div>
+
+          <div class="panel map-panel">
+            <div class="panel-head">
+              <h3>三维地理可视化 · 土壤/轨迹/灾害一体化展示</h3>
+              <div class="actions">
+                <button class="btn btn-sm btn-line">全屏</button>
+                <button class="btn btn-sm btn-line">截图导出</button>
+                <button class="btn btn-sm btn-gold">重置视角</button>
+              </div>
+            </div>
+            <div class="panel-body" style="padding:0">
+              <div id="cesiumContainer">
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:#8a8a8a;font-size:14px;">
+                  <div style="text-align:center">
+                    <div style="font-size:48px;margin-bottom:12px;">🌍</div>
+                    <div>地图加载中... 如显示空白请确认网络可访问 Cesium CDN</div>
+                    <div style="font-size:12px;margin-top:8px;color:#b89968;">已配置 · 天地图影像 + OpenStreetMap 矢量 + 自定义图层</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="map-toolbar">
+                <span class="title">底图：</span>
+                <button class="active" @click="switchBaseMap('tdt-img')">天地图影像</button>
+                <button @click="switchBaseMap('tdt-vec')">天地图矢量</button>
+                <button @click="switchBaseMap('tdt-ter')">天地图地形</button>
+                <button @click="switchBaseMap('gaode')">高德地图</button>
+                <button @click="switchBaseMap('osm')">OSM 全球</button>
+              </div>
+
+              <div class="map-toolbar" style="top:auto;left:16px;right:auto;bottom:110px;flex-direction:column;align-items:stretch;">
+                <span class="title">图层控制：</span>
+                <button class="active" @click="toggleLayer('samples')" :class="{active: layerSamples}">🟢 土壤采样点</button>
+                <button class="active" @click="toggleLayer('flight')" :class="{active: layerFlight}">🛰️ 飞行轨迹</button>
+                <button @click="toggleLayer('heatmap')" :class="{active: layerHeatmap}">🔥 肥力热力</button>
+                <button @click="toggleLayer('disaster')" :class="{active: layerDisaster}">⚠️ 灾害风险</button>
+                <button @click="toggleLayer('cadastre')" :class="{active: layerCadastre}">📐 地块边界</button>
+              </div>
+
+              <div class="map-stat-bar">
+                <div class="item"><div class="label">平均海拔</div><div class="value gold">45<span style="font-size:12px;">m</span></div></div>
+                <div class="item"><div class="label">覆盖面积</div><div class="value blue">12.8<span style="font-size:12px;">km²</span></div></div>
+                <div class="item"><div class="label">最高肥力</div><div class="value">一级</div></div>
+                <div class="item"><div class="label">风险点数</div><div class="value warn">16</div></div>
+                <div class="item"><div class="label">今日采集</div><div class="value">24<span style="font-size:12px;">点</span></div></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="chart-grid">
+            <div class="panel">
+              <div class="panel-head"><h3>采样点土壤指标分布</h3></div>
+              <div class="panel-body">
+                <table class="zr-table">
+                  <thead><tr><th>编号</th><th>坐标(经度,纬度)</th><th>有机质</th><th>全氮</th><th>pH</th><th>肥力等级</th></tr></thead>
+                  <tbody>
+                    <tr v-for="(p,i) in sampleSites.slice(0,8)" :key="i">
+                      <td class="mono" style="font-weight:500">{{ p.id }}</td>
+                      <td class="mono">{{ p.lng }}, {{ p.lat }}</td>
+                      <td class="mono">{{ p.om }}</td>
+                      <td class="mono">{{ p.n }}</td>
+                      <td class="mono">{{ p.ph }}</td>
+                      <td><span class="badge" :class="'badge-'+p.lv">{{ p.grade }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-head"><h3>飞行任务统计</h3></div>
+              <div class="panel-body">
+                <table class="zr-table">
+                  <thead><tr><th>任务</th><th>日期</th><th>航程</th><th>时长</th><th>覆盖面积</th><th>状态</th></tr></thead>
+                  <tbody>
+                    <tr v-for="(f,i) in flightTasks" :key="i">
+                      <td style="font-weight:500">{{ f.name }}</td>
+                      <td class="mono muted">{{ f.date }}</td>
+                      <td class="mono">{{ f.dist }}</td>
+                      <td class="mono">{{ f.time }}</td>
+                      <td class="mono">{{ f.area }}</td>
+                      <td><span class="badge" :class="'badge-'+f.lv">{{ f.status }}</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -1789,12 +1930,18 @@
       const chartSH = ref(null), chartSH2 = ref(null), chartSH3 = ref(null);
       const chartCmp1 = ref(null), chartCmp2 = ref(null), chartCmp3 = ref(null);
 
+      // GIS 图层开关与 Cesium 实例
+      const layerSamples = ref(true), layerFlight = ref(true), layerHeatmap = ref(false);
+      const layerDisaster = ref(false), layerCadastre = ref(false);
+      const currentBaseMap = ref('tdt-img');
+      let cesiumViewer = null;
+
       // 登录
       const loginForm = reactive({ user: 'admin', pwd: '123456', role: '系统管理员' });
       const doLogin = () => { alert('登录成功！模拟跳转首页'); go('dashboard'); };
 
       // 导航
-      const go = (p) => { page.value = p; nextTick(() => drawCharts()); };
+      const go = (p) => { page.value = p; nextTick(() => { drawCharts(); if(p==='gis') initCesium(); }); };
 
       // Mock 数据
       const modules = [
@@ -2164,6 +2311,287 @@
         {dim:'调理成本',bestName:'东部示范区',bestVal:'￥1,200/亩',worstName:'北部老田',worstVal:'￥3,850/亩',diff:'+221%',advice:'建议分阶段投入，降低初期成本压力'},
         {dim:'综合健康指数',bestName:'东部示范区',bestVal:'88 分',worstName:'北部老田',worstVal:'52 分',diff:'+69%',advice:'北部需 3-5 年综合调理计划恢复至健康水平'},
       ];
+
+      // GIS 采样点数据（模拟南湖示范区，坐标 113.15°E, 23.68°N 附近）
+      const CENTER_LNG = 113.15;
+      const CENTER_LAT = 23.68;
+      const sampleSites = [];
+      for (let i = 0; i < 24; i++) {
+        const lng = (CENTER_LNG + (Math.random() - 0.5) * 0.15).toFixed(4);
+        const lat = (CENTER_LAT + (Math.random() - 0.5) * 0.10).toFixed(4);
+        const om = (15 + Math.random() * 18).toFixed(1);
+        const n = (0.9 + Math.random() * 1.0).toFixed(2);
+        const ph = (5.5 + Math.random() * 1.5).toFixed(2);
+        const lv = om > 24 ? 'green' : (om > 18 ? 'blue' : (om > 15 ? 'gold' : 'red'));
+        const grade = om > 24 ? '一级' : (om > 18 ? '二级' : (om > 15 ? '三级' : '四级'));
+        sampleSites.push({ id: 'ZR-' + String(i + 1).padStart(3, '0'), lng, lat, height: (30 + Math.random() * 50).toFixed(1), om, n, ph, lv, grade });
+      }
+
+      // 飞行任务
+      const flightTasks = [
+        { name: '南湖-东区航测', date: '2025-03-18', dist: '8.4 km', time: '32 min', area: '2.6 km²', status: '已完成', lv: 'green' },
+        { name: '南湖-西区航测', date: '2025-03-20', dist: '9.1 km', time: '35 min', area: '3.1 km²', status: '已完成', lv: 'green' },
+        { name: '南湖-南区采样', date: '2025-03-22', dist: '6.2 km', time: '28 min', area: '1.8 km²', status: '已完成', lv: 'green' },
+        { name: '南湖-北区重建', date: '2025-03-25', dist: '11.5 km', time: '45 min', area: '3.5 km²', status: '处理中', lv: 'blue' },
+        { name: '示范区综合航拍', date: '2025-03-28', dist: '15.8 km', time: '62 min', area: '4.5 km²', status: '待飞行', lv: 'gold' },
+      ];
+
+      // 生成飞行轨迹坐标（5 条路径）
+      const flightPaths = [];
+      for (let f = 0; f < 5; f++) {
+        const pts = [];
+        const startLng = CENTER_LNG + (Math.random() - 0.5) * 0.08;
+        const startLat = CENTER_LAT + (Math.random() - 0.5) * 0.05;
+        for (let j = 0; j <= 20; j++) {
+          pts.push([
+            startLng + (j / 20) * 0.08 + (Math.random() - 0.5) * 0.008,
+            startLat + (j / 20) * 0.05 + (Math.random() - 0.5) * 0.005,
+            80 + Math.random() * 40
+          ]);
+        }
+        flightPaths.push(pts);
+      }
+
+      // 灾害风险点
+      const disasterPoints = [];
+      for (let i = 0; i < 16; i++) {
+        disasterPoints.push({
+          lng: (CENTER_LNG + (Math.random() - 0.5) * 0.12).toFixed(4),
+          lat: (CENTER_LAT + (Math.random() - 0.5) * 0.08).toFixed(4),
+          type: ['水土流失', '滑坡隐患', '沙化风险', '积水区'][i % 4],
+          level: i % 3 === 0 ? 'high' : (i % 2 === 0 ? 'mid' : 'low')
+        });
+      }
+
+      // 生成地块多边形（4 个不规则多边形）
+      const cadastrePolygons = [];
+      const blockCenters = [
+        { lng: CENTER_LNG - 0.03, lat: CENTER_LAT + 0.02 },
+        { lng: CENTER_LNG + 0.03, lat: CENTER_LAT + 0.02 },
+        { lng: CENTER_LNG - 0.02, lat: CENTER_LAT - 0.02 },
+        { lng: CENTER_LNG + 0.02, lat: CENTER_LAT - 0.025 }
+      ];
+      blockCenters.forEach(c => {
+        const poly = [];
+        for (let k = 0; k < 8; k++) {
+          const angle = (k / 8) * Math.PI * 2;
+          const radius = 0.012 + Math.random() * 0.008;
+          poly.push([c.lng + Math.cos(angle) * radius, c.lat + Math.sin(angle) * radius * 0.7, 40 + Math.random() * 20]);
+        }
+        poly.push(poly[0]);
+        cadastrePolygons.push(poly);
+      });
+
+      // GIS 图层切换
+      const toggleLayer = (name) => {
+        if (name === 'samples') { layerSamples.value = !layerSamples.value; updateCesiumLayers(); }
+        else if (name === 'flight') { layerFlight.value = !layerFlight.value; updateCesiumLayers(); }
+        else if (name === 'heatmap') { layerHeatmap.value = !layerHeatmap.value; updateCesiumLayers(); }
+        else if (name === 'disaster') { layerDisaster.value = !layerDisaster.value; updateCesiumLayers(); }
+        else if (name === 'cadastre') { layerCadastre.value = !layerCadastre.value; updateCesiumLayers(); }
+      };
+      const switchBaseMap = (name) => {
+        currentBaseMap.value = name;
+        if (cesiumViewer) {
+          document.querySelectorAll('.map-toolbar button').forEach(b => {
+            if (b.textContent.match(/天地图|高德|OSM/)) b.classList.remove('active');
+          });
+          // 找到当前点击的按钮（粗略定位：第一个带 'top:auto' 的不行，这里简化）
+          if (cesiumViewer.imageryLayers.length > 0) cesiumViewer.imageryLayers.removeAll();
+          addBaseLayer(name);
+        }
+      };
+      function addBaseLayer(name) {
+        if (!cesiumViewer) return;
+        if (name === 'osm') {
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.OpenStreetMapImageryProvider());
+        } else if (name === 'gaode') {
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+            url: 'https://webrd0{s}.is.autonavi.com/appmaptile?lang=zh_cn&size=1&scale=1&style=8&x={x}&y={y}&z={z}',
+            subdomains: ['1', '2', '3', '4']
+          }));
+        } else if (name === 'tdt-img') {
+          // 天地图影像（公开可访问替代方案：使用 Esri World Imagery）
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+          }));
+          // 叠加 OSM 道路标注作为文字层
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}'
+          }));
+        } else if (name === 'tdt-vec') {
+          // 天地图矢量替代方案：使用 Esri World Street Map
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}'
+          }));
+        } else if (name === 'tdt-ter') {
+          // 天地图地形：使用 Cesium World Terrial + 地形
+          cesiumViewer.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
+            url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}'
+          }));
+        }
+      }
+
+      let cesiumDatasources = {};
+
+      function updateCesiumLayers() {
+        if (!cesiumViewer) return;
+        // 清空已有数据源
+        Object.values(cesiumDatasources).forEach(ds => cesiumViewer.dataSources.remove(ds));
+        cesiumDatasources = {};
+
+        // 采样点
+        if (layerSamples.value) {
+          const ds = new Cesium.CustomDataSource('samples');
+          sampleSites.forEach(s => {
+            const colorMap = { green: Cesium.Color.fromCssColorString('#2d6a4f'), blue: Cesium.Color.fromCssColorString('#4a90d9'), gold: Cesium.Color.fromCssColorString('#e8a33d'), red: Cesium.Color.fromCssColorString('#c9302c') };
+            const color = colorMap[s.lv] || Cesium.Color.YELLOW;
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(parseFloat(s.lng), parseFloat(s.lat), parseFloat(s.height)),
+              point: { pixelSize: 10, color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              label: { text: s.id, font: '11px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -18), fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              description: `<b>采样点 ${s.id}</b><br>坐标：${s.lng}°E, ${s.lat}°N<br>海拔：${s.height}m<br>有机质：${s.om} g/kg<br>全氮：${s.n} g/kg<br>pH：${s.ph}<br>肥力等级：${s.grade}`
+            });
+            // 底部圆圈
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(parseFloat(s.lng), parseFloat(s.lat), 0),
+              ellipse: { semiMinorAxis: 120, semiMajorAxis: 120, material: color.withAlpha(0.25), height: 0 }
+            });
+          });
+          cesiumViewer.dataSources.add(ds);
+          cesiumDatasources.samples = ds;
+        }
+
+        // 飞行轨迹
+        if (layerFlight.value) {
+          const ds = new Cesium.CustomDataSource('flight');
+          flightPaths.forEach((pts, idx) => {
+            const flat = [];
+            pts.forEach(p => { flat.push(p[0], p[1], p[2]); });
+            ds.entities.add({
+              polyline: { positions: Cesium.Cartesian3.fromDegreesArrayHeights(flat), width: 3, material: Cesium.Color.fromCssColorString('#b89968').withAlpha(0.9), clampToGround: false }
+            });
+            // 起点与终点
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(pts[0][0], pts[0][1], pts[0][2]),
+              point: { pixelSize: 8, color: Cesium.Color.fromCssColorString('#2d6a4f'), outlineColor: Cesium.Color.WHITE, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              label: { text: '起点', font: '11px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -18), fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Number.POSITIVE_INFINITY }
+            });
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(pts[pts.length - 1][0], pts[pts.length - 1][1], pts[pts.length - 1][2]),
+              point: { pixelSize: 8, color: Cesium.Color.fromCssColorString('#c9302c'), outlineColor: Cesium.Color.WHITE, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              label: { text: '终点', font: '11px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -18), fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Number.POSITIVE_INFINITY }
+            });
+          });
+          cesiumViewer.dataSources.add(ds);
+          cesiumDatasources.flight = ds;
+        }
+
+        // 热力点（肥力热力）
+        if (layerHeatmap.value) {
+          const ds = new Cesium.CustomDataSource('heatmap');
+          sampleSites.forEach(s => {
+            const val = parseFloat(s.om);
+            const radius = 150 + val * 15;
+            const alpha = Math.min(0.6, 0.1 + val / 60);
+            let color;
+            if (val > 22) color = Cesium.Color.fromCssColorString('#2d6a4f');
+            else if (val > 18) color = Cesium.Color.fromCssColorString('#e8a33d');
+            else color = Cesium.Color.fromCssColorString('#c9302c');
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(parseFloat(s.lng), parseFloat(s.lat), 0),
+              ellipse: { semiMinorAxis: radius, semiMajorAxis: radius, material: color.withAlpha(alpha), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND }
+            });
+          });
+          cesiumViewer.dataSources.add(ds);
+          cesiumDatasources.heatmap = ds;
+        }
+
+        // 灾害风险点
+        if (layerDisaster.value) {
+          const ds = new Cesium.CustomDataSource('disaster');
+          disasterPoints.forEach(d => {
+            const colorMap = { high: Cesium.Color.fromCssColorString('#c9302c'), mid: Cesium.Color.fromCssColorString('#e8a33d'), low: Cesium.Color.fromCssColorString('#4a90d9') };
+            const color = colorMap[d.level];
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(parseFloat(d.lng), parseFloat(d.lat), 50),
+              point: { pixelSize: 12, color, outlineColor: Cesium.Color.WHITE, outlineWidth: 2, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              label: { text: '⚠ ' + d.type, font: '11px sans-serif', pixelOffset: new Cesium.Cartesian2(0, -20), fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 2, style: Cesium.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Number.POSITIVE_INFINITY },
+              description: `<b>灾害风险点</b><br>类型：${d.type}<br>风险等级：${d.level}<br>坐标：${d.lng}°E, ${d.lat}°N`
+            });
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(parseFloat(d.lng), parseFloat(d.lat), 0),
+              ellipse: { semiMinorAxis: 200, semiMajorAxis: 200, material: color.withAlpha(0.18), heightReference: Cesium.HeightReference.CLAMP_TO_GROUND }
+            });
+          });
+          cesiumViewer.dataSources.add(ds);
+          cesiumDatasources.disaster = ds;
+        }
+
+        // 地块边界多边形
+        if (layerCadastre.value) {
+          const ds = new Cesium.CustomDataSource('cadastre');
+          const colors = [
+            Cesium.Color.fromCssColorString('#2d6a4f'),
+            Cesium.Color.fromCssColorString('#b89968'),
+            Cesium.Color.fromCssColorString('#4a90d9'),
+            Cesium.Color.fromCssColorString('#e8a33d')
+          ];
+          cadastrePolygons.forEach((poly, idx) => {
+            const flat = [];
+            poly.forEach(p => { flat.push(p[0], p[1], p[2]); });
+            ds.entities.add({
+              polygon: {
+                hierarchy: Cesium.Cartesian3.fromDegreesArrayHeights(flat),
+                material: colors[idx % colors.length].withAlpha(0.28),
+                outline: true, outlineColor: colors[idx % colors.length]
+              }
+            });
+            const center = poly[0];
+            ds.entities.add({
+              position: Cesium.Cartesian3.fromDegrees(center[0], center[1], center[2] + 20),
+              label: { text: '地块 ' + (idx + 1), font: 'bold 12px sans-serif', fillColor: Cesium.Color.WHITE, outlineColor: Cesium.Color.BLACK, outlineWidth: 3, style: Cesium.LabelStyle.FILL_AND_OUTLINE, disableDepthTestDistance: Number.POSITIVE_INFINITY }
+            });
+          });
+          cesiumViewer.dataSources.add(ds);
+          cesiumDatasources.cadastre = ds;
+        }
+      }
+
+      const initCesium = () => {
+        if (!document.getElementById('cesiumContainer')) return;
+        if (cesiumViewer) { updateCesiumLayers(); return; }
+        try {
+          // 禁用 Ion token 提示（使用免费公开图层）
+          Cesium.Ion.defaultAccessToken = '';
+          cesiumViewer = new Cesium.Viewer('cesiumContainer', {
+            animation: false, baseLayerPicker: false, geocoder: false, homeButton: true,
+            sceneModePicker: true, timeline: false, navigationHelpButton: false, fullscreenButton: false,
+            infoBox: true, selectionIndicator: true,
+            imageryProvider: new Cesium.UrlTemplateImageryProvider({
+              url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
+            }),
+            terrain: new Cesium.EllipsoidTerrainProvider()
+          });
+          cesiumViewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0a1822');
+          cesiumViewer.scene.backgroundColor = Cesium.Color.fromCssColorString('#0a1822');
+          cesiumViewer.scene.globe.enableLighting = false;
+          cesiumViewer.scene.skyAtmosphere.show = true;
+
+          // 视角飞到采样区
+          cesiumViewer.camera.flyTo({
+            destination: Cesium.Cartesian3.fromDegrees(CENTER_LNG, CENTER_LAT - 0.02, 15000),
+            orientation: { heading: 0, pitch: Cesium.Math.toRadians(-55), roll: 0 },
+            duration: 2.5
+          });
+
+          updateCesiumLayers();
+        } catch (e) {
+          console.error('Cesium 初始化失败：', e);
+          const c = document.getElementById('cesiumContainer');
+          if (c) c.innerHTML = '<div style="padding:40px;color:#c9302c;text-align:center;">⚠️ Cesium 加载失败：' + e.message + '<br>请检查网络或更换 CDN 源</div>';
+        }
+      };
 
       // CAD
       const toggleFullscreen = () => {
@@ -2745,11 +3173,14 @@
         rainStats, rainFilter, rainRecords, refreshRain,
         weatherApi, weatherStats, weatherNow, weatherForecast, weatherLogs, weatherRecords,
         careTable, growthStats, cropPhaseTable, growthAdvice, whStats, whTable, shTable, cmpTable,
+        sampleSites, flightTasks,
+        layerSamples, layerFlight, layerHeatmap, layerDisaster, layerCadastre, currentBaseMap,
         cadCanvas, flightCanvas, chart1, chart2, chart3, chart4, chart5, chart6, chart7, chart8, chartStd, chartCrop,
         chartRain, chartRainPie, chartWeather,
         chartCare, chartCareBar, chartGrowth, chartGrowthRadar, chartGrowthCurve,
         chartWH, chartWH2, chartWH3, chartSH, chartSH2, chartSH3, chartCmp1, chartCmp2, chartCmp3,
-        toggleFullscreen, cadZoomIn, cadZoomOut, cadReset, cadPan, cadSave
+        toggleFullscreen, cadZoomIn, cadZoomOut, cadReset, cadPan, cadSave,
+        switchBaseMap, toggleLayer, initCesium
       };
     }
   }).mount('#app');
