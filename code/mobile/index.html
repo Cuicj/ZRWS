@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#1e3a5f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="format-detection" content="telephone=no, email=no" />
+  <title>智壤卫士 · 移动端</title>
+
+  <!-- Vue 3 + Element Plus -->
+  <script src="https://cdn.jsdelivr.net/npm/vue@3.4.38/dist/vue.global.prod.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.css" />
+  <script src="https://cdn.jsdelivr.net/npm/element-plus@2.7.6/dist/index.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@element-plus/icons-vue@2.3.1/dist/index.iife.min.js"></script>
+
+  <!-- ECharts -->
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+
+  <!-- Leaflet 轻量级地图 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="./mobile.css" />
+</head>
+<body>
+
+<div id="app">
+
+  <!-- ============ 登录页 ============ -->
+  <section v-if="page === 'login'" class="login-page">
+    <div class="login-header">
+      <div class="logo-circle">🛰️</div>
+      <h1>智壤卫士</h1>
+      <p>无人机地形数据采集 · 土质分析平台</p>
+    </div>
+    <div class="login-form">
+      <el-form :model="loginForm" size="large" @submit.prevent>
+        <el-form-item>
+          <el-input v-model="loginForm.username" placeholder="请输入账号" size="large" clearable>
+            <template #prefix><el-icon><user /></el-icon></template>
+          </el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-input v-model="loginForm.password" type="password" placeholder="请输入密码" size="large" show-password>
+            <template #prefix><el-icon><lock /></el-icon></template>
+          </el-input>
+        </el-form-item>
+        <el-button class="login-btn" type="primary" size="large" @click="doLogin">登 录</el-button>
+        <div class="login-extra">
+          <label><el-checkbox v-model="loginForm.remember" /> 记住密码</label>
+          <a href="javascript:;" @click="elMessage('请联系管理员重置密码')">忘记密码？</a>
+        </div>
+      </el-form>
+    </div>
+    <div class="login-footer">版本 v1.0.0 · Mobile H5</div>
+  </section>
+
+  <!-- ============ 主容器（已登录） ============ -->
+  <template v-else>
+
+    <!-- 顶部状态栏 -->
+    <header class="app-header">
+      <div class="header-left">
+        <el-icon @click="toggleMenu" class="menu-btn"><list /></el-icon>
+      </div>
+      <div class="header-title">{{ pageTitle }}</div>
+      <div class="header-right">
+        <el-badge :value="unreadCount" :hidden="unreadCount === 0">
+          <el-icon @click="goTo('approval')" class="bell-btn"><bell /></el-icon>
+        </el-badge>
+      </div>
+    </header>
+
+    <!-- 内容滚动区 -->
+    <main class="page-content" ref="pageContent">
+
+      <!-- ===== 仪表盘 ===== -->
+      <section v-if="page === 'dashboard'" class="p-dashboard">
+        <div class="greeting-card">
+          <div class="greeting-text">
+            <div class="hello">您好，{{ user.name }} 👋</div>
+            <div class="sub-text">{{ todayText }} · 天气晴 28°C</div>
+          </div>
+          <div class="avatar-circle">{{ user.role.charAt(0) }}</div>
+        </div>
+
+        <div class="stat-grid">
+          <div class="stat-item stat-blue" @click="goTo('missions')">
+            <div class="stat-num">{{ stats.missionTotal }}</div>
+            <div class="stat-label">总任务数</div>
+            <div class="stat-trend">↑ 今日新增 {{ stats.missionToday }}</div>
+          </div>
+          <div class="stat-item stat-green" @click="goTo('flight-control')">
+            <div class="stat-num">{{ stats.droneOnline }}</div>
+            <div class="stat-label">无人机在线</div>
+            <div class="stat-trend">● 实时监控</div>
+          </div>
+          <div class="stat-item stat-orange" @click="goTo('soil-sample')">
+            <div class="stat-num">{{ stats.soilSamples }}</div>
+            <div class="stat-label">采样数据</div>
+            <div class="stat-trend">↑ 今日 {{ stats.soilToday }}</div>
+          </div>
+          <div class="stat-item stat-red" @click="goTo('approval')">
+            <div class="stat-num">{{ stats.pendingApproval }}</div>
+            <div class="stat-label">待审批</div>
+            <div class="stat-trend">⚠ 请及时处理</div>
+          </div>
+        </div>
+
+        <div class="section-title">快捷操作</div>
+        <div class="quick-grid">
+          <div class="quick-item" @click="showNewMission()">
+            <div class="qi-icon qi-blue">📝</div>
+            <div class="qi-name">新建任务</div>
+          </div>
+          <div class="quick-item" @click="goTo('flight-control')">
+            <div class="qi-icon qi-green">✈️</div>
+            <div class="qi-name">飞行控制</div>
+          </div>
+          <div class="quick-item" @click="goTo('soil-sample')">
+            <div class="qi-icon qi-orange">🌱</div>
+            <div class="qi-name">土壤采样</div>
+          </div>
+          <div class="quick-item" @click="goTo('area-calc')">
+            <div class="qi-icon qi-purple">📐</div>
+            <div class="qi-name">面积测量</div>
+          </div>
+          <div class="quick-item" @click="goTo('gps-track')">
+            <div class="qi-icon qi-cyan">📍</div>
+            <div class="qi-name">GPS航迹</div>
+          </div>
+          <div class="quick-item" @click="goTo('disaster-risk')">
+            <div class="qi-icon qi-yellow">⚠️</div>
+            <div class="qi-name">灾害评估</div>
+          </div>
+          <div class="quick-item" @click="goTo('approval')">
+            <div class="qi-icon qi-pink">✅</div>
+            <div class="qi-name">审批中心</div>
+          </div>
+          <div class="quick-item" @click="showPCOnly()">
+            <div class="qi-icon qi-gray">🖥️</div>
+            <div class="qi-name">CAD查看</div>
+          </div>
+        </div>
+
+        <div class="section-title">任务执行趋势（近 7 日）</div>
+        <div class="chart-card">
+          <div ref="dashboardTrendChart" class="mini-chart"></div>
+        </div>
+
+        <div class="section-title">最近任务</div>
+        <div class="mission-list-mini">
+          <div v-for="(m, i) in recentMissions" :key="i" class="mission-card-mini" @click="openMission(m)">
+            <div class="m-head">
+              <span class="m-id">{{ m.id }}</span>
+              <el-tag :type="statusColor(m.status)" size="small" effect="light">{{ statusText(m.status) }}</el-tag>
+            </div>
+            <div class="m-area">{{ m.area }}</div>
+            <div class="m-foot">
+              <span>📐 {{ m.coverage }} 亩</span>
+              <span>📷 {{ m.photos }} 张</span>
+              <span>{{ m.date }}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 任务列表 ===== -->
+      <section v-if="page === 'missions'" class="p-missions">
+        <div class="search-bar">
+          <el-input v-model="missionFilter.keyword" placeholder="搜索任务编号/区域" size="small" clearable>
+            <template #prefix><el-icon><search /></el-icon></template>
+          </el-input>
+          <el-select v-model="missionFilter.status" size="small" placeholder="状态" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="进行中" value="processing" />
+            <el-option label="待执行" value="pending" />
+            <el-option label="已完成" value="completed" />
+            <el-option label="异常" value="abnormal" />
+          </el-select>
+          <el-button type="primary" size="small" round @click="showNewMission()">
+            <el-icon><plus /></el-icon> 新建
+          </el-button>
+        </div>
+
+        <div class="mission-tabs">
+          <div :class="['tab', {active: missionFilter.status === ''}]" @click="setMissionFilter('')">全部</div>
+          <div :class="['tab', {active: missionFilter.status === 'processing'}]" @click="setMissionFilter('processing')">进行中</div>
+          <div :class="['tab', {active: missionFilter.status === 'pending'}]" @click="setMissionFilter('pending')">待执行</div>
+          <div :class="['tab', {active: missionFilter.status === 'completed'}]" @click="setMissionFilter('completed')">已完成</div>
+        </div>
+
+        <div class="mission-list">
+          <div v-for="(m, i) in filteredMissions" :key="i" class="mission-card" @click="openMission(m)">
+            <div class="mission-head">
+              <div class="mission-title">{{ m.id }}</div>
+              <el-tag :type="statusColor(m.status)" size="small">{{ statusText(m.status) }}</el-tag>
+            </div>
+            <div class="mission-desc">{{ m.area }}</div>
+            <div class="mission-meta">
+              <span>🛰️ {{ m.altitude }}m</span>
+              <span>📐 {{ m.coverage }} 亩</span>
+              <span>📷 {{ m.photos }} 张</span>
+            </div>
+            <div class="mission-foot">
+              <span class="operator">👤 {{ m.operator }}</span>
+              <span class="date">{{ m.date }}</span>
+            </div>
+          </div>
+          <div v-if="filteredMissions.length === 0" class="empty-state">
+            <div class="empty-icon">📭</div>
+            <div>暂无任务数据</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 任务详情 ===== -->
+      <section v-if="page === 'mission-detail'" class="p-mission-detail">
+        <div v-if="currentMission" class="detail-container">
+          <div class="detail-card">
+            <div class="detail-title-row">
+              <h3>{{ currentMission.id }}</h3>
+              <el-tag :type="statusColor(currentMission.status)" size="large">{{ statusText(currentMission.status) }}</el-tag>
+            </div>
+            <div class="detail-item">
+              <span class="label">采集区域</span>
+              <span class="value">{{ currentMission.area }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">中心坐标</span>
+              <span class="value">{{ currentMission.lng }}°, {{ currentMission.lat }}°</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">飞行高度</span>
+              <span class="value">{{ currentMission.altitude }} 米</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">覆盖面积</span>
+              <span class="value">{{ currentMission.coverage }} 亩</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">拍摄照片</span>
+              <span class="value">{{ currentMission.photos }} 张</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">操作员</span>
+              <span class="value">{{ currentMission.operator }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="label">执行日期</span>
+              <span class="value">{{ currentMission.date }}</span>
+            </div>
+          </div>
+
+          <div class="progress-card">
+            <div class="progress-head">
+              <span>任务进度</span>
+              <span>{{ currentMission.progress || 65 }}%</span>
+            </div>
+            <el-progress :percentage="currentMission.progress || 65" :stroke-width="10" />
+            <div class="step-list">
+              <div class="step done"><span class="dot">✓</span>任务创建</div>
+              <div class="step done"><span class="dot">✓</span>航线规划</div>
+              <div class="step active"><span class="dot">●</span>执行采集中</div>
+              <div class="step"><span class="dot">○</span>数据回传</div>
+              <div class="step"><span class="dot">○</span>成果归档</div>
+            </div>
+          </div>
+
+          <div class="action-buttons">
+            <el-button type="primary" size="large" @click="goTo('flight-control')">▶ 进入飞行控制</el-button>
+            <el-button type="success" size="large" @click="goTo('gps-track')">📍 查看GPS航迹</el-button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 飞行控制 ===== -->
+      <section v-if="page === 'flight-control'" class="p-flight">
+        <div class="drone-status-card">
+          <div class="drone-title">
+            <span class="drone-id">🛩️ {{ telemetry.droneId }}</span>
+            <el-tag :type="telemetry.connected ? 'success' : 'danger'" size="small" effect="dark">
+              {{ telemetry.connected ? '已连接' : '未连接' }}
+            </el-tag>
+          </div>
+          <div class="drone-big-alt">
+            <div class="alt-number">{{ telemetry.alt }}</div>
+            <div class="alt-unit">米高度</div>
+          </div>
+          <div class="drone-meta-row">
+            <div>
+              <div class="label">⚡ 电量</div>
+              <el-progress :percentage="telemetry.battery" :color="telemetry.battery > 30 ? '#67C23A' : '#F56C6C'" :stroke-width="14" text-inside />
+            </div>
+            <div>
+              <div class="label">📡 GPS 卫星</div>
+              <div class="value-big">{{ telemetry.sat }} 颗</div>
+            </div>
+            <div>
+              <div class="label">🚀 地速</div>
+              <div class="value-big">{{ telemetry.speed }} m/s</div>
+            </div>
+            <div>
+              <div class="label">🧭 航向</div>
+              <div class="value-big">{{ telemetry.heading }}°</div>
+            </div>
+          </div>
+          <div class="coord-row">
+            <div>
+              <span class="label">经度</span>
+              <span class="value-mono">{{ telemetry.lng }}°</span>
+            </div>
+            <div>
+              <span class="label">纬度</span>
+              <span class="value-mono">{{ telemetry.lat }}°</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title">实时位置</div>
+        <div class="map-card">
+          <div ref="flightMapRef" class="mini-map"></div>
+        </div>
+
+        <div class="section-title">飞行高度曲线</div>
+        <div class="chart-card">
+          <div ref="altitudeChartRef" class="mini-chart"></div>
+        </div>
+
+        <div class="control-buttons">
+          <el-button size="large" type="primary" @click="startFlight">▶ 开始采集</el-button>
+          <el-button size="large" type="warning" @click="pauseFlight">⏸ 暂停</el-button>
+          <el-button size="large" type="danger" @click="returnToHome">⬅ 返航</el-button>
+        </div>
+      </section>
+
+      <!-- ===== GPS 航迹 ===== -->
+      <section v-if="page === 'gps-track'" class="p-gps">
+        <div class="gps-now-card">
+          <div class="gps-now-title">📍 当前GPS坐标</div>
+          <div class="gps-now-coord">
+            <div class="coord-pair">
+              <span class="coord-label">经度</span>
+              <span class="coord-value">{{ gpsLive.lng }}°</span>
+            </div>
+            <div class="coord-pair">
+              <span class="coord-label">纬度</span>
+              <span class="coord-value">{{ gpsLive.lat }}°</span>
+            </div>
+            <div class="coord-pair">
+              <span class="coord-label">海拔</span>
+              <span class="coord-value">{{ gpsLive.alt }} m</span>
+            </div>
+          </div>
+          <div class="gps-now-meta">
+            <el-tag type="success" size="small">RTK FIXED</el-tag>
+            <el-tag size="small">{{ gpsLive.sat }} 颗卫星</el-tag>
+            <el-tag type="info" size="small">{{ gpsLive.time }}</el-tag>
+          </div>
+        </div>
+
+        <div class="section-title">航迹地图</div>
+        <div class="map-card">
+          <div ref="gpsMapRef" class="mini-map"></div>
+        </div>
+
+        <div class="section-title">
+          航迹点位 · 共 {{ trackPoints.length }} 个点
+          <el-button size="small" type="primary" plain @click="exportTrackCSV">导出CSV</el-button>
+        </div>
+        <div class="track-list">
+          <table>
+            <thead>
+              <tr><th>序号</th><th>时间</th><th>经度</th><th>纬度</th><th>海拔</th></tr>
+            </thead>
+            <tbody>
+              <tr v-for="(p, i) in trackPoints.slice(0, 20)" :key="i">
+                <td>{{ p.seq }}</td>
+                <td>{{ p.time }}</td>
+                <td>{{ p.lng }}</td>
+                <td>{{ p.lat }}</td>
+                <td>{{ p.alt }}m</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ===== 土壤采样 ===== -->
+      <section v-if="page === 'soil-sample'" class="p-soil">
+        <div class="soil-stats">
+          <div class="soil-stat">
+            <div class="ss-num">{{ soilStats.total }}</div>
+            <div class="ss-label">采样总数</div>
+          </div>
+          <div class="soil-stat">
+            <div class="ss-num">{{ soilStats.today }}</div>
+            <div class="ss-label">今日新增</div>
+          </div>
+          <div class="soil-stat">
+            <div class="ss-num">{{ soilStats.avgPH }}</div>
+            <div class="ss-label">平均pH</div>
+          </div>
+        </div>
+
+        <div class="form-card">
+          <div class="form-head">
+            <span>📝 新建采样记录</span>
+            <el-tag size="small" type="success">自动定位中...</el-tag>
+          </div>
+          <el-form :model="soilForm" size="small" label-width="70px">
+            <el-form-item label="采样点号">
+              <el-input v-model="soilForm.id" placeholder="如 SP-2026-0618-01" />
+            </el-form-item>
+            <el-form-item label="坐标">
+              <el-input v-model="soilForm.lng" placeholder="经度" style="width:46%" />
+              <span style="margin:0 6px;">,</span>
+              <el-input v-model="soilForm.lat" placeholder="纬度" style="width:46%" />
+            </el-form-item>
+            <el-form-item label="pH值">
+              <el-input v-model="soilForm.ph" type="number" placeholder="如 6.8" />
+            </el-form-item>
+            <el-form-item label="含水量">
+              <el-input v-model="soilForm.moisture" type="number" placeholder="如 32.5%" />
+              <span style="color:#909399;margin-left:6px;">%</span>
+            </el-form-item>
+            <el-form-item label="电导率">
+              <el-input v-model="soilForm.ec" type="number" placeholder="如 145" />
+              <span style="color:#909399;margin-left:6px;">μS/cm</span>
+            </el-form-item>
+            <el-form-item label="土质类型">
+              <el-select v-model="soilForm.type" placeholder="选择土质类型" style="width:100%">
+                <el-option label="壤土" value="壤土" />
+                <el-option label="黏土" value="黏土" />
+                <el-option label="砂土" value="砂土" />
+                <el-option label="粉砂土" value="粉砂土" />
+                <el-option label="泥炭土" value="泥炭土" />
+                <el-option label="盐碱土" value="盐碱土" />
+              </el-select>
+            </el-form-item>
+            <el-form-item label="备注">
+              <el-input v-model="soilForm.note" type="textarea" :rows="2" placeholder="现场观察记录..." />
+            </el-form-item>
+            <div style="padding: 10px 0;">
+              <el-button type="primary" size="large" @click="saveSoilSample" style="width:100%">💾 保存采样数据</el-button>
+            </div>
+          </el-form>
+        </div>
+
+        <div class="section-title">最近采样</div>
+        <div class="sample-list">
+          <div v-for="(s, i) in soilSamples" :key="i" class="sample-card">
+            <div class="sample-head">
+              <span class="sample-id">{{ s.id }}</span>
+              <el-tag :type="soilTagColor(s.type)" size="small" effect="light">{{ s.type }}</el-tag>
+            </div>
+            <div class="sample-coords">{{ s.lng }}, {{ s.lat }}</div>
+            <div class="sample-data">
+              <span>pH {{ s.ph }}</span>
+              <span>💧 {{ s.moisture }}%</span>
+              <span>⚡ {{ s.ec }} μS/cm</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 面积测量 ===== -->
+      <section v-if="page === 'area-calc'" class="p-area">
+        <div class="area-instruction">
+          <div class="ai-title">📐 地块面积测量</div>
+          <div class="ai-desc">请依次点击地块顶点，系统将自动计算多边形面积</div>
+        </div>
+
+        <div class="area-result">
+          <div class="area-big">{{ areaResult.mu.toFixed(2) }}</div>
+          <div class="area-unit">亩</div>
+          <div class="area-sub">≈ {{ areaResult.sqm.toFixed(0) }} 平方米</div>
+          <div class="area-sub" style="margin-top:4px;">（{{ areaResult.points }} 个点位）</div>
+        </div>
+
+        <div class="section-title">点击地图添加边界点</div>
+        <div class="map-card">
+          <div ref="areaMapRef" class="mini-map"></div>
+        </div>
+
+        <div class="area-buttons">
+          <el-button size="large" type="success" @click="addAreaPoint()">📍 添加当前位置</el-button>
+          <el-button size="large" type="warning" @click="undoAreaPoint()">↩ 撤销上一点</el-button>
+          <el-button size="large" @click="clearAreaPoints()">🗑 清空重绘</el-button>
+        </div>
+
+        <div class="section-title">已测量地块</div>
+        <div class="plot-list">
+          <div v-for="(p, i) in plotAreas" :key="i" class="plot-card">
+            <div class="plot-head">
+              <span>{{ p.name }}</span>
+              <el-tag :type="p.diff >= 0 ? 'success' : 'danger'" size="small">
+                {{ p.diff >= 0 ? '+' : '' }}{{ p.diff.toFixed(2) }} 亩
+              </el-tag>
+            </div>
+            <div class="plot-data">
+              <span>GPS: <b>{{ p.gpsArea }}</b> 亩</span>
+              <span>登记: {{ p.registeredArea }} 亩</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 灾害评估 ===== -->
+      <section v-if="page === 'disaster-risk'" class="p-risk">
+        <div class="risk-summary">
+          <div class="risk-card risk-low">
+            <div class="risk-num">低</div>
+            <div class="risk-label">滑坡风险</div>
+            <div class="risk-detail">地形平缓</div>
+          </div>
+          <div class="risk-card risk-mid">
+            <div class="risk-num">中</div>
+            <div class="risk-label">洪涝风险</div>
+            <div class="risk-detail">雨季注意排水</div>
+          </div>
+          <div class="risk-card risk-low">
+            <div class="risk-num">低</div>
+            <div class="risk-label">泥石流</div>
+            <div class="risk-detail">植被覆盖良好</div>
+          </div>
+          <div class="risk-card risk-mid">
+            <div class="risk-num">⚠</div>
+            <div class="risk-label">地面沉降</div>
+            <div class="risk-detail">年均 1.2cm</div>
+          </div>
+        </div>
+
+        <div class="section-title">综合风险热力图</div>
+        <div class="chart-card">
+          <div ref="riskHeatmapRef" class="mini-chart"></div>
+        </div>
+
+        <div class="section-title">风险评估报告</div>
+        <div class="risk-list">
+          <div v-for="(r, i) in disasterRisks" :key="i" class="risk-item">
+            <div class="risk-head">
+              <span class="risk-type">{{ r.type }}</span>
+              <el-tag :type="r.levelColor" size="small" effect="light">{{ r.level }}</el-tag>
+            </div>
+            <div class="risk-desc">{{ r.desc }}</div>
+            <div class="risk-action">💡 {{ r.action }}</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 审批中心 ===== -->
+      <section v-if="page === 'approval'" class="p-approval">
+        <div class="approval-stats">
+          <div class="ap-stat">
+            <div class="ap-num ap-red">{{ approvalStats.pending }}</div>
+            <div class="ap-label">待我审批</div>
+          </div>
+          <div class="ap-stat">
+            <div class="ap-num ap-green">{{ approvalStats.done }}</div>
+            <div class="ap-label">已审批</div>
+          </div>
+          <div class="ap-stat">
+            <div class="ap-num ap-blue">{{ approvalStats.initiated }}</div>
+            <div class="ap-label">我发起</div>
+          </div>
+        </div>
+
+        <div class="approval-tabs">
+          <div :class="['tab', {active: approvalFilter === 'pending'}]" @click="approvalFilter = 'pending'">待审批</div>
+          <div :class="['tab', {active: approvalFilter === 'done'}]" @click="approvalFilter = 'done'">已处理</div>
+        </div>
+
+        <div class="approval-list">
+          <div v-for="(a, i) in filteredApprovals" :key="i" class="approval-card">
+            <div class="ap-head">
+              <span class="ap-title">{{ a.title }}</span>
+              <el-tag size="small" type="warning">{{ a.currentNode }}</el-tag>
+            </div>
+            <div class="ap-meta">
+              <span>📝 {{ a.type }}</span>
+              <span>👤 {{ a.initiator }}</span>
+            </div>
+            <div class="ap-time">🕐 {{ a.createdAt }}</div>
+            <div v-if="approvalFilter === 'pending'" class="ap-actions">
+              <el-button size="small" type="danger" plain @click="rejectApproval(a)">驳回</el-button>
+              <el-button size="small" type="primary" @click="approveApproval(a)">通过</el-button>
+            </div>
+            <div v-else class="ap-result">
+              <el-tag :type="a.result === '已通过' ? 'success' : 'danger'" size="small">{{ a.result }}</el-tag>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== 我的 ===== -->
+      <section v-if="page === 'mine'" class="p-mine">
+        <div class="mine-profile">
+          <div class="avatar-big">{{ user.role.charAt(0) }}</div>
+          <div class="mine-info">
+            <div class="mine-name">{{ user.name }}</div>
+            <div class="mine-role">{{ user.role }} · {{ user.department }}</div>
+          </div>
+        </div>
+
+        <div class="mine-menu">
+          <div class="menu-item" @click="elMessage('功能开发中')">
+            <span class="mi-icon">👤</span><span class="mi-name">个人资料</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item" @click="elMessage('功能开发中')">
+            <span class="mi-icon">🔔</span><span class="mi-name">消息通知</span>
+            <el-tag size="small" type="danger" style="margin-right:8px">{{ unreadCount }}</el-tag>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item" @click="elMessage('功能开发中')">
+            <span class="mi-icon">⚙️</span><span class="mi-name">系统设置</span>
+            <span class="mi-arrow">›</span>
+          </div>
+          <div class="menu-item" @click="elMessage('关于智壤卫士 v1.0')">
+            <span class="mi-icon">ℹ️</span><span class="mi-name">关于我们</span>
+            <span class="mi-arrow">›</span>
+          </div>
+        </div>
+
+        <div style="padding: 20px 16px;">
+          <el-button size="large" type="danger" plain @click="doLogout" style="width:100%">退出登录</el-button>
+        </div>
+
+        <div class="mine-footer">
+          <div>智壤卫士 v1.0.0 · Mobile H5</div>
+          <div>© 2026 ZRWS · 无人机地形数据采集平台</div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- 侧边菜单 -->
+    <aside v-if="menuOpen" class="side-menu" @click.self="menuOpen = false">
+      <div class="menu-content">
+        <div class="menu-title">模块导航</div>
+        <div class="menu-item" @click="goTo('dashboard')">📊 运行仪表盘</div>
+        <div class="menu-item" @click="goTo('missions')">📋 任务列表</div>
+        <div class="menu-item" @click="goTo('flight-control')">✈️ 飞行控制</div>
+        <div class="menu-item" @click="goTo('gps-track')">📍 GPS航迹</div>
+        <div class="menu-item" @click="goTo('soil-sample')">🌱 土壤采样</div>
+        <div class="menu-item" @click="goTo('area-calc')">📐 面积测量</div>
+        <div class="menu-item" @click="goTo('disaster-risk')">⚠️ 灾害评估</div>
+        <div class="menu-item" @click="goTo('approval')">✅ 审批中心</div>
+        <div class="menu-divider">🖥️ PC端功能（需在电脑操作）</div>
+        <div class="menu-item-disabled">📦 数据导入与质检</div>
+        <div class="menu-item-disabled">🖼️ 3D重建 · 正射影像</div>
+        <div class="menu-item-disabled">📐 CAD图纸查看/对比</div>
+        <div class="menu-item-disabled">🛠️ 工作流设计</div>
+      </div>
+    </aside>
+
+    <!-- 底部 TabBar -->
+    <nav class="tab-bar">
+      <div :class="['tab-item', {active: page === 'missions'}]" @click="goTo('missions')">
+        <div class="tab-icon">📋</div>
+        <div class="tab-label">任务</div>
+      </div>
+      <div :class="['tab-item', {active: page === 'flight-control' || page === 'gps-track'}" @click="goTo('flight-control')">
+        <div class="tab-icon">✈️</div>
+        <div class="tab-label">飞行</div>
+      </div>
+      <div :class="['tab-item', {active: page === 'soil-sample' || page === 'area-calc'}" @click="goTo('soil-sample')">
+        <div class="tab-icon">🌱</div>
+        <div class="tab-label">采集</div>
+      </div>
+      <div :class="['tab-item', {active: page === 'approval'}" @click="goTo('approval')">
+        <div class="tab-icon">
+          <span v-if="stats.pendingApproval > 0" class="badge-dot">{{ stats.pendingApproval }}</span>
+          ✅
+        </div>
+        <div class="tab-label">审批</div>
+      </div>
+      <div :class="['tab-item', {active: page === 'mine' || page === 'dashboard'}" @click="goTo('dashboard')">
+        <div class="tab-icon">👤</div>
+        <div class="tab-label">我的</div>
+      </div>
+    </nav>
+  </template>
+
+  <!-- 全局Dialog: 新建任务 -->
+  <el-dialog v-model="newMissionDialog" title="新建采集任务" width="90%">
+    <el-form :model="newMission" size="small" label-width="80px">
+      <el-form-item label="任务名称">
+        <el-input v-model="newMission.name" placeholder="如 望城区乔口镇土地调查" />
+      </el-form-item>
+      <el-form-item label="采集区域">
+        <el-input v-model="newMission.area" placeholder="湖南省长沙市望城区..." />
+      </el-form-item>
+      <el-form-item label="飞行高度">
+        <el-input v-model="newMission.altitude" type="number" />
+        <span style="color:#909399;margin-left:6px;">米</span>
+      </el-form-item>
+      <el-form-item label="GPS模式">
+        <el-radio-group v-model="newMission.gpsMode">
+          <el-radio value="RTK">RTK厘米级</el-radio>
+          <el-radio value="DGPS">DGPS分米级</el-radio>
+        </el-radio-group>
+      </el-form-item>
+      <el-form-item label="备注">
+        <el-input v-model="newMission.note" type="textarea" :rows="2" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <el-button @click="newMissionDialog = false">取消</el-button>
+      <el-button type="primary" @click="createMission">创建任务</el-button>
+    </template>
+  </el-dialog>
+
+</div>
+
+<script src="../html/mock/mockData.js"></script>
+<script src="./mobile.js"></script>
+</body>
+</html>
