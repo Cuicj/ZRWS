@@ -1,0 +1,108 @@
+/* 智壤卫士 uni-app 全局样式变量 */
+
+/* 主题色 */
+$primary: #1e3a5f;
+$primary-light: #2b6cb0;
+$primary-bg: #ecf5ff;
+
+$success: #67c23a;
+$success-bg: #f0f9eb;
+
+$warning: #e6a23c;
+$warning-bg: #fdf6ec;
+
+$danger: #f56c6c;
+$danger-bg: #fef0f0;
+
+$info: #909399;
+$info-bg: #f4f4f5;
+
+/* 文字色 */
+$text-primary: #303133;
+$text-regular: #606266;
+$text-secondary: #909399;
+$text-placeholder: #c0c4cc;
+
+/* 背景色 */
+$bg-page: #f0f2f5;
+$bg-card: #ffffff;
+$bg-gray: #f5f7fa;
+
+/* 边框 */
+$border-color: #ebeef5;
+$border-light: #f0f0f0;
+
+/* 圆角 */
+$radius-sm: 8rpx;
+$radius: 12rpx;
+$radius-lg: 16rpx;
+$radius-xl: 24rpx;
+
+/* 间距 */
+$spacing-xs: 10rpx;
+$spacing-sm: 16rpx;
+$spacing: 24rpx;
+$spacing-lg: 32rpx;
+$spacing-xl: 40rpx;
+
+/* 字号 */
+$font-xs: 22rpx;
+$font-sm: 24rpx;
+$font-base: 28rpx;
+$font-lg: 32rpx;
+$font-xl: 36rpx;
+$font-xxl: 44rpx;
+
+/* 阴影 */
+$shadow-sm: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+$shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 8rpx 24rpx rgba(0, 0, 0, 0.12);
+
+/* 全局通用类 */
+.flex {
+  display: flex;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-1 {
+  flex: 1;
+}
+.text-primary {
+  color: $primary;
+}
+.text-success {
+  color: $success;
+}
+.text-warning {
+  color: $warning;
+}
+.text-danger {
+  color: $danger;
+}
+.text-muted {
+  color: $text-secondary;
+}
+.bg-white {
+  background-color: #fff;
+}
+.bg-primary {
+  background-color: $primary;
+}
+.mt-sm { margin-top: $spacing-sm; }
+.mt { margin-top: $spacing; }
+.mb-sm { margin-bottom: $spacing-sm; }
+.mb { margin-bottom: $spacing; }
+.p-sm { padding: $spacing-sm; }
+.p { padding: $spacing; }
