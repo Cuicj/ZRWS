@@ -7,3 +7,6 @@
 376508507502266:git: 提交推送(6267764) - feat: 完善项目数据库与BPMN流程 +1240行:session 376508507502266 T(2026/6/22)
 376508507502266:test: 创建单元测试(ApprovalServiceTest/ApprovalControllerTest) - 30个测试方法覆盖核心业务:session 376508507502266 T(2026/6/22)
 376508507502266:feat: Flowable流程管理完善(FlowableDeployService/FlowableDesignerService/FlowableDeployController/FlowableDesignerController) - 支持流程创建/部署/查询/版本管理/模板/设计验证:session 376508507502266 T(2026/6/22)
+376508507502266:git: 提交推送(e124048) - feat: 完善Flowable流程管理 - 部署/设计/模板/API:session 376508507502266 T(2026/6/22)
+376508507502266:feat: Spring AI 2.0 GA集成 - 升级Spring Boot 3.2.5 + Java 17 + spring-ai-openai-starter:session 376508507502266 T(2026/6/22)
+376508507502266:feat: AI智能流程生成服务(FlowableAIService/FlowableAIController) - 自然语言生成/优化/分析/推荐流程:session 376508507502266 T(2026/6/22)
