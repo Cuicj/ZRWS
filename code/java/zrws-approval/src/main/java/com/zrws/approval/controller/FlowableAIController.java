@@ -141,7 +141,7 @@ public class FlowableAIController {
     /**
      * AI对话式流程设计（多轮交互）
      * POST /api/v1/ai/chat
-     * Body: {"message": "我想创建一个采购审批流程", "sessionId": "xxx"}
+     * Body: {"sessionId": "xxx", "message": "我想创建一个采购审批流程"}
      */
     @PostMapping("/chat")
     public ResponseEntity<Map<String, Object>> chatDesign(@RequestBody Map<String, String> body) {
@@ -152,15 +152,46 @@ public class FlowableAIController {
             return error("请输入消息");
         }
 
-        // TODO: 实现多轮对话逻辑，维护session状态
+        // 如果没有sessionId，创建新的
+        if (sessionId == null || sessionId.isEmpty()) {
+            sessionId = UUID.randomUUID().toString();
+        }
+
         try {
-            // 第一轮：理解需求并生成流程建议
-            Map<String, Object> result = aiService.generateProcessFromDescription(message);
-            result.put("sessionId", sessionId != null ? sessionId : UUID.randomUUID().toString());
-            result.put("message", "已根据您的需求生成流程定义，请确认是否部署？");
+            Map<String, Object> result = aiService.chatDesign(sessionId, message);
             return success(result);
         } catch (Exception e) {
             return error("AI对话失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 清除对话会话
+     * DELETE /api/v1/ai/chat/{sessionId}
+     */
+    @DeleteMapping("/chat/{sessionId}")
+    public ResponseEntity<Map<String, Object>> clearSession(@PathVariable String sessionId) {
+        aiService.clearSession(sessionId);
+        return successMsg("会话已清除");
+    }
+
+    // ============================================================
+    // 6. 智能表单生成
+    // ============================================================
+
+    /**
+     * AI生成表单字段
+     * GET /api/v1/ai/form/{processKey}/{stepKey}
+     */
+    @GetMapping("/form/{processKey}/{stepKey}")
+    public ResponseEntity<Map<String, Object>> generateForm(
+            @PathVariable String processKey,
+            @PathVariable String stepKey) {
+        try {
+            Map<String, Object> result = aiService.generateFormFields(processKey, stepKey);
+            return success(result);
+        } catch (Exception e) {
+            return error("表单生成失败: " + e.getMessage());
         }
     }
 
