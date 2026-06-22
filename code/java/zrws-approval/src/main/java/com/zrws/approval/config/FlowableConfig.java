@@ -1,10 +1,7 @@
 package com.zrws.approval.config;
 
+import com.zrws.approval.service.FlowableDeployService;
 import org.flowable.engine.ProcessEngine;
-import org.flowable.engine.ProcessEngineConfiguration;
-import org.flowable.engine.RuntimeService;
-import org.flowable.engine.TaskService;
-import org.flowable.engine.HistoryService;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.Deployment;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -35,18 +33,28 @@ public class FlowableConfig implements CommandLineRunner {
     @Autowired
     private ProcessEngine processEngine;
 
+    @Autowired
+    private FlowableDeployService deployService;
+
     /**
-     * 启动后打印已部署的流程定义信息
+     * 启动后自动部署流程并打印信息
      */
     @Override
     public void run(String... args) throws Exception {
+        System.out.println("\n=====================================================");
+        System.out.println("  [Flowable] 流程引擎初始化开始...");
+        
+        // 自动部署所有BPMN流程
+        List<Map<String, Object>> deployResults = deployService.deployAllFromClasspath();
+        
         long count = repositoryService.createProcessDefinitionQuery().count();
-        System.out.println("=====================================================");
         System.out.println("  [Flowable] 已加载流程定义: " + count + " 个");
-        System.out.println("  - STANDARD      标准审批 (5步)");
-        System.out.println("  - MATERIAL      物资申领 (4步 + 条件分支)");
-        System.out.println("  - DRONE_FLIGHT  无人机外出报备 (4步)");
-        System.out.println("  - EMERGENCY     应急快速通道 (2步)");
+        for (Map<String, Object> result : deployResults) {
+            System.out.println("  - " + result.get("processKey") + " (" + result.get("processName") + ") v" + result.get("version"));
+        }
+        
+        // 打印流程引擎状态
+        System.out.println("  [Flowable] 引擎状态: " + processEngine.getName() + " " + processEngine.getVersion());
         System.out.println("=====================================================\n");
     }
 
