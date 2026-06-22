@@ -1,3 +1,4 @@
+376508507502266:89cae99712094341ce7345b1760198b0_6a32977fdb349ce070a1d9ba.6a32977fdb349ce070a1d9ba.6a3928ea226c5e94c50e2379:TRAE Work CN.0.1.21.sid.376508507502266.no_ppe.T(2026/6/22 20:22:02)
 376508507502266:git: 拉取最新代码(cc260ba) - 新增UniApp小程序+移动端H5:session 376508507502266 T(2026/6/22)
 376508507502266:view: 查看移动端H5页面(index.html/mobile.css/mobile.js) - 11个页面模块:session 376508507502266 T(2026/6/22)
 376508507502266:config: 更新阿里云RDS连接配置(application.yml) - rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com:3306 test_admin:session 376508507502266 T(2026/6/22)
@@ -11,3 +12,5 @@
 376508507502266:feat: Spring AI 2.0 GA集成 - 升级Spring Boot 3.2.5 + Java 17 + spring-ai-openai-starter:session 376508507502266 T(2026/6/22)
 376508507502266:feat: AI智能流程生成服务(FlowableAIService/FlowableAIController/SpringAIConfig) - 自然语言生成/优化/分析/推荐/多轮对话/智能表单:session 376508507502266 T(2026/6/22)
 376508507502266:git: 提交推送(f92c386) - feat: Spring AI 2.0 GA集成 - AI智能流程生成服务:session 376508507502266 T(2026/6/22)
+376508507502266:feat: Python蓝牙+局域网设备发现系统(bluetooth_discovery.py/lan_discovery.py/data_transfer.py/image_storage.py/auth.py/app.py) - BLE扫描/ARP扫描/数据传输/图片存储/用户+管理员权限控制/Web界面:session 376508507502266 T(2026/6/22)
+376508507502266:feat: Spring AI 2.0数据分析器(bo_config_schema.sql/AIAnalyzerService/DataValidator/DataImportService/DataAnalyzerController) - BO配置/智能字段映射/数据校验/自动入库:session 376508507502266 T(2026/6/22)

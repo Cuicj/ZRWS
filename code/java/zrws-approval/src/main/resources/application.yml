@@ -26,6 +26,13 @@ spring:
     async-executor-activate: true
     history-level: full
 
+  # 文件上传配置
+  servlet:
+    multipart:
+      enabled: true
+      max-file-size: 50MB
+      max-request-size: 100MB
+
 server:
   port: 5571
   servlet:
@@ -36,6 +43,19 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+# AI数据分析器配置
+app:
+  dataimport:
+    upload-path: uploads/dataimport
+    max-file-size: 50MB
+    allowed-extensions: xlsx,xls,csv,json
+
+# Spring AI 分析器配置
+spring-ai-analyzer:
+  temperature: 0.3
+  max-tokens: 2000
+  quality-threshold: 70
 
 # 日志配置
 logging:
