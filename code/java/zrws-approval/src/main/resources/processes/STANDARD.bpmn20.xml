@@ -6,35 +6,115 @@
              expressionLanguage="http://www.w3.org/1999/XPath"
              targetNamespace="http://zrws.com/process/standard">
 
-    <!-- 标准审批流程（5步：提交→校核→审核→批准→归档） -->
+    <!-- 标准审批流程（5步 + 驳回网关） -->
     <process id="STANDARD" name="标准审批" isExecutable="true">
 
         <startEvent id="start"/>
 
         <!-- 第一步：校核 (checker)，时限 8h -->
         <userTask id="checker" name="校核" flowable:assignee="${checker}"
+                  flowable:formKey="form_standard_checker"
                   flowable:dueDate="${dueDateChecker}">
+            <extensionElements>
+                <flowable:formProperty id="opinion" name="校核意见" type="string" required="true"/>
+                <flowable:formProperty id="qualityScore" name="质量评分" type="number" required="true"/>
+            </extensionElements>
         </userTask>
+
+        <!-- 校核结果网关 -->
+        <exclusiveGateway id="checkerGateway" name="校核结果"/>
 
         <!-- 第二步：审核 (reviewer)，时限 24h -->
         <userTask id="reviewer" name="审核" flowable:assignee="${reviewer}"
-                  flowable:dueDate="${dueDateReviewer}"/>
+                  flowable:formKey="form_standard_reviewer"
+                  flowable:dueDate="${dueDateReviewer}">
+            <extensionElements>
+                <flowable:formProperty id="opinion" name="审核意见" type="string" required="true"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 审核结果网关 -->
+        <exclusiveGateway id="reviewerGateway" name="审核结果"/>
 
         <!-- 第三步：批准 (approver)，时限 48h -->
         <userTask id="approver" name="批准" flowable:assignee="${approver}"
-                  flowable:dueDate="${dueDateApprover}"/>
+                  flowable:formKey="form_standard_approver"
+                  flowable:dueDate="${dueDateApprover}">
+            <extensionElements>
+                <flowable:formProperty id="opinion" name="批准意见" type="string" required="true"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 批准结果网关 -->
+        <exclusiveGateway id="approverGateway" name="批准结果"/>
 
         <!-- 第四步：归档 (archiver) -->
-        <userTask id="archiver" name="归档" flowable:assignee="${archiver}"/>
+        <userTask id="archiver" name="归档" flowable:assignee="${archiver}"
+                  flowable:formKey="form_standard_archiver"/>
+
+        <!-- 驳回后重新提交（回到第一步） -->
+        <userTask id="resubmit" name="重新提交" flowable:assignee="${resubmitter}"
+                  flowable:formKey="form_standard_resubmit"/>
+
+        <!-- 连线定义 -->
+        <sequenceFlow id="flowStartToChecker" sourceRef="start" targetRef="checker"/>
+
+        <!-- 校核通过 -> 审核 -->
+        <sequenceFlow id="flowCheckerPass" sourceRef="checker" targetRef="checkerGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowCheckerToReviewer" sourceRef="checkerGateway" targetRef="reviewer">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 校核驳回 -> 重新提交 -->
+        <sequenceFlow id="flowCheckerReject" sourceRef="checker" targetRef="checkerGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowCheckerToResubmit" sourceRef="checkerGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 重新提交 -> 回到校核 -->
+        <sequenceFlow id="flowResubmitToChecker" sourceRef="resubmit" targetRef="checker"/>
+
+        <!-- 审核通过 -> 批准 -->
+        <sequenceFlow id="flowReviewerPass" sourceRef="reviewer" targetRef="reviewerGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowReviewerToApprover" sourceRef="reviewerGateway" targetRef="approver">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 审核驳回 -> 重新提交 -->
+        <sequenceFlow id="flowReviewerReject" sourceRef="reviewer" targetRef="reviewerGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowReviewerToResubmit" sourceRef="reviewerGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 批准通过 -> 归档 -->
+        <sequenceFlow id="flowApproverPass" sourceRef="approver" targetRef="approverGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowApproverToArchiver" sourceRef="approverGateway" targetRef="archiver">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 批准驳回 -> 重新提交 -->
+        <sequenceFlow id="flowApproverReject" sourceRef="approver" targetRef="approverGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowApproverToResubmit" sourceRef="approverGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 归档 -> 结束 -->
+        <sequenceFlow id="flowArchiverToEnd" sourceRef="archiver" targetRef="end"/>
 
         <endEvent id="end"/>
-
-        <!-- 连线 -->
-        <sequenceFlow sourceRef="start" targetRef="checker"/>
-        <sequenceFlow sourceRef="checker" targetRef="reviewer"/>
-        <sequenceFlow sourceRef="reviewer" targetRef="approver"/>
-        <sequenceFlow sourceRef="approver" targetRef="archiver"/>
-        <sequenceFlow sourceRef="archiver" targetRef="end"/>
+        <endEvent id="endCancel" name="取消"/>
 
     </process>
 

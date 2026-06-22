@@ -6,24 +6,81 @@
              expressionLanguage="http://www.w3.org/1999/XPath"
              targetNamespace="http://zrws.com/process/emergency">
 
-    <!-- 应急快速通道流程（2步：快速提交 → 指挥员批准） -->
+    <!-- 应急快速通道流程（2步 + 驳回） -->
     <process id="EMERGENCY" name="应急快速通道" isExecutable="true">
 
         <startEvent id="start"/>
 
-        <!-- 第一步：应急提交 -->
-        <userTask id="emergency_submit" name="应急提交" flowable:assignee="${applicant}"/>
+        <!-- 第一步：应急提交（30min SLA） -->
+        <userTask id="emergency_submit" name="应急提交" flowable:assignee="${applicant}"
+                  flowable:formKey="form_emergency_submit"
+                  flowable:dueDate="${dueDateSubmit}">
+            <extensionElements>
+                <flowable:formProperty id="emergencyType" name="紧急类型" type="string" required="true"/>
+                <flowable:formProperty id="location" name="事发地点" type="string" required="true"/>
+                <flowable:formProperty id="description" name="情况描述" type="string" required="true"/>
+                <flowable:formProperty id="urgentLevel" name="紧急程度" type="enum" required="true">
+                    <flowable:value id="HIGH" name="高"/>
+                    <flowable:value id="CRITICAL" name="极高"/>
+                </flowable:formProperty>
+            </extensionElements>
+        </userTask>
 
         <!-- 第二步：指挥员批准（30min 响应） -->
         <userTask id="commander" name="指挥员批准" flowable:assignee="${commander}"
-                  flowable:dueDate="${dueDateCommander}"/>
+                  flowable:formKey="form_emergency_commander"
+                  flowable:dueDate="${dueDateCommander}">
+            <extensionElements>
+                <flowable:formProperty id="decision" name="决策决定" type="enum" required="true">
+                    <flowable:value id="APPROVE" name="批准行动"/>
+                    <flowable:value id="REJECT" name="暂缓"/>
+                    <flowable:value id="UPGRADE" name="升级处理"/>
+                </flowable:formProperty>
+                <flowable:formProperty id="opinion" name="指挥意见" type="string" required="true"/>
+                <flowable:formProperty id="resource" name="调配资源" type="string"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 指挥决策网关 -->
+        <exclusiveGateway id="decisionGateway" name="指挥决策"/>
+
+        <!-- 批准后执行 -->
+        <userTask id="execute" name="应急执行" flowable:assignee="${applicant}"
+                  flowable:formKey="form_emergency_execute"/>
+
+        <!-- 升级处理 -->
+        <userTask id="escalate" name="升级处理" flowable:assignee="${superCommander}"
+                  flowable:formKey="form_emergency_escalate"/>
+
+        <!-- 连线定义 -->
+        <sequenceFlow id="flowStartToSubmit" sourceRef="start" targetRef="emergency_submit"/>
+
+        <!-- 提交 -> 指挥员 -->
+        <sequenceFlow id="flowSubmitToCommander" sourceRef="emergency_submit" targetRef="commander"/>
+
+        <!-- 批准 -> 执行 -->
+        <sequenceFlow id="flowCommanderApprove" sourceRef="commander" targetRef="decisionGateway">
+            <conditionExpression xsi:type="tFormalExpression">${decision == 'APPROVE'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowDecisionToExecute" sourceRef="decisionGateway" targetRef="execute">
+            <conditionExpression xsi:type="tFormalExpression">${decision == 'APPROVE'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 执行 -> 结束 -->
+        <sequenceFlow id="flowExecuteToEnd" sourceRef="execute" targetRef="end"/>
+
+        <!-- 升级 -> 升级处理 -->
+        <sequenceFlow id="flowCommanderUpgrade" sourceRef="commander" targetRef="decisionGateway">
+            <conditionExpression xsi:type="tFormalExpression">${decision == 'UPGRADE'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowDecisionToEscalate" sourceRef="decisionGateway" targetRef="escalate">
+            <conditionExpression xsi:type="tFormalExpression">${decision == 'UPGRADE'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 升级处理后结束 -->
+        <sequenceFlow id="flowEscalateToEnd" sourceRef="escalate" targetRef="end"/>
 
         <endEvent id="end"/>
-
-        <!-- 连线 -->
-        <sequenceFlow sourceRef="start" targetRef="emergency_submit"/>
-        <sequenceFlow sourceRef="emergency_submit" targetRef="commander"/>
-        <sequenceFlow sourceRef="commander" targetRef="end"/>
 
     </process>
 

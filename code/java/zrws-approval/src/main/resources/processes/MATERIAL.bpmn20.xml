@@ -6,49 +6,130 @@
              expressionLanguage="http://www.w3.org/1999/XPath"
              targetNamespace="http://zrws.com/process/material">
 
-    <!-- 物资申领流程（5步：申领→部门审批→仓库分配→领导审批→签收确认） -->
+    <!-- 物资申领流程（5步 + 驳回网关） -->
     <process id="MATERIAL" name="物资申领" isExecutable="true">
 
         <startEvent id="start"/>
 
         <!-- 第一步：部门审批 -->
-        <userTask id="dept_approve" name="部门审批" flowable:assignee="${deptManager}"/>
+        <userTask id="dept_approve" name="部门审批" flowable:assignee="${deptManager}"
+                  flowable:formKey="form_material_dept"
+                  flowable:dueDate="${dueDateDept}">
+            <extensionElements>
+                <flowable:formProperty id="materialName" name="物资名称" type="string" required="true"/>
+                <flowable:formProperty id="quantity" name="数量" type="number" required="true"/>
+                <flowable:formProperty id="purpose" name="用途说明" type="string" required="true"/>
+                <flowable:formProperty id="opinion" name="审批意见" type="string"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 部门审批结果网关 -->
+        <exclusiveGateway id="deptGateway" name="部门审批结果"/>
 
         <!-- 第二步：仓库分配（条件路由） -->
-        <userTask id="warehouse_check" name="库存核验" flowable:assignee="${warehouse}"/>
+        <userTask id="warehouse_check" name="库存核验" flowable:assignee="${warehouse}"
+                  flowable:formKey="form_material_warehouse"
+                  flowable:dueDate="${dueDateWarehouse}">
+            <extensionElements>
+                <flowable:formProperty id="stockStatus" name="库存状态" type="enum" required="true">
+                    <flowable:value id="SUFFICIENT" name="库存充足"/>
+                    <flowable:value id="INSUFFICIENT" name="库存不足"/>
+                </flowable:formProperty>
+                <flowable:formProperty id="availableQty" name="可用数量" type="number"/>
+                <flowable:formProperty id="opinion" name="核验意见" type="string"/>
+            </extensionElements>
+        </userTask>
 
-        <!-- 条件网关：库存是否充足 -->
+        <!-- 库存判断网关 -->
         <exclusiveGateway id="stock_gateway" name="库存判断"/>
 
         <!-- 充足分支：领导审批 -->
-        <userTask id="leader_approve" name="领导审批" flowable:assignee="${leader}"/>
+        <userTask id="leader_approve" name="领导审批" flowable:assignee="${leader}"
+                  flowable:formKey="form_material_leader"
+                  flowable:dueDate="${dueDateLeader}">
+            <extensionElements>
+                <flowable:formProperty id="opinion" name="审批意见" type="string" required="true"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 领导审批结果网关 -->
+        <exclusiveGateway id="leaderGateway" name="领导审批结果"/>
 
         <!-- 不足分支：触发采购（Service Task） -->
         <serviceTask id="trigger_purchase" name="触发采购申请"
                      flowable:class="com.zrws.approval.engine.delegate.TriggerPurchaseDelegate"/>
 
-        <!-- 最终：签收确认（仅充足分支走到此处） -->
-        <userTask id="signoff" name="签收确认" flowable:assignee="${applicant}"/>
+        <!-- 采购审批 -->
+        <userTask id="purchase_approve" name="采购审批" flowable:assignee="${purchaseManager}"
+                  flowable:formKey="form_material_purchase"
+                  flowable:dueDate="${dueDatePurchase}"/>
+
+        <!-- 最终：签收确认 -->
+        <userTask id="signoff" name="签收确认" flowable:assignee="${applicant}"
+                  flowable:formKey="form_material_signoff"/>
+
+        <!-- 驳回后重新提交 -->
+        <userTask id="resubmit" name="重新申领" flowable:assignee="${applicant}"
+                  flowable:formKey="form_material_resubmit"/>
+
+        <!-- 连线 -->
+        <sequenceFlow id="flowStartToDept" sourceRef="start" targetRef="dept_approve"/>
+
+        <!-- 部门通过 -> 仓库 -->
+        <sequenceFlow id="flowDeptPass" sourceRef="dept_approve" targetRef="deptGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowDeptToWarehouse" sourceRef="deptGateway" targetRef="warehouse_check">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 部门驳回 -> 重新申领 -->
+        <sequenceFlow id="flowDeptReject" sourceRef="dept_approve" targetRef="deptGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowDeptToResubmit" sourceRef="deptGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 重新申领 -> 回到部门审批 -->
+        <sequenceFlow id="flowResubmitToDept" sourceRef="resubmit" targetRef="dept_approve"/>
+
+        <!-- 仓库 -> 库存判断 -->
+        <sequenceFlow id="flowWarehouseToGateway" sourceRef="warehouse_check" targetRef="stock_gateway"/>
+
+        <!-- 充足分支：领导审批 -->
+        <sequenceFlow id="flowStockSufficient" sourceRef="stock_gateway" targetRef="leader_approve">
+            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'SUFFICIENT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 领导通过 -> 签收 -->
+        <sequenceFlow id="flowLeaderPass" sourceRef="leader_approve" targetRef="leaderGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowLeaderToSignoff" sourceRef="leaderGateway" targetRef="signoff">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 领导驳回 -> 重新申领 -->
+        <sequenceFlow id="flowLeaderReject" sourceRef="leader_approve" targetRef="leaderGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowLeaderToResubmit" sourceRef="leaderGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 签收 -> 结束 -->
+        <sequenceFlow id="flowSignoffToEnd" sourceRef="signoff" targetRef="end_normal"/>
+
+        <!-- 不足分支：采购 -->
+        <sequenceFlow id="flowStockInsufficient" sourceRef="stock_gateway" targetRef="trigger_purchase">
+            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'INSUFFICIENT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowPurchaseToApprove" sourceRef="trigger_purchase" targetRef="purchase_approve"/>
+        <sequenceFlow id="flowPurchaseToResubmit" sourceRef="purchase_approve" targetRef="resubmit"/>
 
         <endEvent id="end_normal" name="完成"/>
         <endEvent id="end_purchase" name="转采购"/>
-
-        <!-- 连线 -->
-        <sequenceFlow sourceRef="start" targetRef="dept_approve"/>
-        <sequenceFlow sourceRef="dept_approve" targetRef="warehouse_check"/>
-        <sequenceFlow sourceRef="warehouse_check" targetRef="stock_gateway"/>
-
-        <!-- 条件表达式：stockStatus = SUFFICIENT / INSUFFICIENT -->
-        <sequenceFlow sourceRef="stock_gateway" targetRef="leader_approve">
-            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'SUFFICIENT'}</conditionExpression>
-        </sequenceFlow>
-        <sequenceFlow sourceRef="stock_gateway" targetRef="trigger_purchase">
-            <conditionExpression xsi:type="tFormalExpression">${stockStatus == 'INSUFFICIENT'}</conditionExpression>
-        </sequenceFlow>
-
-        <sequenceFlow sourceRef="leader_approve" targetRef="signoff"/>
-        <sequenceFlow sourceRef="signoff" targetRef="end_normal"/>
-        <sequenceFlow sourceRef="trigger_purchase" targetRef="end_purchase"/>
 
     </process>
 

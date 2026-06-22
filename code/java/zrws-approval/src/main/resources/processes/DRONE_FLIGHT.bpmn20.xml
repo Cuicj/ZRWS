@@ -6,34 +6,117 @@
              expressionLanguage="http://www.w3.org/1999/XPath"
              targetNamespace="http://zrws.com/process/drone-flight">
 
-    <!-- 无人机外出报备流程（4步：报备→空域申请→安全审批→主管批准） -->
+    <!-- 无人机外出报备流程（4步 + 驳回网关） -->
     <process id="DRONE_FLIGHT" name="无人机外出报备" isExecutable="true">
 
         <startEvent id="start"/>
 
         <!-- 第一步：空域申请 (24h SLA) -->
         <userTask id="airspace" name="空域申请" flowable:assignee="${airspaceAdmin}"
-                  flowable:dueDate="${dueDateAirspace}"/>
+                  flowable:formKey="form_drone_airspace"
+                  flowable:dueDate="${dueDateAirspace}">
+            <extensionElements>
+                <flowable:formProperty id="airspaceArea" name="空域范围" type="string" required="true"/>
+                <flowable:formProperty id="flightTime" name="飞行时段" type="string" required="true"/>
+                <flowable:formProperty id="opinion" name="审批意见" type="string"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 空域审批结果网关 -->
+        <exclusiveGateway id="airspaceGateway" name="空域审批结果"/>
 
         <!-- 第二步：安全审批 (4h SLA) -->
         <userTask id="safety" name="安全审批" flowable:assignee="${safetyOfficer}"
-                  flowable:dueDate="${dueDateSafety}"/>
+                  flowable:formKey="form_drone_safety"
+                  flowable:dueDate="${dueDateSafety}">
+            <extensionElements>
+                <flowable:formProperty id="weatherCheck" name="天气检查" type="boolean" required="true"/>
+                <flowable:formProperty id="equipmentCheck" name="设备检查" type="boolean" required="true"/>
+                <flowable:formProperty id="opinion" name="审批意见" type="string"/>
+            </extensionElements>
+        </userTask>
+
+        <!-- 安全审批结果网关 -->
+        <exclusiveGateway id="safetyGateway" name="安全审批结果"/>
 
         <!-- 第三步：主管批准 (2h SLA) -->
         <userTask id="leader" name="主管批准" flowable:assignee="${leader}"
-                  flowable:dueDate="${dueDateLeader}"/>
+                  flowable:formKey="form_drone_leader"
+                  flowable:dueDate="${dueDateLeader}">
+            <extensionElements>
+                <flowable:formProperty id="opinion" name="批准意见" type="string" required="true"/>
+            </extensionElements>
+        </userTask>
 
-        <!-- 第四步：执行确认（可选） -->
-        <userTask id="execute" name="执行确认" flowable:assignee="${applicant}"/>
+        <!-- 主管批准结果网关 -->
+        <exclusiveGateway id="leaderGateway" name="主管批准结果"/>
+
+        <!-- 第四步：执行确认 -->
+        <userTask id="execute" name="执行确认" flowable:assignee="${applicant}"
+                  flowable:formKey="form_drone_execute"/>
+
+        <!-- 第五步：重新报备（驳回后） -->
+        <userTask id="resubmit" name="重新报备" flowable:assignee="${applicant}"
+                  flowable:formKey="form_drone_resubmit"/>
+
+        <!-- 连线定义 -->
+        <sequenceFlow id="flowStartToAirspace" sourceRef="start" targetRef="airspace"/>
+
+        <!-- 空域通过 -> 安全审批 -->
+        <sequenceFlow id="flowAirspacePass" sourceRef="airspace" targetRef="airspaceGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowAirspaceToSafety" sourceRef="airspaceGateway" targetRef="safety">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 空域驳回 -> 重新报备 -->
+        <sequenceFlow id="flowAirspaceReject" sourceRef="airspace" targetRef="airspaceGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowAirspaceToResubmit" sourceRef="airspaceGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 重新报备 -> 回到空域申请 -->
+        <sequenceFlow id="flowResubmitToAirspace" sourceRef="resubmit" targetRef="airspace"/>
+
+        <!-- 安全通过 -> 主管批准 -->
+        <sequenceFlow id="flowSafetyPass" sourceRef="safety" targetRef="safetyGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowSafetyToLeader" sourceRef="safetyGateway" targetRef="leader">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 安全驳回 -> 重新报备 -->
+        <sequenceFlow id="flowSafetyReject" sourceRef="safety" targetRef="safetyGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowSafetyToResubmit" sourceRef="safetyGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 主管通过 -> 执行确认 -->
+        <sequenceFlow id="flowLeaderPass" sourceRef="leader" targetRef="leaderGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowLeaderToExecute" sourceRef="leaderGateway" targetRef="execute">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'PASS'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 主管驳回 -> 重新报备 -->
+        <sequenceFlow id="flowLeaderReject" sourceRef="leader" targetRef="leaderGateway">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+        <sequenceFlow id="flowLeaderToResubmit" sourceRef="leaderGateway" targetRef="resubmit">
+            <conditionExpression xsi:type="tFormalExpression">${action == 'REJECT'}</conditionExpression>
+        </sequenceFlow>
+
+        <!-- 执行确认 -> 结束 -->
+        <sequenceFlow id="flowExecuteToEnd" sourceRef="execute" targetRef="end"/>
 
         <endEvent id="end"/>
-
-        <!-- 连线 -->
-        <sequenceFlow sourceRef="start" targetRef="airspace"/>
-        <sequenceFlow sourceRef="airspace" targetRef="safety"/>
-        <sequenceFlow sourceRef="safety" targetRef="leader"/>
-        <sequenceFlow sourceRef="leader" targetRef="execute"/>
-        <sequenceFlow sourceRef="execute" targetRef="end"/>
 
     </process>
 
