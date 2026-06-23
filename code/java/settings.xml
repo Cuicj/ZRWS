@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
+
+    <!-- 本地仓库位置 -->
+    <localRepository>${user.home}/.m2/repository</localRepository>
+
+    <!-- 镜像配置 -->
+    <mirrors>
+        <!-- 阿里云公共镜像 -->
+        <mirror>
+            <id>aliyunmaven</id>
+            <mirrorOf>central</mirrorOf>
+            <url>https://maven.aliyun.com/repository/public</url>
+        </mirror>
+
+        <!-- 阿里云Spring镜像 -->
+        <mirror>
+            <id>aliyun-spring</id>
+            <mirrorOf>spring-milestones,spring-snapshots</mirrorOf>
+            <url>https://maven.aliyun.com/repository/spring</url>
+        </mirror>
+
+        <!-- 阿里云Google镜像 -->
+        <mirror>
+            <id>aliyun-google</id>
+            <mirrorOf>google</mirrorOf>
+            <url>https://maven.aliyun.com/repository/google</url>
+        </mirror>
+
+        <!-- 阿里云Apache镜像 -->
+        <mirror>
+            <id>aliyun-apache</id>
+            <mirrorOf>apache-snapshots</mirrorOf>
+            <url>https://maven.aliyun.com/repository/apache-snapshots</url>
+        </mirror>
+
+        <!-- 清华镜像 -->
+        <mirror>
+            <id>tsinghua</id>
+            <mirrorOf>*,!spring-milestones</mirrorOf>
+            <url>https://mirrors.tuna.tsinghua.edu.cn/maven/repository/</url>
+        </mirror>
+    </mirrors>
+
+    <!-- 配置文件 -->
+    <profiles>
+        <profile>
+            <id>aliyun</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>aliyunmaven</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>aliyun-spring</id>
+                    <url>https://maven.aliyun.com/repository/spring</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+                <repository>
+                    <id>spring-milestones</id>
+                    <url>https://repo.spring.io/milestone</url>
+                    <releases>
+                        <enabled>true</enabled>
+                    </releases>
+                    <snapshots>
+                        <enabled>false</enabled>
+                    </snapshots>
+                </repository>
+            </repositories>
+            <pluginRepositories>
+                <pluginRepository>
+                    <id>aliyunmaven</id>
+                    <url>https://maven.aliyun.com/repository/public</url>
+                </pluginRepository>
+            </pluginRepositories>
+        </profile>
+    </profiles>
+
+    <!-- 激活配置 -->
+    <activeProfiles>
+        <activeProfile>aliyun</activeProfile>
+    </activeProfiles>
+
+</settings>

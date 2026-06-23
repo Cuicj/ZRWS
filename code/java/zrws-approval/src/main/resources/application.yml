@@ -2,7 +2,7 @@ spring:
   application:
     name: zrws-approval
 
-  # Spring AI 2.0 GA 配置
+  # Spring AI 1.0 配置
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:your-api-key-here}
@@ -12,9 +12,6 @@ spring:
           model: gpt-4o
           temperature: 0.7
           max-tokens: 2000
-      embedding:
-        options:
-          model: text-embedding-3-small
 
   # 数据库配置（阿里云RDS）
   datasource:
@@ -29,13 +26,28 @@ spring:
       connection-timeout: 30000
       max-lifetime: 1800000
 
-  # Flowable 7.0 配置
+  # Redis配置
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: 0
+      timeout: 5000
+      lettuce:
+        pool:
+          max-active: 20
+          max-idle: 10
+          min-idle: 5
+          max-wait: -1
+
+  # Flowable 6.8.1 配置
   flowable:
     database-schema-update: true
     async-executor-activate: true
     history-level: full
-    app:
-      rest-enabled: true
+    rest-api:
+      enabled: true
 
   # 文件上传配置
   servlet:
@@ -49,12 +61,28 @@ server:
   servlet:
     context-path: /approval
 
+# Spring Cloud 配置
+spring.cloud:
+  # 服务发现
+  discovery:
+    enabled: true
+  # 负载均衡
+  loadbalancer:
+    ribbon:
+      enabled: false
+
 # MyBatis-Plus 配置
 mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
     map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
 
 # AI数据分析器配置
 app:
@@ -69,11 +97,38 @@ spring-ai-analyzer:
   max-tokens: 2000
   quality-threshold: 70
 
+# Feign配置
+feign:
+  client:
+    config:
+      default:
+        loggerLevel: basic
+        connectTimeout: 5000
+        readTimeout: 5000
+  httpclient:
+    enabled: true
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+
+# Actuator配置
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
 # 日志配置
 logging:
   level:
     com.zrws: debug
     org.flowable: info
     org.springframework.ai: debug
+    org.springframework.cloud.openfeign: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
