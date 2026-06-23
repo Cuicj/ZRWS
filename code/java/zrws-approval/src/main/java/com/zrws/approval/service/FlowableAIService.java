@@ -16,6 +16,8 @@ import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 /**
  * AI智能流程生成服务
@@ -397,27 +399,33 @@ public class FlowableAIService {
     }
 
     private Map<String, Object> bpmnXmlToJson(String bpmnXml) {
-        BpmnModel model = bpmnXMLConverter.convertToBpmnModel(new ByteArrayInputStream(bpmnXml.getBytes()));
+        try {
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = factory.createXMLStreamReader(new ByteArrayInputStream(bpmnXml.getBytes()));
+            BpmnModel model = bpmnXMLConverter.convertToBpmnModel(reader);
 
-        Map<String, Object> result = new HashMap<>();
-        for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
-            result.put("processKey", process.getId());
-            result.put("processName", process.getName());
+            Map<String, Object> result = new HashMap<>();
+            for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
+                result.put("processKey", process.getId());
+                result.put("processName", process.getName());
 
-            List<Map<String, Object>> steps = new ArrayList<>();
-            for (FlowElement element : process.getFlowElements()) {
-                if (element instanceof UserTask) {
-                    UserTask task = (UserTask) element;
-                    Map<String, Object> step = new HashMap<>();
-                    step.put("key", task.getId());
-                    step.put("name", task.getName());
-                    step.put("assignee", task.getAssignee());
-                    steps.add(step);
+                List<Map<String, Object>> steps = new ArrayList<>();
+                for (FlowElement element : process.getFlowElements()) {
+                    if (element instanceof UserTask) {
+                        UserTask task = (UserTask) element;
+                        Map<String, Object> step = new HashMap<>();
+                        step.put("key", task.getId());
+                        step.put("name", task.getName());
+                        step.put("assignee", task.getAssignee());
+                        steps.add(step);
+                    }
                 }
+                result.put("steps", steps);
             }
-            result.put("steps", steps);
+            return result;
+        } catch (Exception e) {
+            throw new RuntimeException("BPMN XML解析失败", e);
         }
-        return result;
     }
 
     private Map<String, Object> validateGeneratedProcess(Map<String, Object> processJson) {

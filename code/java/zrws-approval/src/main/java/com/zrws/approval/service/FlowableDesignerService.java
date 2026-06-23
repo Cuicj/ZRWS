@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.*;
+import javax.xml.stream.XMLInputFactory;
+import javax.xml.stream.XMLStreamReader;
 
 /**
  * 流程设计器服务
@@ -44,7 +46,9 @@ public class FlowableDesignerService {
      */
     public Map<String, Object> bpmnXmlToJson(String bpmnXml) {
         try {
-            BpmnModel model = bpmnXMLConverter.convertToBpmnModel(new ByteArrayInputStream(bpmnXml.getBytes()));
+            XMLInputFactory factory = XMLInputFactory.newInstance();
+            XMLStreamReader reader = factory.createXMLStreamReader(new ByteArrayInputStream(bpmnXml.getBytes()));
+            BpmnModel model = bpmnXMLConverter.convertToBpmnModel(reader);
             return bpmnModelToJson(model);
         } catch (Exception e) {
             throw new RuntimeException("BPMN XML解析失败", e);
