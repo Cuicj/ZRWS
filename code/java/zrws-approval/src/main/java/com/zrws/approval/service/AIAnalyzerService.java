@@ -8,10 +8,9 @@ import com.zrws.approval.dto.DataAnalysisResponse;
 import com.zrws.approval.mapper.BoDefinitionMapper;
 import com.zrws.approval.mapper.BoFieldMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.ai.chat.ChatClient;
-import org.springframework.ai.chat.messages.SystemMessage;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiApi;
+import org.springframework.ai.openai.chat.ChatCompletionRequest;
+import org.springframework.ai.openai.chat.ChatCompletionResult;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -20,14 +19,14 @@ import java.util.*;
 
 /**
  * AI数据分析服务
- * <p>使用Spring AI进行数据智能分析、字段映射、校验建议
+ * <p>使用Spring AI 1.0.0-M2进行数据智能分析、字段映射、校验建议
  */
 @Slf4j
 @Service
 public class AIAnalyzerService {
 
     @Autowired
-    private ChatClient chatClient;
+    private OpenAiApi openAiApi;
 
     @Autowired
     private BoDefinitionMapper boDefinitionMapper;
@@ -38,8 +37,14 @@ public class AIAnalyzerService {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Value("${spring.ai.openai.api-key:}")
+    private String apiKey;
+
     @Value("${spring.ai.analyzer.temperature:0.3}")
-    private Float temperature;
+    private Double temperature;
+
+    @Value("${spring.ai.openai.chat.model:gpt-3.5-turbo}")
+    private String chatModel;
 
     /**
      * 智能字段映射
@@ -122,30 +127,25 @@ public class AIAnalyzerService {
      * 生成数据分析报告
      */
     public String generateAnalysisReport(DataAnalysisRequest request, DataAnalysisResponse response) {
-        String prompt = String.format("""
-            请为以下数据分析生成一份详细报告：
-
-            数据概览：
-            - BO类型：%s
-            - 总行数：%d
-            - 成功行数：%d
-            - 失败行数：%d
-
-            字段映射：%d 个字段已映射
-
-            校验结果：
-            - 通过：%d
-            - 失败：%d
-            - 警告：%d
-
-            请以Markdown格式输出，包含：
-            1. 数据质量评分（0-100）
-            2. 主要问题列表
-            3. 数据分布统计
-            4. 改进建议
-            """,
+        String prompt = String.format(
+            "请为以下数据分析生成一份详细报告：\n\n" +
+            "数据概览：\n" +
+            "- BO类型：%s\n" +
+            "- 总行数：%d\n" +
+            "- 成功行数：%d\n" +
+            "- 失败行数：%d\n\n" +
+            "字段映射：%d 个字段已映射\n\n" +
+            "校验结果：\n" +
+            "- 通过：%d\n" +
+            "- 失败：%d\n" +
+            "- 警告：%d\n\n" +
+            "请以Markdown格式输出，包含：\n" +
+            "1. 数据质量评分（0-100）\n" +
+            "2. 主要问题列表\n" +
+            "3. 数据分布统计\n" +
+            "4. 改进建议",
                 request.getBoCode(),
-                response.getTotalRows(),
+                request.getRows() != null ? request.getRows().size() : 0,
                 response.getSuccessRows(),
                 response.getFailedRows(),
                 response.getFieldMappings() != null ? response.getFieldMappings().size() : 0,
@@ -189,18 +189,16 @@ public class AIAnalyzerService {
                     field.getSourceNames()));
         }
 
-        prompt.append("""
-            \n## 输出要求：
-            请以JSON格式输出字段映射结果，格式如下：
-            ```json
-            [
-              {"sourceField": "源列名", "targetField": "目标字段编码", "confidence": 0.95, "description": "匹配说明"},
-              ...
-            ]
-            ```
-            如果某个源列无法匹配，返回null即可。
-            只输出JSON，不要其他内容。
-            """);
+        prompt.append("\n## 输出要求：\n");
+        prompt.append("请以JSON格式输出字段映射结果，格式如下：\n");
+        prompt.append("```json\n");
+        prompt.append("[\n");
+        prompt.append("  {\"sourceField\": \"源列名\", \"targetField\": \"目标字段编码\", \"confidence\": 0.95, \"description\": \"匹配说明\"},\n");
+        prompt.append("  ...\n");
+        prompt.append("]\n");
+        prompt.append("```\n");
+        prompt.append("如果某个源列无法匹配，返回null即可。\n");
+        prompt.append("只输出JSON，不要其他内容。");
 
         return prompt.toString();
     }
@@ -229,20 +227,18 @@ public class AIAnalyzerService {
                     validation));
         }
 
-        prompt.append("""
-            \n## 输出要求：
-            请以JSON格式输出分析结果：
-            ```json
-            {
-              "qualityScore": 85,
-              "dataDistribution": {"字段名": {"正常": 100, "异常": 5}},
-              "anomalies": [{"rowNumber": 5, "fieldName": "xxx", "value": "xxx", "anomalyType": "范围超限", "description": "..."}],
-              "suggestions": ["建议1", "建议2"],
-              "problems": [{"type": "数据类型错误", "description": "...", "affectedRows": 10, "severity": "MEDIUM"}]
-            }
-            ```
-            只输出JSON。
-            """);
+        prompt.append("\n## 输出要求：\n");
+        prompt.append("请以JSON格式输出分析结果：\n");
+        prompt.append("```json\n");
+        prompt.append("{\n");
+        prompt.append("  \"qualityScore\": 85,\n");
+        prompt.append("  \"dataDistribution\": {\"字段名\": {\"正常\": 100, \"异常\": 5}},\n");
+        prompt.append("  \"anomalies\": [{\"rowNumber\": 5, \"fieldName\": \"xxx\", \"value\": \"xxx\", \"anomalyType\": \"范围超限\", \"description\": \"...\"}],\n");
+        prompt.append("  \"suggestions\": [\"建议1\", \"建议2\"],\n");
+        prompt.append("  \"problems\": [{\"type\": \"数据类型错误\", \"description\": \"...\", \"affectedRows\": 10, \"severity\": \"MEDIUM\"}]\n");
+        prompt.append("}\n");
+        prompt.append("```\n");
+        prompt.append("只输出JSON。");
 
         return prompt.toString();
     }
@@ -263,32 +259,43 @@ public class AIAnalyzerService {
             prompt.append(String.format("- %s: %s\n", field.getFieldCode(), field.getFieldType()));
         }
 
-        prompt.append("""
-            \n## 输出要求：
-            JSON格式校验结果：
-            ```json
-            {
-              "isValid": true,
-              "errors": [{"field": "xxx", "value": "xxx", "message": "错误信息"}],
-              "warnings": [{"field": "xxx", "value": "xxx", "message": "警告信息"}],
-              "suggestions": ["修复建议"]
-            }
-            ```
-            """);
+        prompt.append("\n## 输出要求：\n");
+        prompt.append("JSON格式校验结果：\n");
+        prompt.append("```json\n");
+        prompt.append("{\n");
+        prompt.append("  \"isValid\": true,\n");
+        prompt.append("  \"errors\": [{\"field\": \"xxx\", \"value\": \"xxx\", \"message\": \"错误信息\"}],\n");
+        prompt.append("  \"warnings\": [{\"field\": \"xxx\", \"value\": \"xxx\", \"message\": \"警告信息\"}],\n");
+        prompt.append("  \"suggestions\": [\"修复建议\"]\n");
+        prompt.append("}\n");
+        prompt.append("```");
 
         return prompt.toString();
     }
 
-    private String callAI(String prompt) {
-        Prompt aiPrompt = Prompt.builder()
-                .messages(
-                        new SystemMessage("你是一个专业的数据分析助手。请仔细分析用户提供的需求，并给出准确、结构化的回答。"),
-                        new UserMessage(prompt)
-                )
+    private String callAI(String prompt) throws Exception {
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new RuntimeException("OpenAI API Key未配置");
+        }
+
+        ChatCompletionRequest request = ChatCompletionRequest.builder()
+                .model(chatModel)
+                .messages(Collections.singletonList(
+                    org.springframework.ai.openai.chat.ChatMessage.builder()
+                        .role("user")
+                        .content(prompt)
+                        .build()
+                ))
                 .temperature(temperature)
                 .build();
 
-        return chatClient.call(aiPrompt).getResult().getOutput().getContent();
+        ChatCompletionResult result = openAiApi.chatCompletion(request);
+
+        if (result != null && result.getChoices() != null && !result.getChoices().isEmpty()) {
+            return result.getChoices().get(0).getMessage().getContent();
+        }
+
+        throw new RuntimeException("AI返回结果为空");
     }
 
     private List<DataAnalysisResponse.FieldMapping> parseFieldMappingResponse(String response, List<String> headers) {
@@ -323,20 +330,14 @@ public class AIAnalyzerService {
 
         // 如果解析失败，使用模糊匹配作为降级方案
         if (mappings.isEmpty()) {
-            mappings = fallbackFieldMappingByKeyword(headers, headers); // 需要重新获取targetFields
+            mappings = fallbackFieldMapping(headers, headers);
         }
 
         return mappings;
     }
 
-    private List<DataAnalysisResponse.FieldMapping> fallbackFieldMapping(List<String> headers, List<BoField> targetFields) {
-        return fallbackFieldMappingByKeyword(headers, targetFields.stream()
-                .map(BoField::getSourceNames)
-                .map(sn -> {
-                    if (sn == null) return "";
-                    return sn.split(",")[0].trim();
-                })
-                .toList());
+    private List<DataAnalysisResponse.FieldMapping> fallbackFieldMapping(List<String> headers, List<String> possibleTargets) {
+        return fallbackFieldMappingByKeyword(headers, possibleTargets);
     }
 
     private List<DataAnalysisResponse.FieldMapping> fallbackFieldMappingByKeyword(List<String> headers, List<String> possibleTargets) {
@@ -419,7 +420,7 @@ public class AIAnalyzerService {
         } catch (Exception e) {
             log.error("解析AI分析结果失败: {}", e.getMessage());
             result.setQualityScore(0);
-            result.setSuggestions(List.of("分析失败，请检查数据格式"));
+            result.setSuggestions(Collections.singletonList("分析失败，请检查数据格式"));
         }
 
         return result;
@@ -434,7 +435,7 @@ public class AIAnalyzerService {
         } catch (Exception e) {
             log.error("解析校验结果失败: {}", e.getMessage());
         }
-        return Map.of("error", "解析失败");
+        return Collections.singletonMap("error", "解析失败");
     }
 
     private DataAnalysisResponse.AiAnalysisResult createBasicAnalysis(List<Map<String, Object>> dataRows,
@@ -444,11 +445,11 @@ public class AIAnalyzerService {
         result.setQualityScore(70);
         result.setDataDistribution(new HashMap<>());
         result.setAnomalies(new ArrayList<>());
-        result.setSuggestions(List.of(
+        result.setSuggestions(Arrays.asList(
                 "建议检查数据格式是否符合预期",
                 "部分字段可能需要额外校验"
         ));
-        result.setProblems(List.of());
+        result.setProblems(new ArrayList<>());
 
         return result;
     }

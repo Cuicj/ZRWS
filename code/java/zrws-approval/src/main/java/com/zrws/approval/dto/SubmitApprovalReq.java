@@ -1,7 +1,7 @@
 package com.zrws.approval.dto;
 
 import lombok.Data;
-import javax.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotBlank;
 
 /**
  * 提交审批请求 DTO
