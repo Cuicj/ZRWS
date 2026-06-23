@@ -6,41 +6,30 @@
 
     <groupId>com.zrws</groupId>
     <artifactId>zrws-approval</artifactId>
-    <version>2.0.0</version>
+    <version>3.0.0</version>
     <packaging>jar</packaging>
 
     <name>智壤卫士 - 审批与工作流服务</name>
-    <description>基于 Flowable 6.8.1 + Spring AI 2.0 GA 的智能审批流程微服务</description>
+    <description>基于 Flowable 7.0 + Spring AI 2.0 GA 的智能审批流程微服务</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.2.5</version>
+        <version>4.0.5</version>
         <relativePath/>
     </parent>
 
     <properties>
-        <java.version>17</java.version>
+        <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <flowable.version>6.8.1</flowable.version>
-        <mybatis-plus.version>3.5.5</mybatis-plus.version>
-        <hutool.version>5.8.26</hutool.version>
-        <spring-ai.version>1.0.0-M2</spring-ai.version>
+        <flowable.version>7.0.1</flowable.version>
+        <mybatis-plus.version>3.5.6</mybatis-plus.version>
+        <hutool.version>5.8.32</hutool.version>
+        <spring-ai.version>2.0.0</spring-ai.version>
     </properties>
 
-    <repositories>
-        <repository>
-            <id>spring-milestones</id>
-            <name>Spring Milestones</name>
-            <url>https://repo.spring.io/milestone</url>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-
     <dependencies>
-        <!-- Spring Boot 3.2 -->
+        <!-- Spring Boot 4.0 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -57,7 +46,14 @@
             <version>${spring-ai.version}</version>
         </dependency>
 
-        <!-- Flowable 6.8.1 流程引擎 -->
+        <!-- Spring AI Core -->
+        <dependency>
+            <groupId>org.springframework.ai</groupId>
+            <artifactId>spring-ai-core</artifactId>
+            <version>${spring-ai.version}</version>
+        </dependency>
+
+        <!-- Flowable 7.0.1 流程引擎 -->
         <dependency>
             <groupId>org.flowable</groupId>
             <artifactId>flowable-spring-boot-starter-process</artifactId>
@@ -101,7 +97,7 @@
         <dependency>
             <groupId>com.alibaba.fastjson2</groupId>
             <artifactId>fastjson2</artifactId>
-            <version>2.0.49</version>
+            <version>2.0.54</version>
         </dependency>
 
         <!-- Excel处理 -->
@@ -125,6 +121,24 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                        </exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                </configuration>
             </plugin>
         </plugins>
         <resources>

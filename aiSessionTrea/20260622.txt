@@ -15,3 +15,5 @@
 376508507502266:feat: Python蓝牙+局域网设备发现系统(bluetooth_discovery.py/lan_discovery.py/data_transfer.py/image_storage.py/auth.py/app.py) - BLE扫描/ARP扫描/数据传输/图片存储/用户+管理员权限控制/Web界面:session 376508507502266 T(2026/6/22)
 376508507502266:feat: Spring AI 2.0数据分析器(bo_config_schema.sql/AIAnalyzerService/DataValidator/DataImportService/DataAnalyzerController) - BO配置/智能字段映射/数据校验/自动入库:session 376508507502266 T(2026/6/22)
 376508507502266:git: 提交推送(a242662) - feat: 新增Spring AI 2.0数据分析器 + Python蓝牙局域网设备发现系统:session 376508507502266 T(2026/6/22)
+376508507502266:feat: 优化AI数据适配器 - 添加图形界面(data-analyzer.html/data-analyzer.js)、审批流配置(ApprovalFlowConfig)、数据统计(DataStatistics)、相关Service和Controller:session 376508507502266 T(2026/6/22)
+376508507502266:git: 提交推送(e1f4c17) - feat: 优化AI数据适配器 - 添加图形界面+审批流配置+数据统计:session 376508507502266 T(2026/6/22)

@@ -2,7 +2,7 @@ spring:
   application:
     name: zrws-approval
 
-  # Spring AI 2.0 配置
+  # Spring AI 2.0 GA 配置
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:your-api-key-here}
@@ -12,6 +12,9 @@ spring:
           model: gpt-4o
           temperature: 0.7
           max-tokens: 2000
+      embedding:
+        options:
+          model: text-embedding-3-small
 
   # 数据库配置（阿里云RDS）
   datasource:
@@ -19,12 +22,20 @@ spring:
     username: test_admin
     password: Test_admin
     driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 30000
+      connection-timeout: 30000
+      max-lifetime: 1800000
 
-  # Flowable 配置
+  # Flowable 7.0 配置
   flowable:
     database-schema-update: true
     async-executor-activate: true
     history-level: full
+    app:
+      rest-enabled: true
 
   # 文件上传配置
   servlet:
@@ -43,6 +54,7 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
 
 # AI数据分析器配置
 app:
@@ -63,3 +75,5 @@ logging:
     com.zrws: debug
     org.flowable: info
     org.springframework.ai: debug
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,1142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>全局设置与公告栏管理</title>
+    <style id="dynamic-styles">
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+    </style>
+    <style>
+        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* 页面标题 */
+        .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .page-header h1 { font-size: 24px; font-weight: 600; }
+        
+        /* 标签页 */
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 2px solid #e0e0e0; }
+        .tab { padding: 12px 24px; background: none; border: none; cursor: pointer; font-size: 15px; position: relative; color: #666; }
+        .tab:hover { color: #333; }
+        .tab.active { color: var(--theme-color, #3498db); font-weight: 600; }
+        .tab.active::after { content: ''; position: absolute; bottom: -2px; left: 0; right: 0; height: 2px; background: var(--theme-color, #3498db); }
+        
+        /* 卡片 */
+        .card { background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 20px; }
+        .card-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .card-title { font-size: 16px; font-weight: 600; }
+        .card-body { padding: 20px; }
+        
+        /* 公告栏样式 */
+        .announcement-bar { background: linear-gradient(135deg, var(--theme-color, #3498db) 0%, #2c3e50 100%); color: white; border-radius: 8px; padding: 15px 20px; margin-bottom: 20px; }
+        .announcement-bar h3 { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .announcement-bar h3 .icon { font-size: 20px; }
+        .announcement-list { display: flex; flex-direction: column; gap: 8px; }
+        .announcement-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; background: rgba(255,255,255,0.1); border-radius: 4px; cursor: pointer; transition: background 0.2s; }
+        .announcement-item:hover { background: rgba(255,255,255,0.2); }
+        .announcement-item .tag { padding: 2px 8px; border-radius: 3px; font-size: 12px; background: rgba(255,255,255,0.2); }
+        .announcement-item .title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .announcement-item .time { font-size: 12px; opacity: 0.8; }
+        
+        /* 公告详情弹窗 */
+        .announcement-detail { max-height: 70vh; overflow-y: auto; }
+        .announcement-detail h2 { font-size: 20px; margin-bottom: 15px; }
+        .announcement-detail .meta { color: #999; font-size: 14px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .announcement-detail .content { line-height: 1.8; }
+        .announcement-detail .stats { margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee; display: flex; gap: 20px; color: #999; }
+        
+        /* 表单样式 */
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; }
+        .form-group textarea { resize: vertical; min-height: 100px; }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--theme-color, #3498db); }
+        
+        /* 颜色选择器 */
+        .color-picker { display: flex; gap: 10px; align-items: center; }
+        .color-picker input[type="color"] { width: 50px; height: 40px; padding: 2px; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; }
+        .color-picker input[type="text"] { flex: 1; }
+        
+        /* 字号选择 */
+        .font-size-options { display: flex; gap: 10px; }
+        .font-size-option { padding: 10px 20px; border: 2px solid #ddd; border-radius: 4px; cursor: pointer; transition: all 0.2s; }
+        .font-size-option:hover { border-color: var(--theme-color, #3498db); }
+        .font-size-option.active { border-color: var(--theme-color, #3498db); background: var(--theme-color, #3498db); color: white; }
+        
+        /* 禁用词 */
+        .disable-words { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+        .disable-word { display: flex; align-items: center; gap: 5px; padding: 5px 10px; background: #f8d7da; color: #721c24; border-radius: 4px; font-size: 13px; }
+        .disable-word .remove { cursor: pointer; font-weight: bold; }
+        
+        /* 表格 */
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f8f9fa; font-weight: 600; color: #666; }
+        tr:hover { background: #f8f9fa; }
+        
+        /* 按钮 */
+        .btn { padding: 8px 16px; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+        .btn-primary { background: var(--theme-color, #3498db); color: white; }
+        .btn-primary:hover { background: #2980b9; }
+        .btn-success { background: #27ae60; color: white; }
+        .btn-success:hover { background: #229954; }
+        .btn-warning { background: #f39c12; color: white; }
+        .btn-warning:hover { background: #d68910; }
+        .btn-danger { background: #e74c3c; color: white; }
+        .btn-danger:hover { background: #c0392b; }
+        .btn-secondary { background: #95a5a6; color: white; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-sm { padding: 5px 10px; font-size: 12px; }
+        
+        /* 徽章 */
+        .badge { display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 12px; }
+        .badge-success { background: #d4edda; color: #155724; }
+        .badge-warning { background: #fff3cd; color: #856404; }
+        .badge-danger { background: #f8d7da; color: #721c24; }
+        .badge-info { background: #d1ecf1; color: #0c5460; }
+        .badge-secondary { background: #e2e3e5; color: #383d41; }
+        
+        /* 模态框 */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal-overlay.show { display: flex; }
+        .modal { background: white; border-radius: 8px; width: 90%; max-width: 600px; max-height: 85vh; overflow-y: auto; }
+        .modal-header { padding: 15px 20px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; }
+        .modal-title { font-size: 18px; font-weight: 600; }
+        .modal-close { cursor: pointer; color: #999; font-size: 24px; }
+        .modal-body { padding: 20px; }
+        .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; display: flex; justify-content: flex-end; gap: 10px; }
+        
+        /* 搜索框 */
+        .search-box { display: flex; gap: 10px; margin-bottom: 15px; }
+        .search-box input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        
+        /* 分类标签 */
+        .category-tags { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .category-tag { padding: 8px 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; border: 2px solid transparent; }
+        .category-tag:hover { transform: scale(1.05); }
+        .category-tag.active { border-color: currentColor; }
+        
+        /* 设置项 */
+        .setting-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px solid #eee; }
+        .setting-item:last-child { border-bottom: none; }
+        .setting-info h4 { margin-bottom: 5px; }
+        .setting-info p { color: #999; font-size: 13px; }
+        
+        /* 审核流程 */
+        .audit-flow { display: flex; align-items: center; gap: 5px; }
+        .audit-step { padding: 8px 15px; background: #e0e0e0; border-radius: 4px; font-size: 13px; }
+        .audit-step.active { background: var(--theme-color, #3498db); color: white; }
+        .audit-step.completed { background: #27ae60; color: white; }
+        .audit-arrow { color: #ccc; }
+        
+        /* 提示消息 */
+        #toast { position: fixed; top: 20px; right: 20px; padding: 15px 25px; border-radius: 4px; color: white; font-weight: 500; z-index: 2000; display: none; }
+        
+        /* 空状态 */
+        .empty-state { text-align: center; padding: 50px; color: #999; }
+        .empty-state .icon { font-size: 48px; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面标题 -->
+        <div class="page-header">
+            <h1>系统设置</h1>
+            <button class="btn btn-secondary" onclick="loadSettings()">刷新设置</button>
+        </div>
+        
+        <!-- 标签页 -->
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('global')">全局设置</button>
+            <button class="tab" onclick="switchTab('announcement')">公告栏</button>
+            <button class="tab" onclick="switchTab('category')">分类管理</button>
+            <button class="tab" onclick="switchTab('manage')">公告管理</button>
+        </div>
+        
+        <!-- 全局设置面板 -->
+        <div id="panel-global" class="panel">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">全局设置</div>
+                </div>
+                <div class="card-body">
+                    <!-- 字体大小 -->
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>字体大小</h4>
+                            <p>系统全局字体大小</p>
+                        </div>
+                        <div class="font-size-options">
+                            <div class="font-size-option" data-size="12" onclick="setFontSize(12)">小 12px</div>
+                            <div class="font-size-option" data-size="14" onclick="setFontSize(14)">中 14px</div>
+                            <div class="font-size-option active" data-size="16" onclick="setFontSize(16)">大 16px</div>
+                            <div class="font-size-option" data-size="18" onclick="setFontSize(18)">特大 18px</div>
+                        </div>
+                    </div>
+                    
+                    <!-- 主题色 -->
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>主题色</h4>
+                            <p>系统主题颜色</p>
+                        </div>
+                        <div class="color-picker">
+                            <input type="color" id="theme-color" value="#3498db" onchange="setThemeColor(this.value)">
+                            <input type="text" id="theme-color-text" value="#3498db" onchange="setThemeColor(this.value)">
+                        </div>
+                    </div>
+                    
+                    <!-- 禁用词 -->
+                    <div class="setting-item" style="display: block;">
+                        <div class="setting-info">
+                            <h4>禁用词</h4>
+                            <p>内容中禁用的敏感词，用逗号分隔</p>
+                        </div>
+                        <div style="margin-top: 10px;">
+                            <div class="disable-words" id="disable-words-list"></div>
+                            <div style="display: flex; gap: 10px;">
+                                <input type="text" id="new-disable-word" placeholder="输入禁用词" style="flex: 1;">
+                                <button class="btn btn-primary btn-sm" onclick="addDisableWord()">添加</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <button class="btn btn-success" onclick="saveGlobalSettings()">保存设置</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 公告栏面板 -->
+        <div id="panel-announcement" class="panel" style="display: none;">
+            <!-- 公告栏展示 -->
+            <div class="announcement-bar" id="announcement-bar">
+                <h3><span class="icon">📢</span> <span>系统公告</span></h3>
+                <div class="announcement-list" id="announcement-list">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+            
+            <!-- 公告列表 -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">公告列表</div>
+                    <button class="btn btn-primary" onclick="showAnnouncementModal()">发布公告</button>
+                </div>
+                <div class="card-body">
+                    <!-- 分类筛选 -->
+                    <div class="category-tags" id="category-tags"></div>
+                    
+                    <!-- 搜索 -->
+                    <div class="search-box">
+                        <input type="text" id="search-keyword" placeholder="搜索公告标题...">
+                        <button class="btn btn-primary" onclick="searchAnnouncements()">搜索</button>
+                    </div>
+                    
+                    <!-- 公告表格 -->
+                    <table id="announcement-table">
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>浏览</th>
+                                <th>发布时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="announcement-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 分类管理面板 -->
+        <div id="panel-category" class="panel" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">公告分类</div>
+                    <button class="btn btn-primary" onclick="showCategoryModal()">添加分类</button>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>图标</th>
+                                <th>分类名称</th>
+                                <th>编码</th>
+                                <th>颜色</th>
+                                <th>排序</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="category-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 公告管理面板 -->
+        <div id="panel-manage" class="panel" style="display: none;">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title">审核管理</div>
+                </div>
+                <div class="card-body">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>标题</th>
+                                <th>分类</th>
+                                <th>状态</th>
+                                <th>审核状态</th>
+                                <th>创建时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="manage-tbody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 公告详情模态框 -->
+    <div class="modal-overlay" id="detail-modal">
+        <div class="modal" style="max-width: 700px;">
+            <div class="modal-header">
+                <div class="modal-title">公告详情</div>
+                <div class="modal-close" onclick="closeModal('detail-modal')">×</div>
+            </div>
+            <div class="modal-body announcement-detail" id="detail-content">
+                <!-- 动态内容 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('detail-modal')">关闭</button>
+                <button class="btn btn-primary" onclick="likeAnnouncement()">👍 点赞</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 公告编辑模态框 -->
+    <div class="modal-overlay" id="announcement-modal">
+        <div class="modal" style="max-width: 800px;">
+            <div class="modal-header">
+                <div class="modal-title" id="announcement-modal-title">发布公告</div>
+                <div class="modal-close" onclick="closeModal('announcement-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="announcement-id">
+                <div class="form-group">
+                    <label>标题 *</label>
+                    <input type="text" id="announcement-title" placeholder="请输入公告标题">
+                </div>
+                <div class="form-group">
+                    <label>分类</label>
+                    <select id="announcement-category"></select>
+                </div>
+                <div class="form-group">
+                    <label>摘要</label>
+                    <input type="text" id="announcement-summary" placeholder="简要描述">
+                </div>
+                <div class="form-group">
+                    <label>内容 *</label>
+                    <textarea id="announcement-content" placeholder="请输入公告内容，支持HTML"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>来源</label>
+                    <input type="text" id="announcement-source" placeholder="如: 新华社">
+                </div>
+                <div style="display: flex; gap: 15px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label><input type="checkbox" id="announcement-top"> 置顶</label>
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label><input type="checkbox" id="announcement-recommend"> 推荐</label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('announcement-modal')">取消</button>
+                <button class="btn btn-primary" onclick="saveAnnouncement()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 分类编辑模态框 -->
+    <div class="modal-overlay" id="category-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title">分类设置</div>
+                <div class="modal-close" onclick="closeModal('category-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="category-id">
+                <div class="form-group">
+                    <label>分类名称 *</label>
+                    <input type="text" id="category-name" placeholder="如: 今日新闻">
+                </div>
+                <div class="form-group">
+                    <label>分类编码 *</label>
+                    <input type="text" id="category-code" placeholder="如: NEWS">
+                </div>
+                <div class="form-group">
+                    <label>图标</label>
+                    <input type="text" id="category-icon" placeholder="如: 📰">
+                </div>
+                <div class="form-group">
+                    <label>颜色</label>
+                    <input type="color" id="category-color" value="#3498db">
+                </div>
+                <div class="form-group">
+                    <label>排序</label>
+                    <input type="number" id="category-sort" value="0">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('category-modal')">取消</button>
+                <button class="btn btn-success" onclick="saveCategory()">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 审核意见模态框 -->
+    <div class="modal-overlay" id="audit-modal">
+        <div class="modal" style="max-width: 400px;">
+            <div class="modal-header">
+                <div class="modal-title" id="audit-modal-title">审核意见</div>
+                <div class="modal-close" onclick="closeModal('audit-modal')">×</div>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="audit-type">
+                <input type="hidden" id="audit-announcement-id">
+                <div class="form-group" id="reject-reason-group" style="display: none;">
+                    <label>驳回原因</label>
+                    <textarea id="reject-reason" placeholder="请输入驳回原因"></textarea>
+                </div>
+                <div class="form-group" id="audit-comment-group">
+                    <label>审核意见</label>
+                    <textarea id="audit-comment" placeholder="请输入审核意见"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('audit-modal')">取消</button>
+                <button class="btn btn-primary" id="audit-confirm-btn" onclick="confirmAudit()">确认</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 提示消息 -->
+    <div id="toast"></div>
+    
+    <script>
+        const API_CONFIG = '/api/v1/sysconfig';
+        const API_ANNOUNCEMENT = '/api/v1/announcement';
+        
+        let currentSettings = {};
+        let currentAnnouncementId = null;
+        let categories = [];
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            loadSettings();
+            loadCategories();
+            loadAnnouncements();
+            loadTopAnnouncements();
+        });
+        
+        // 切换标签
+        function switchTab(tab) {
+            document.querySelectorAll('.panel').forEach(p => p.style.display = 'none');
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            
+            document.getElementById('panel-' + tab).style.display = 'block';
+            document.querySelector(`.tab:nth-child(${['global', 'announcement', 'category', 'manage'].indexOf(tab) + 1})`).classList.add('active');
+            
+            if (tab === 'manage') {
+                loadManageList();
+            }
+        }
+        
+        // 加载设置
+        function loadSettings() {
+            fetch(`${API_CONFIG}/global`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        currentSettings = data.settings;
+                        applySettings(data.settings);
+                    }
+                });
+        }
+        
+        // 应用设置
+        function applySettings(settings) {
+            // 字体大小
+            const fontSize = settings.FONT_SIZE || 14;
+            document.body.style.fontSize = fontSize + 'px';
+            document.querySelectorAll('.font-size-option').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.size) === fontSize);
+            });
+            
+            // 主题色
+            const themeColor = settings.THEME_COLOR || '#3498db';
+            document.documentElement.style.setProperty('--theme-color', themeColor);
+            document.getElementById('theme-color').value = themeColor;
+            document.getElementById('theme-color-text').value = themeColor;
+            
+            // 禁用词
+            renderDisableWords(settings.DISABLE_WORDS || '');
+        }
+        
+        // 设置字体大小
+        function setFontSize(size) {
+            document.body.style.fontSize = size + 'px';
+            document.querySelectorAll('.font-size-option').forEach(el => {
+                el.classList.toggle('active', parseInt(el.dataset.size) === size);
+            });
+            currentSettings.FONT_SIZE = size;
+        }
+        
+        // 设置主题色
+        function setThemeColor(color) {
+            document.documentElement.style.setProperty('--theme-color', color);
+            document.getElementById('theme-color').value = color;
+            document.getElementById('theme-color-text').value = color;
+            currentSettings.THEME_COLOR = color;
+        }
+        
+        // 渲染禁用词
+        function renderDisableWords(words) {
+            const list = document.getElementById('disable-words-list');
+            if (!words) {
+                list.innerHTML = '<span style="color: #999;">暂无禁用词</span>';
+                return;
+            }
+            
+            const wordArray = words.split(',').filter(w => w.trim());
+            if (wordArray.length === 0) {
+                list.innerHTML = '<span style="color: #999;">暂无禁用词</span>';
+                return;
+            }
+            
+            list.innerHTML = wordArray.map(w => `
+                <span class="disable-word">
+                    ${w.trim()}
+                    <span class="remove" onclick="removeDisableWord('${w.trim()}')">×</span>
+                </span>
+            `).join('');
+        }
+        
+        // 添加禁用词
+        function addDisableWord() {
+            const input = document.getElementById('new-disable-word');
+            const word = input.value.trim();
+            if (!word) return;
+            
+            let words = currentSettings.DISABLE_WORDS || '';
+            let wordArray = words ? words.split(',') : [];
+            if (!wordArray.includes(word)) {
+                wordArray.push(word);
+            }
+            currentSettings.DISABLE_WORDS = wordArray.join(',');
+            renderDisableWords(currentSettings.DISABLE_WORDS);
+            input.value = '';
+        }
+        
+        // 移除禁用词
+        function removeDisableWord(word) {
+            let words = currentSettings.DISABLE_WORDS || '';
+            let wordArray = words.split(',').filter(w => w.trim() !== word);
+            currentSettings.DISABLE_WORDS = wordArray.join(',');
+            renderDisableWords(currentSettings.DISABLE_WORDS);
+        }
+        
+        // 保存全局设置
+        function saveGlobalSettings() {
+            fetch(`${API_CONFIG}/batch`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(currentSettings)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('设置保存成功', 'success');
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            });
+        }
+        
+        // 加载分类
+        function loadCategories() {
+            fetch(`${API_ANNOUNCEMENT}/category`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        categories = data.list;
+                        renderCategoryTags();
+                        renderCategorySelect();
+                        renderCategoryTable();
+                    }
+                });
+        }
+        
+        // 渲染分类标签
+        function renderCategoryTags() {
+            const container = document.getElementById('category-tags');
+            container.innerHTML = `
+                <div class="category-tag active" style="background: #f0f0f0;" onclick="filterByCategory(null)">全部</div>
+                ${categories.map(c => `
+                    <div class="category-tag" style="background: ${c.color || '#3498db'}20; color: ${c.color || '#3498db'};" 
+                         onclick="filterByCategory(${c.categoryId})">
+                        ${c.icon || ''} ${c.categoryName}
+                    </div>
+                `).join('')}
+            `;
+        }
+        
+        // 渲染分类下拉框
+        function renderCategorySelect() {
+            const select = document.getElementById('announcement-category');
+            select.innerHTML = categories.map(c => 
+                `<option value="${c.categoryId}">${c.icon || ''} ${c.categoryName}</option>`
+            ).join('');
+        }
+        
+        // 渲染分类表格
+        function renderCategoryTable() {
+            const tbody = document.getElementById('category-tbody');
+            tbody.innerHTML = categories.map(c => `
+                <tr>
+                    <td>${c.icon || '-'}</td>
+                    <td>${c.categoryName}</td>
+                    <td>${c.categoryCode}</td>
+                    <td><span style="display: inline-block; width: 20px; height: 20px; background: ${c.color || '#3498db'}; border-radius: 4px;"></span></td>
+                    <td>${c.sortOrder || 0}</td>
+                    <td><span class="badge ${c.status === 1 ? 'badge-success' : 'badge-secondary'}">${c.status === 1 ? '启用' : '禁用'}</span></td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="editCategory(${c.categoryId})">编辑</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteCategory(${c.categoryId})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 显示分类模态框
+        function showCategoryModal(id) {
+            document.getElementById('category-id').value = id || '';
+            document.getElementById('category-name').value = '';
+            document.getElementById('category-code').value = '';
+            document.getElementById('category-icon').value = '';
+            document.getElementById('category-color').value = '#3498db';
+            document.getElementById('category-sort').value = '0';
+            
+            if (id) {
+                const category = categories.find(c => c.categoryId === id);
+                if (category) {
+                    document.getElementById('category-name').value = category.categoryName;
+                    document.getElementById('category-code').value = category.categoryCode;
+                    document.getElementById('category-icon').value = category.icon || '';
+                    document.getElementById('category-color').value = category.color || '#3498db';
+                    document.getElementById('category-sort').value = category.sortOrder || 0;
+                }
+            }
+            
+            document.getElementById('category-modal').classList.add('show');
+        }
+        
+        // 编辑分类
+        function editCategory(id) {
+            showCategoryModal(id);
+        }
+        
+        // 保存分类
+        function saveCategory() {
+            const category = {
+                categoryId: document.getElementById('category-id').value || null,
+                categoryName: document.getElementById('category-name').value,
+                categoryCode: document.getElementById('category-code').value,
+                icon: document.getElementById('category-icon').value,
+                color: document.getElementById('category-color').value,
+                sortOrder: parseInt(document.getElementById('category-sort').value) || 0,
+                status: 1
+            };
+            
+            if (!category.categoryName || !category.categoryCode) {
+                showToast('请填写完整信息', 'warning');
+                return;
+            }
+            
+            fetch(`${API_ANNOUNCEMENT}/category`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(category)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('保存成功', 'success');
+                    closeModal('category-modal');
+                    loadCategories();
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            });
+        }
+        
+        // 删除分类
+        function deleteCategory(id) {
+            if (!confirm('确定要删除该分类吗?')) return;
+            
+            fetch(`${API_ANNOUNCEMENT}/category/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('删除成功', 'success');
+                        loadCategories();
+                    } else {
+                        showToast(data.error || '删除失败', 'error');
+                    }
+                });
+        }
+        
+        // 加载公告
+        function loadAnnouncements() {
+            fetch(`${API_ANNOUNCEMENT}/list`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderAnnouncementTable(data.list);
+                    }
+                });
+        }
+        
+        // 加载置顶公告
+        function loadTopAnnouncements() {
+            fetch(`${API_ANNOUNCEMENT}/top`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderAnnouncementBar(data.list);
+                    }
+                });
+        }
+        
+        // 渲染公告栏
+        function renderAnnouncementBar(announcements) {
+            const list = document.getElementById('announcement-list');
+            if (!announcements || announcements.length === 0) {
+                list.innerHTML = '<div class="announcement-item"><span class="title">暂无公告</span></div>';
+                return;
+            }
+            
+            list.innerHTML = announcements.slice(0, 5).map(a => `
+                <div class="announcement-item" onclick="showAnnouncementDetail(${a.announcementId})">
+                    <span class="tag" style="background: ${getCategoryColor(a.categoryId)};">${a.categoryName || '公告'}</span>
+                    <span class="title">${a.title}</span>
+                    <span class="time">${formatTime(a.publishTime)}</span>
+                </div>
+            `).join('');
+        }
+        
+        // 获取分类颜色
+        function getCategoryColor(categoryId) {
+            const category = categories.find(c => c.categoryId === categoryId);
+            return category ? category.color + '40' : '#3498db40';
+        }
+        
+        // 渲染公告表格
+        function renderAnnouncementTable(announcements) {
+            const tbody = document.getElementById('announcement-tbody');
+            tbody.innerHTML = announcements.map(a => `
+                <tr>
+                    <td>${a.isTop ? '📌 ' : ''}${a.title}</td>
+                    <td><span class="badge" style="background: ${getCategoryColor(a.categoryId)}; color: inherit;">${a.categoryName || '-'}</span></td>
+                    <td><span class="badge ${getStatusBadge(a.status)}">${getStatusText(a.status)}</span></td>
+                    <td>${a.viewCount || 0}</td>
+                    <td>${formatTime(a.publishTime)}</td>
+                    <td>
+                        <button class="btn btn-secondary btn-sm" onclick="showAnnouncementDetail(${a.announcementId})">查看</button>
+                        <button class="btn btn-primary btn-sm" onclick="editAnnouncement(${a.announcementId})">编辑</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteAnnouncement(${a.announcementId})">删除</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 获取状态徽章
+        function getStatusBadge(status) {
+            const map = {
+                'DRAFT': 'badge-secondary',
+                'PENDING': 'badge-warning',
+                'APPROVED': 'badge-info',
+                'REJECTED': 'badge-danger',
+                'PUBLISHED': 'badge-success',
+                'OFFLINE': 'badge-secondary'
+            };
+            return map[status] || 'badge-secondary';
+        }
+        
+        // 获取状态文本
+        function getStatusText(status) {
+            const map = {
+                'DRAFT': '草稿',
+                'PENDING': '待审核',
+                'APPROVED': '已审核',
+                'REJECTED': '已驳回',
+                'PUBLISHED': '已发布',
+                'OFFLINE': '已下线'
+            };
+            return map[status] || status;
+        }
+        
+        // 按分类筛选
+        function filterByCategory(categoryId) {
+            document.querySelectorAll('.category-tag').forEach(t => t.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            if (categoryId) {
+                fetch(`${API_ANNOUNCEMENT}/list?categoryId=${categoryId}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            renderAnnouncementTable(data.list);
+                        }
+                    });
+            } else {
+                loadAnnouncements();
+            }
+        }
+        
+        // 搜索公告
+        function searchAnnouncements() {
+            const keyword = document.getElementById('search-keyword').value;
+            if (!keyword) {
+                loadAnnouncements();
+                return;
+            }
+            
+            fetch(`${API_ANNOUNCEMENT}/list?keyword=${encodeURIComponent(keyword)}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderAnnouncementTable(data.list);
+                    }
+                });
+        }
+        
+        // 显示公告详情
+        function showAnnouncementDetail(id) {
+            currentAnnouncementId = id;
+            fetch(`${API_ANNOUNCEMENT}/${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        const a = data.announcement;
+                        document.getElementById('detail-content').innerHTML = `
+                            <h2>${a.title}</h2>
+                            <div class="meta">
+                                <span>分类: ${a.categoryName || '-'}</span> | 
+                                <span>来源: ${a.source || '-'}</span> | 
+                                <span>发布时间: ${formatTime(a.publishTime)}</span>
+                            </div>
+                            <div class="content">${a.content}</div>
+                            <div class="stats">
+                                <span>👁️ ${a.viewCount || 0} 次浏览</span>
+                                <span>👍 ${a.likeCount || 0} 次点赞</span>
+                            </div>
+                        `;
+                        document.getElementById('detail-modal').classList.add('show');
+                    }
+                });
+        }
+        
+        // 点赞
+        function likeAnnouncement() {
+            if (!currentAnnouncementId) return;
+            
+            fetch(`${API_ANNOUNCEMENT}/${currentAnnouncementId}/like`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('点赞成功', 'success');
+                        showAnnouncementDetail(currentAnnouncementId);
+                    }
+                });
+        }
+        
+        // 显示公告编辑模态框
+        function showAnnouncementModal(id) {
+            document.getElementById('announcement-id').value = id || '';
+            document.getElementById('announcement-title').value = '';
+            document.getElementById('announcement-summary').value = '';
+            document.getElementById('announcement-content').value = '';
+            document.getElementById('announcement-source').value = '';
+            document.getElementById('announcement-top').checked = false;
+            document.getElementById('announcement-recommend').checked = false;
+            document.getElementById('announcement-modal-title').textContent = id ? '编辑公告' : '发布公告';
+            
+            if (id) {
+                fetch(`${API_ANNOUNCEMENT}/${id}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            const a = data.announcement;
+                            document.getElementById('announcement-title').value = a.title;
+                            document.getElementById('announcement-category').value = a.categoryId || '';
+                            document.getElementById('announcement-summary').value = a.summary || '';
+                            document.getElementById('announcement-content').value = a.content;
+                            document.getElementById('announcement-source').value = a.source || '';
+                            document.getElementById('announcement-top').checked = a.isTop === 1;
+                            document.getElementById('announcement-recommend').checked = a.isRecommend === 1;
+                        }
+                    });
+            }
+            
+            document.getElementById('announcement-modal').classList.add('show');
+        }
+        
+        // 编辑公告
+        function editAnnouncement(id) {
+            showAnnouncementModal(id);
+        }
+        
+        // 保存公告
+        function saveAnnouncement() {
+            const announcement = {
+                announcementId: document.getElementById('announcement-id').value || null,
+                title: document.getElementById('announcement-title').value,
+                categoryId: document.getElementById('announcement-category').value,
+                summary: document.getElementById('announcement-summary').value,
+                content: document.getElementById('announcement-content').value,
+                source: document.getElementById('announcement-source').value,
+                isTop: document.getElementById('announcement-top').checked ? 1 : 0,
+                isRecommend: document.getElementById('announcement-recommend').checked ? 1 : 0
+            };
+            
+            if (!announcement.title || !announcement.content) {
+                showToast('请填写标题和内容', 'warning');
+                return;
+            }
+            
+            fetch(`${API_ANNOUNCEMENT}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(announcement)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('保存成功', 'success');
+                    closeModal('announcement-modal');
+                    loadAnnouncements();
+                    loadTopAnnouncements();
+                } else {
+                    showToast(data.error || '保存失败', 'error');
+                }
+            });
+        }
+        
+        // 删除公告
+        function deleteAnnouncement(id) {
+            if (!confirm('确定要删除该公告吗?')) return;
+            
+            fetch(`${API_ANNOUNCEMENT}/${id}`, { method: 'DELETE' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast('删除成功', 'success');
+                        loadAnnouncements();
+                        loadTopAnnouncements();
+                    } else {
+                        showToast(data.error || '删除失败', 'error');
+                    }
+                });
+        }
+        
+        // 加载管理列表
+        function loadManageList() {
+            fetch(`${API_ANNOUNCEMENT}/manage/list`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        renderManageTable(data.list);
+                    }
+                });
+        }
+        
+        // 渲染管理表格
+        function renderManageTable(list) {
+            const tbody = document.getElementById('manage-tbody');
+            tbody.innerHTML = list.map(a => `
+                <tr>
+                    <td>${a.title}</td>
+                    <td>${a.categoryName || '-'}</td>
+                    <td><span class="badge ${getStatusBadge(a.status)}">${getStatusText(a.status)}</span></td>
+                    <td><span class="badge ${a.auditStatus === 'PASSED' ? 'badge-success' : 'badge-warning'}">${a.auditStatus === 'PASSED' ? '已通过' : '待审核'}</span></td>
+                    <td>${formatTime(a.createdTime)}</td>
+                    <td>
+                        ${getAuditActions(a)}
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        // 获取审核操作按钮
+        function getAuditActions(a) {
+            let actions = '';
+            
+            if (a.status === 'DRAFT') {
+                actions += `<button class="btn btn-primary btn-sm" onclick="submitForAudit(${a.announcementId})">提交审核</button>`;
+            }
+            if (a.status === 'PENDING') {
+                actions += `<button class="btn btn-success btn-sm" onclick="showAuditModal('approve', ${a.announcementId})">通过</button>`;
+                actions += `<button class="btn btn-danger btn-sm" onclick="showAuditModal('reject', ${a.announcementId})">驳回</button>`;
+            }
+            if (a.status === 'APPROVED') {
+                actions += `<button class="btn btn-success btn-sm" onclick="publish(${a.announcementId})">发布</button>`;
+            }
+            if (a.status === 'PUBLISHED') {
+                actions += `<button class="btn btn-warning btn-sm" onclick="offline(${a.announcementId})">下线</button>`;
+            }
+            
+            return actions;
+        }
+        
+        // 提交审核
+        function submitForAudit(id) {
+            fetch(`${API_ANNOUNCEMENT}/${id}/submit`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operatorId: 1, operatorName: '管理员' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('提交审核成功', 'success');
+                    loadManageList();
+                } else {
+                    showToast(data.error || '提交失败', 'error');
+                }
+            });
+        }
+        
+        // 显示审核模态框
+        function showAuditModal(type, id) {
+            document.getElementById('audit-type').value = type;
+            document.getElementById('audit-announcement-id').value = id;
+            document.getElementById('audit-comment').value = '';
+            document.getElementById('reject-reason').value = '';
+            
+            document.getElementById('reject-reason-group').style.display = type === 'reject' ? 'block' : 'none';
+            document.getElementById('audit-comment-group').style.display = type === 'reject' ? 'none' : 'block';
+            document.getElementById('audit-modal-title').textContent = type === 'approve' ? '通过审核' : '驳回审核';
+            document.getElementById('audit-confirm-btn').className = type === 'approve' ? 'btn btn-success' : 'btn btn-danger';
+            
+            document.getElementById('audit-modal').classList.add('show');
+        }
+        
+        // 确认审核
+        function confirmAudit() {
+            const type = document.getElementById('audit-type').value;
+            const id = document.getElementById('audit-announcement-id').value;
+            const comment = document.getElementById('audit-comment').value;
+            const reason = document.getElementById('reject-reason').value;
+            
+            let url, body;
+            if (type === 'approve') {
+                url = `${API_ANNOUNCEMENT}/${id}/approve`;
+                body = { auditorId: 1, auditorName: '管理员', comment };
+            } else {
+                url = `${API_ANNOUNCEMENT}/${id}/reject`;
+                body = { auditorId: 1, auditorName: '管理员', reason };
+            }
+            
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(type === 'approve' ? '审核通过' : '已驳回', 'success');
+                    closeModal('audit-modal');
+                    loadManageList();
+                    loadAnnouncements();
+                } else {
+                    showToast(data.error || '操作失败', 'error');
+                }
+            });
+        }
+        
+        // 发布
+        function publish(id) {
+            fetch(`${API_ANNOUNCEMENT}/${id}/publish`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operatorId: 1, operatorName: '管理员' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('发布成功', 'success');
+                    loadManageList();
+                    loadAnnouncements();
+                    loadTopAnnouncements();
+                } else {
+                    showToast(data.error || '发布失败', 'error');
+                }
+            });
+        }
+        
+        // 下线
+        function offline(id) {
+            if (!confirm('确定要下线该公告吗?')) return;
+            
+            fetch(`${API_ANNOUNCEMENT}/${id}/offline`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ operatorId: 1, operatorName: '管理员' })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    showToast('下线成功', 'success');
+                    loadManageList();
+                    loadAnnouncements();
+                    loadTopAnnouncements();
+                } else {
+                    showToast(data.error || '下线失败', 'error');
+                }
+            });
+        }
+        
+        // 关闭模态框
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+        
+        // 格式化时间
+        function formatTime(time) {
+            if (!time) return '-';
+            const date = new Date(time);
+            return date.toLocaleString('zh-CN');
+        }
+        
+        // 显示提示
+        function showToast(message, type) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.background = type === 'success' ? '#27ae60' : type === 'warning' ? '#f39c12' : '#e74c3c';
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3000);
+        }
+    </script>
+</body>
+</html>
