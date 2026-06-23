@@ -207,6 +207,13 @@ public class FlowableAIController {
         return ResponseEntity.ok(body);
     }
 
+    private ResponseEntity<Map<String, Object>> successMsg(String msg) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("code", 0);
+        body.put("msg", msg);
+        return ResponseEntity.ok(body);
+    }
+
     private ResponseEntity<Map<String, Object>> error(String msg) {
         Map<String, Object> body = new HashMap<>();
         body.put("code", -1);

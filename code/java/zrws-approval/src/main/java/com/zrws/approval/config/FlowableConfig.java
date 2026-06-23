@@ -54,7 +54,7 @@ public class FlowableConfig implements CommandLineRunner {
         }
         
         // 打印流程引擎状态
-        System.out.println("  [Flowable] 引擎状态: " + processEngine.getName() + " " + processEngine.getVersion());
+        System.out.println("  [Flowable] 引擎状态: " + processEngine.getName());
         System.out.println("=====================================================\n");
     }
 

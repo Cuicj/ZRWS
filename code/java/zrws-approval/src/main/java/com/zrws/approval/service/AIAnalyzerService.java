@@ -71,7 +71,12 @@ public class AIAnalyzerService {
             return parseFieldMappingResponse(response, sourceHeaders);
         } catch (Exception e) {
             log.error("AI字段映射失败: {}", e.getMessage());
-            return fallbackFieldMapping(sourceHeaders, targetFields);
+            // 将BoField列表转换为字符串列表
+            List<String> targetFieldNames = new ArrayList<>();
+            for (BoField f : targetFields) {
+                targetFieldNames.add(f.getSourceNames() != null ? f.getSourceNames().split(",")[0].trim() : f.getFieldCode());
+            }
+            return fallbackFieldMapping(sourceHeaders, targetFieldNames);
         }
     }
 

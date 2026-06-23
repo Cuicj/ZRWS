@@ -650,7 +650,9 @@ public class DataAnalyzerController {
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
         if (data instanceof Map) {
-            result.putAll((Map<?, ?>) data);
+            @SuppressWarnings("unchecked")
+            Map<String, Object> dataMap = (Map<String, Object>) data;
+            result.putAll(dataMap);
         }
         return ResponseEntity.ok(result);
     }

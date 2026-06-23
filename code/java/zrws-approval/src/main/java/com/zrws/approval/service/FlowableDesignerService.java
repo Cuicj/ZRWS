@@ -15,6 +15,8 @@ import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 import java.util.*;
 
 /**
@@ -42,7 +44,7 @@ public class FlowableDesignerService {
      */
     public Map<String, Object> bpmnXmlToJson(String bpmnXml) {
         try {
-            BpmnModel model = bpmnXMLConverter.convertToBpmnModel(bpmnXml.getBytes());
+            BpmnModel model = bpmnXMLConverter.convertToBpmnModel(new ByteArrayInputStream(bpmnXml.getBytes()));
             return bpmnModelToJson(model);
         } catch (Exception e) {
             throw new RuntimeException("BPMN XML解析失败", e);
@@ -56,7 +58,7 @@ public class FlowableDesignerService {
         Map<String, Object> result = new HashMap<>();
         List<Map<String, Object>> processes = new ArrayList<>();
 
-        for (Process process : model.getProcesses()) {
+        for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
             Map<String, Object> processMap = new HashMap<>();
             processMap.put("id", process.getId());
             processMap.put("name", process.getName());
@@ -160,7 +162,7 @@ public class FlowableDesignerService {
         List<Map<String, Object>> processes = (List<Map<String, Object>>) json.get("processes");
         if (processes != null) {
             for (Map<String, Object> processJson : processes) {
-                Process process = new Process();
+                org.flowable.bpmn.model.Process process = new org.flowable.bpmn.model.Process();
                 process.setId((String) processJson.get("id"));
                 process.setName((String) processJson.get("name"));
                 process.setExecutable(true);
@@ -337,7 +339,7 @@ public class FlowableDesignerService {
             BpmnModel model = jsonToBpmnModel(json);
 
             // 验证流程定义
-            for (Process process : model.getProcesses()) {
+            for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
                 // 检查是否有开始事件
                 boolean hasStart = process.getFlowElements().stream()
                         .anyMatch(e -> e instanceof StartEvent);

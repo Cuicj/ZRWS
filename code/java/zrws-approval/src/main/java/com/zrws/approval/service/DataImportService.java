@@ -1,6 +1,7 @@
 package com.zrws.approval.service;
 
 import cn.hutool.core.date.DateUtil;
+import org.apache.poi.ss.usermodel.DateUtil;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.crypto.digest.DigestUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -395,7 +396,7 @@ public class DataImportService {
             case STRING:
                 return cell.getStringCellValue();
             case NUMERIC:
-                if (DateUtil.isNumericDate(cell)) {
+                if (org.apache.poi.ss.usermodel.DateUtil.isCellDateFormatted(cell)) {
                     return cell.getLocalDateTimeCellValue();
                 }
                 double numValue = cell.getNumericCellValue();

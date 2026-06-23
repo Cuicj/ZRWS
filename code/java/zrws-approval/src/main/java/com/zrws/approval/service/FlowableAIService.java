@@ -344,7 +344,7 @@ public class FlowableAIService {
 
     private String convertJsonToBpmnXml(Map<String, Object> processJson) {
         BpmnModel model = new BpmnModel();
-        Process process = new Process();
+        org.flowable.bpmn.model.Process process = new org.flowable.bpmn.model.Process();
 
         String processKey = (String) processJson.get("processKey");
         String processName = (String) processJson.get("processName");
@@ -400,7 +400,7 @@ public class FlowableAIService {
         BpmnModel model = bpmnXMLConverter.convertToBpmnModel(new ByteArrayInputStream(bpmnXml.getBytes()));
 
         Map<String, Object> result = new HashMap<>();
-        for (Process process : model.getProcesses()) {
+        for (org.flowable.bpmn.model.Process process : model.getProcesses()) {
             result.put("processKey", process.getId());
             result.put("processName", process.getName());
 

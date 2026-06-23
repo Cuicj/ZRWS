@@ -195,7 +195,7 @@ public class DataValidator {
                 break;
 
             case "ENUM":
-                result = validateEnum(value, field.getEnumValues(), field.getEnumCode());
+                result = validateEnum(value, field.getEnumValues(), field.getFieldCode());
                 break;
 
             case "CUSTOM":
