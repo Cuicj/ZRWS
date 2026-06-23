@@ -1,39 +1,48 @@
 package com.zrws.approval.service;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
-import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
 
 /**
- * Spring AI 2.0 GA 智能流程生成服务
+ * AI智能流程生成服务
  * <p>用户通过自然语言描述流程需求，AI自动生成BPMN流程定义并部署
- * 
- * 功能：
- * 1. 自然语言生成流程定义
- * 2. AI优化现有流程
- * 3. 流程分析与改进建议
- * 4. 流程模板推荐
- * 5. 多轮对话式流程设计
- * 6. 智能表单生成
  */
 @Service
 public class FlowableAIService {
 
     @Autowired
-    private ChatClient chatClient;
-
-    @Autowired
     private FlowableDeployService deployService;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Value("${spring.ai.openai.api-key:}")
+    private String apiKey;
+
+    @Value("${spring.ai.openai.base-url:https://api.openai.com}")
+    private String baseUrl;
+
+    @Value("${spring.ai.openai.chat.model:gpt-3.5-turbo}")
+    private String chatModel;
+
+    @Value("${spring.ai.openai.chat.options.temperature:0.7}")
+    private Double temperature;
+
+    private final RestTemplate restTemplate = new RestTemplate();
     private final BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
 
     // 存储对话会话
@@ -48,16 +57,9 @@ public class FlowableAIService {
      */
     public Map<String, Object> generateProcessFromDescription(String userDescription) {
         String userPrompt = buildGeneratePrompt(userDescription);
-
-        String aiResponse = chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
-
-        // 解析AI返回的JSON
+        String aiResponse = callOpenAI(userPrompt);
         Map<String, Object> processJson = parseAiResponse(aiResponse);
 
-        // 验证生成的流程
         Map<String, Object> validation = validateGeneratedProcess(processJson);
         if (!(Boolean) validation.get("valid")) {
             throw new RuntimeException("AI生成的流程定义无效: " + validation.get("errors"));
@@ -70,20 +72,15 @@ public class FlowableAIService {
      * 生成并部署流程
      */
     public Map<String, Object> generateAndDeploy(String userDescription) {
-        // 1. AI生成流程定义
         Map<String, Object> processJson = generateProcessFromDescription(userDescription);
-
-        // 2. 转换为BPMN XML
         String bpmnXml = convertJsonToBpmnXml(processJson);
 
-        // 3. 部署流程
         String processKey = (String) processJson.get("processKey");
         String processName = (String) processJson.get("processName");
         ByteArrayInputStream inputStream = new ByteArrayInputStream(bpmnXml.getBytes());
 
         Map<String, Object> deployResult = deployService.deployBPMN(processKey, processName, inputStream);
 
-        // 4. 返回完整结果
         Map<String, Object> result = new HashMap<>();
         result.put("aiGenerated", processJson);
         result.put("bpmnXml", bpmnXml);
@@ -100,30 +97,20 @@ public class FlowableAIService {
      * AI优化现有流程定义
      */
     public Map<String, Object> optimizeProcess(String processDefinitionId, String optimizationRequest) {
-        // 1. 获取现有流程定义
         String existingXml = deployService.getProcessDefinitionXML(processDefinitionId);
         if (existingXml == null) {
             throw new IllegalArgumentException("流程定义不存在");
         }
 
-        // 2. 获取现有流程JSON
         Map<String, Object> existingJson = bpmnXmlToJson(existingXml);
 
-        // 3. AI优化
-        String userPrompt = String.format(
-                "现有流程定义：\n%s\n\n优化需求：\n%s\n\n请返回优化后的完整流程定义JSON。",
-                JSON.toJSONString(existingJson), optimizationRequest
-        );
+        String userPrompt = "现有流程定义：\n" + JSON.toJSONString(existingJson) +
+                "\n\n优化需求：\n" + optimizationRequest +
+                "\n\n请返回优化后的完整流程定义JSON。";
 
-        String aiResponse = chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
-
-        // 4. 解析优化后的流程
+        String aiResponse = callOpenAI(userPrompt);
         Map<String, Object> optimizedJson = parseAiResponse(aiResponse);
 
-        // 5. 部署新版本
         String bpmnXml = convertJsonToBpmnXml(optimizedJson);
         String processKey = (String) optimizedJson.get("processKey");
         String processName = (String) optimizedJson.get("processName");
@@ -153,14 +140,10 @@ public class FlowableAIService {
 
         Map<String, Object> existingJson = bpmnXmlToJson(existingXml);
 
-        String userPrompt = "请分析以下流程定义并提出改进建议：\n" + JSON.toJSONString(existingJson) + 
+        String userPrompt = "请分析以下流程定义并提出改进建议：\n" + JSON.toJSONString(existingJson) +
                 "\n\n请从以下维度分析：\n1. 流程效率\n2. SLA设置\n3. 风险控制\n4. 用户体验\n5. 扩展性\n\n返回JSON格式分析报告。";
 
-        String aiResponse = chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
-
+        String aiResponse = callOpenAI(userPrompt);
         Map<String, Object> analysis = parseAiResponse(aiResponse);
 
         Map<String, Object> result = new HashMap<>();
@@ -178,7 +161,7 @@ public class FlowableAIService {
      * 根据业务场景推荐合适的流程模板
      */
     public Map<String, Object> recommendTemplate(String businessScenario) {
-        String userPrompt = "业务场景描述：\n" + businessScenario + 
+        String userPrompt = "业务场景描述：\n" + businessScenario +
                 "\n\n请推荐最合适的审批流程模板。可用模板：\n" +
                 "1. STANDARD - 标准审批：校核→审核→批准→归档\n" +
                 "2. MATERIAL - 物资申领：部门审批→库存核验→领导审批→签收\n" +
@@ -186,11 +169,7 @@ public class FlowableAIService {
                 "4. EMERGENCY - 应急快速通道：应急提交→指挥员批准\n\n" +
                 "请返回JSON格式：{\"recommendedTemplate\":\"模板KEY\",\"reason\":\"推荐理由\",\"suggestedModifications\":[]}";
 
-        String aiResponse = chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
-
+        String aiResponse = callOpenAI(userPrompt);
         return parseAiResponse(aiResponse);
     }
 
@@ -202,23 +181,16 @@ public class FlowableAIService {
      * 多轮对话式流程设计
      */
     public Map<String, Object> chatDesign(String sessionId, String userMessage) {
-        // 获取或创建会话历史
         List<Map<String, Object>> history = conversationHistory.computeIfAbsent(sessionId, k -> new ArrayList<>());
 
-        // 构建对话上下文
         StringBuilder contextBuilder = new StringBuilder();
         for (Map<String, Object> msg : history) {
             contextBuilder.append(msg.get("role")).append(": ").append(msg.get("content")).append("\n");
         }
         contextBuilder.append("用户: ").append(userMessage);
 
-        // AI响应
-        String aiResponse = chatClient.prompt()
-                .user(contextBuilder.toString())
-                .call()
-                .content();
+        String aiResponse = callOpenAI(contextBuilder.toString());
 
-        // 记录对话
         Map<String, Object> userMsg = new HashMap<>();
         userMsg.put("role", "用户");
         userMsg.put("content", userMessage);
@@ -231,13 +203,11 @@ public class FlowableAIService {
         aiMsg.put("timestamp", System.currentTimeMillis());
         history.add(aiMsg);
 
-        // 尝试解析为流程定义
         Map<String, Object> result = new HashMap<>();
         result.put("sessionId", sessionId);
         result.put("response", aiResponse);
         result.put("history", history);
 
-        // 如果AI返回了流程定义JSON，尝试提取
         try {
             Map<String, Object> processJson = parseAiResponse(aiResponse);
             if (processJson.containsKey("processKey")) {
@@ -245,7 +215,6 @@ public class FlowableAIService {
                 result.put("readyToDeploy", true);
             }
         } catch (Exception ignored) {
-            // 不是流程定义，继续对话
         }
 
         return result;
@@ -274,53 +243,93 @@ public class FlowableAIService {
                 "- 相关附件上传\n" +
                 "- 根据步骤类型添加特定字段\n\n" +
                 "返回JSON格式表单定义。",
-                processKey, stepKey
-        );
+                processKey, stepKey);
 
-        String aiResponse = chatClient.prompt()
-                .user(userPrompt)
-                .call()
-                .content();
-
+        String aiResponse = callOpenAI(userPrompt);
         return parseAiResponse(aiResponse);
     }
 
     // ============================================================
-    // 7. 辅助方法
+    // 7. OpenAI API调用
+    // ============================================================
+
+    @SuppressWarnings("unchecked")
+    private String callOpenAI(String prompt) {
+        if (apiKey == null || apiKey.isEmpty()) {
+            throw new RuntimeException("OpenAI API Key未配置");
+        }
+
+        String url = baseUrl + "/v1/chat/completions";
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setBearerAuth(apiKey);
+
+        Map<String, Object> requestBody = new HashMap<>();
+        requestBody.put("model", chatModel);
+        requestBody.put("temperature", temperature);
+
+        List<Map<String, String>> messages = new ArrayList<>();
+        messages.add(Collections.singletonMap("role", "user"));
+        messages.get(0).put("content", prompt);
+        requestBody.put("messages", messages);
+
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
+        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
+        String responseBody = responseEntity.getBody();
+
+        if (responseBody == null) {
+            throw new RuntimeException("OpenAI API返回为空");
+        }
+
+        Map<String, Object> responseMap;
+        try {
+            responseMap = objectMapper.readValue(responseBody, Map.class);
+        } catch (Exception e) {
+            throw new RuntimeException("解析OpenAI响应失败: " + responseBody, e);
+        }
+
+        List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
+        if (choices == null || choices.isEmpty()) {
+            throw new RuntimeException("OpenAI API返回choices为空");
+        }
+
+        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
+        return (String) message.get("content");
+    }
+
+    // ============================================================
+    // 8. 辅助方法
     // ============================================================
 
     private String buildGeneratePrompt(String userDescription) {
-        return String.format("""
-                请根据以下需求生成审批流程定义JSON：
-                
-                用户需求：%s
-                
-                输出格式要求（JSON）：
-                {
-                    "processKey": "PROCESS_KEY",
-                    "processName": "流程名称",
-                    "description": "流程描述",
-                    "steps": [
-                        {
-                            "key": "step_key",
-                            "name": "步骤名称",
-                            "assignee": "${assignee_var}",
-                            "slaHours": 24,
-                            "formProperties": [
-                                {"id": "opinion", "name": "审批意见", "type": "string", "required": true}
-                            ]
-                        }
-                    ],
-                    "hasRejectPath": true,
-                    "hasReturnPath": true
-                }
-                
-                请只返回JSON，不要添加其他说明文字。
-                """, userDescription);
+        StringBuilder prompt = new StringBuilder();
+        prompt.append("请根据以下需求生成审批流程定义JSON：\n\n");
+        prompt.append("用户需求：").append(userDescription).append("\n\n");
+        prompt.append("输出格式要求（JSON）：\n");
+        prompt.append("{\n");
+        prompt.append("    \"processKey\": \"PROCESS_KEY\",\n");
+        prompt.append("    \"processName\": \"流程名称\",\n");
+        prompt.append("    \"description\": \"流程描述\",\n");
+        prompt.append("    \"steps\": [\n");
+        prompt.append("        {\n");
+        prompt.append("            \"key\": \"step_key\",\n");
+        prompt.append("            \"name\": \"步骤名称\",\n");
+        prompt.append("            \"assignee\": \"${assignee_var}\",\n");
+        prompt.append("            \"slaHours\": 24,\n");
+        prompt.append("            \"formProperties\": [\n");
+        prompt.append("                {\"id\": \"opinion\", \"name\": \"审批意见\", \"type\": \"string\", \"required\": true}\n");
+        prompt.append("            ]\n");
+        prompt.append("        }\n");
+        prompt.append("    ],\n");
+        prompt.append("    \"hasRejectPath\": true,\n");
+        prompt.append("    \"hasReturnPath\": true\n");
+        prompt.append("}\n\n");
+        prompt.append("请只返回JSON，不要添加其他说明文字。");
+        return prompt.toString();
     }
 
     private Map<String, Object> parseAiResponse(String aiResponse) {
-        // 清理可能的Markdown标记
         String cleaned = aiResponse
                 .replaceAll("```json", "")
                 .replaceAll("```", "")
@@ -364,7 +373,6 @@ public class FlowableAIService {
             userTask.setName(stepName);
             userTask.setAssignee(assignee);
 
-            // 添加连线
             SequenceFlow flow = new SequenceFlow(prevElement, stepKey);
             flow.setId("flow_" + prevElement + "_to_" + stepKey);
             process.addFlowElement(flow);
@@ -389,7 +397,7 @@ public class FlowableAIService {
     }
 
     private Map<String, Object> bpmnXmlToJson(String bpmnXml) {
-        BpmnModel model = bpmnXMLConverter.convertToBpmnModel(bpmnXml.getBytes());
+        BpmnModel model = bpmnXMLConverter.convertToBpmnModel(new ByteArrayInputStream(bpmnXml.getBytes()));
 
         Map<String, Object> result = new HashMap<>();
         for (Process process : model.getProcesses()) {
