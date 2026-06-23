@@ -58,30 +58,24 @@
         </dependency>
 
         <!-- ============================================== -->
-        <!-- Spring AI 1.0.0-M2 - 本地lib目录 -->
+        <!-- Spring AI 1.0.0-M2 (已安装到本地Maven仓库) -->
         <!-- ============================================== -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-core</artifactId>
             <version>1.0.0-M2</version>
-            <scope>system</scope>
-            <systemPath>${lib.dir}/spring-ai-core-1.0.0-M2.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai</artifactId>
             <version>1.0.0-M2</version>
-            <scope>system</scope>
-            <systemPath>${lib.dir}/spring-ai-openai-1.0.0-M2.jar</systemPath>
         </dependency>
 
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
             <version>1.0.0-M2</version>
-            <scope>system</scope>
-            <systemPath>${lib.dir}/spring-ai-openai-spring-boot-starter-1.0.0-M2.jar</systemPath>
         </dependency>
 
         <!-- ============================================== -->
