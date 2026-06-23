@@ -28,7 +28,7 @@ public class SlaEscalationScheduler {
 
     /**
      * 每 5 分钟检查一次超时任务
-     * 0 */5 * * * ?  每 5 分钟
+     * Cron: 0 0/5 * * * ? (每5分钟)
      */
     @Scheduled(cron = "0 */5 * * * ?")
     public void checkEscalation() {
