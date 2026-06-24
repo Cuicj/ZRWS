@@ -311,7 +311,7 @@ public class FlowableDesignerService {
                     task.setDueDate((String) node.get("dueDate"));
                 }
                 if (node.get("priority") != null) {
-                    task.setPriority((Integer) node.get("priority"));
+                    task.setPriority(String.valueOf(node.get("priority")));
                 }
                 if (documentation != null) task.setDocumentation(documentation);
 
