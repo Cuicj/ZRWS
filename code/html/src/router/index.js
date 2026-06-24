@@ -5,9 +5,15 @@
 import { createRouter, createWebHashHistory } from 'vue-router';
 
 const routes = [
-  // 门户首页（模块陈列）
+  // 根路径重定向到登录页
   {
     path: '/',
+    redirect: '/login'
+  },
+
+  // 门户首页（模块陈列）
+  {
+    path: '/portal',
     name: 'Portal',
     component: () => import('@/views/Portal.vue'),
     meta: { layout: 'blank', title: '智壤卫士' }
@@ -156,7 +162,7 @@ const router = createRouter({
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} · 智壤卫士` : '智壤卫士';
   
-  // 如果不是登录页且没有token，跳转到登录页
+  // 如果不是登录页且不是门户页且没有token，跳转到登录页
   if (to.name !== 'Login' && to.name !== 'Portal' && !localStorage.getItem('token')) {
     next('/login');
   } else {
