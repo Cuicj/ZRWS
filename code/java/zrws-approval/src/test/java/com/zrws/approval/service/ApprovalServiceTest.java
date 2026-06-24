@@ -85,7 +85,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("校核");
         when(mockTask.getTaskDefinitionKey()).thenReturn("checker");
         // 使用完整的查询模拟
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-001")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
@@ -140,7 +140,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("部门审批");
         when(mockTask.getTaskDefinitionKey()).thenReturn("dept_approve");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-002")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
@@ -175,7 +175,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("空域申请");
         when(mockTask.getTaskDefinitionKey()).thenReturn("airspace");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-003")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
@@ -211,7 +211,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("应急提交");
         when(mockTask.getTaskDefinitionKey()).thenReturn("emergency_submit");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-004")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
@@ -275,7 +275,7 @@ public class ApprovalServiceTest {
         task.setCurStepKey("checker");
         when(taskMapper.selectById(100001L)).thenReturn(task);
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-001")).thenReturn(taskQuery);
         when(taskQuery.taskDefinitionKey("checker")).thenReturn(taskQuery);
@@ -304,7 +304,7 @@ public class ApprovalServiceTest {
         Task mockTask = mock(Task.class);
         when(mockTask.getId()).thenReturn("TASK-001");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-001")).thenReturn(taskQuery);
         when(taskQuery.taskDefinitionKey("checker")).thenReturn(taskQuery);
@@ -409,7 +409,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("校核");
         when(mockTask.getTaskDefinitionKey()).thenReturn("checker");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-002")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
@@ -486,7 +486,7 @@ public class ApprovalServiceTest {
         Task mockTask = mock(Task.class);
         when(mockTask.getId()).thenReturn("TASK-001");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-001")).thenReturn(taskQuery);
         when(taskQuery.taskDefinitionKey("checker")).thenReturn(taskQuery);
@@ -522,7 +522,7 @@ public class ApprovalServiceTest {
         when(mockTask.getName()).thenReturn("校核");
         when(mockTask.getTaskDefinitionKey()).thenReturn("checker");
 
-        org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
+        org.flowable.task.api.TaskQuery taskQuery = mock(org.flowable.task.api.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
         when(taskQuery.processInstanceId("PROCESS-005")).thenReturn(taskQuery);
         when(taskQuery.singleResult()).thenReturn(mockTask);
