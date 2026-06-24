@@ -140,10 +140,10 @@ const routes = [
     ]
   },
 
-  // 404
+  // 404 - 重定向到登录页
   {
     path: '/:pathMatch(.*)*',
-    redirect: '/'
+    redirect: '/login'
   }
 ];
 
@@ -152,10 +152,16 @@ const router = createRouter({
   routes
 });
 
-// 路由守卫：更新标题
+// 路由守卫：检查登录状态
 router.beforeEach((to, from, next) => {
   document.title = to.meta.title ? `${to.meta.title} · 智壤卫士` : '智壤卫士';
-  next();
+  
+  // 如果不是登录页且没有token，跳转到登录页
+  if (to.name !== 'Login' && to.name !== 'Portal' && !localStorage.getItem('token')) {
+    next('/login');
+  } else {
+    next();
+  }
 });
 
 export default router;
