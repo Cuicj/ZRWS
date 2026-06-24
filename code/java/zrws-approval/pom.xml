@@ -79,11 +79,11 @@
         </dependency>
 
         <!-- ============================================== -->
-        <!-- Flowable 6.8.1 流程引擎 -->
+        <!-- Flowable 7.0.0 流程引擎 -->
         <!-- ============================================== -->
         <dependency>
             <groupId>org.flowable</groupId>
-            <artifactId>flowable-spring-boot-starter-process</artifactId>
+            <artifactId>flowable-spring-boot-starter</artifactId>
         </dependency>
 
         <!-- 数据库 -->
