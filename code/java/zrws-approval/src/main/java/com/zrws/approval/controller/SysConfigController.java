@@ -117,11 +117,12 @@ public class SysConfigController {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private ResponseEntity<Map<String, Object>> success(Object data) {
         Map<String, Object> result = new HashMap<>();
         result.put("success", true);
         if (data instanceof Map) {
-            result.putAll((Map<?, ?>) data);
+            result.putAll((Map<String, Object>) data);
         }
         return ResponseEntity.ok(result);
     }
