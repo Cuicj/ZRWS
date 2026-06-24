@@ -101,7 +101,7 @@
         </div>
         <div class="spec-item">
           <div class="spec-key mono">后端</div>
-          <div class="spec-val">Spring Cloud · Python AI · Flowable 6.8.1</div>
+          <div class="spec-val">Spring Cloud · Python AI · Flowable 7.0.0</div>
         </div>
         <div class="spec-item">
           <div class="spec-key mono">数据库</div>

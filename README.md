@@ -38,7 +38,7 @@ ZRWS/
 - Spring Boot 3.2.5
 - Spring Cloud 2023.0.1
 - Spring AI 1.0.0-M2
-- Flowable 6.8.1 (工作流引擎)
+- Flowable 7.0.0 (工作流引擎)
 - MySQL 8.0+
 - Redis 6.0+
 
