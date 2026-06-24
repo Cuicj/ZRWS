@@ -9,10 +9,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * 流程设计器 REST API 控制器
- * <p>提供BPMN模型与JSON的相互转换、模板管理、设计验证等接口
- */
 @RestController
 @RequestMapping("/api/v1/designer")
 @CrossOrigin(origins = "*")
@@ -25,20 +21,12 @@ public class FlowableDesignerController {
     // 1. BPMN模型转换
     // ============================================================
 
-    /**
-     * BPMN XML转JSON
-     * POST /api/v1/designer/xml-to-json
-     */
     @PostMapping("/xml-to-json")
     public ResponseEntity<Map<String, Object>> xmlToJson(@RequestBody String xml) {
         Map<String, Object> result = designerService.bpmnXmlToJson(xml);
         return success(result);
     }
 
-    /**
-     * JSON转BPMN XML
-     * POST /api/v1/designer/json-to-xml
-     */
     @PostMapping("/json-to-xml")
     public ResponseEntity<Map<String, Object>> jsonToXml(@RequestBody Map<String, Object> json) {
         String xml = designerService.jsonToBpmnXml(json);
@@ -47,10 +35,6 @@ public class FlowableDesignerController {
         return success(result);
     }
 
-    /**
-     * 获取流程定义的JSON格式
-     * GET /api/v1/designer/definition/{processDefinitionId}
-     */
     @GetMapping("/definition/{processDefinitionId}")
     public ResponseEntity<Map<String, Object>> getDefinitionJson(@PathVariable String processDefinitionId) {
         Map<String, Object> result = designerService.getProcessDefinitionJson(processDefinitionId);
@@ -61,23 +45,90 @@ public class FlowableDesignerController {
     }
 
     // ============================================================
-    // 2. 保存与部署
+    // 2. 流程生命周期管理（设计-保存-审核-发布-部署）
     // ============================================================
 
-    /**
-     * 保存流程设计并部署
-     * POST /api/v1/designer/save
-     */
+    @PostMapping("/drafts")
+    public ResponseEntity<Map<String, Object>> saveDraft(@RequestBody Map<String, Object> json) {
+        String processKey = (String) json.get("processKey");
+        if (processKey == null) {
+            return error("流程Key不能为空");
+        }
+        Map<String, Object> result = designerService.saveDraft(processKey, json);
+        return success(result);
+    }
+
+    @GetMapping("/drafts")
+    public ResponseEntity<Map<String, Object>> listDrafts() {
+        List<Map<String, Object>> drafts = designerService.listDrafts();
+        Map<String, Object> result = new HashMap<>();
+        result.put("total", drafts.size());
+        result.put("list", drafts);
+        return success(result);
+    }
+
+    @GetMapping("/drafts/{processKey}")
+    public ResponseEntity<Map<String, Object>> getDraft(@PathVariable String processKey) {
+        Map<String, Object> draft = designerService.getDraft(processKey);
+        if (draft == null) {
+            return error("流程草稿不存在");
+        }
+        return success(draft);
+    }
+
+    @PostMapping("/drafts/{processKey}/submit")
+    public ResponseEntity<Map<String, Object>> submitForReview(@PathVariable String processKey) {
+        try {
+            Map<String, Object> result = designerService.submitForReview(processKey);
+            return success(result);
+        } catch (RuntimeException e) {
+            return error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/drafts/{processKey}/review")
+    public ResponseEntity<Map<String, Object>> review(@PathVariable String processKey,
+                                                        @RequestBody Map<String, Object> body) {
+        try {
+            boolean approved = Boolean.TRUE.equals(body.get("approved"));
+            String comment = (String) body.get("comment");
+            Map<String, Object> result = designerService.review(processKey, approved, comment);
+            return success(result);
+        } catch (RuntimeException e) {
+            return error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/drafts/{processKey}/publish")
+    public ResponseEntity<Map<String, Object>> publish(@PathVariable String processKey) {
+        try {
+            Map<String, Object> result = designerService.publish(processKey);
+            return success(result);
+        } catch (RuntimeException e) {
+            return error(e.getMessage());
+        }
+    }
+
+    @PostMapping("/drafts/{processKey}/deploy")
+    public ResponseEntity<Map<String, Object>> deployPublished(@PathVariable String processKey) {
+        try {
+            Map<String, Object> result = designerService.deployPublished(processKey);
+            return success(result);
+        } catch (RuntimeException e) {
+            return error(e.getMessage());
+        }
+    }
+
+    // ============================================================
+    // 3. 保存与部署（快速模式）
+    // ============================================================
+
     @PostMapping("/save")
     public ResponseEntity<Map<String, Object>> saveAndDeploy(@RequestBody Map<String, Object> json) {
         Map<String, Object> result = designerService.saveAndDeploy(json);
         return success(result);
     }
 
-    /**
-     * 验证BPMN模型
-     * POST /api/v1/designer/validate
-     */
     @PostMapping("/validate")
     public ResponseEntity<Map<String, Object>> validate(@RequestBody Map<String, Object> json) {
         Map<String, Object> result = designerService.validateBpmn(json);
@@ -85,13 +136,9 @@ public class FlowableDesignerController {
     }
 
     // ============================================================
-    // 3. 模板管理
+    // 4. 模板管理
     // ============================================================
 
-    /**
-     * 获取流程模板列表
-     * GET /api/v1/designer/templates
-     */
     @GetMapping("/templates")
     public ResponseEntity<Map<String, Object>> getTemplates() {
         List<Map<String, Object>> templates = designerService.getTemplates();
@@ -101,10 +148,6 @@ public class FlowableDesignerController {
         return success(result);
     }
 
-    /**
-     * 根据模板创建流程定义
-     * POST /api/v1/designer/template/{templateKey}/create
-     */
     @PostMapping("/template/{templateKey}/create")
     public ResponseEntity<Map<String, Object>> createFromTemplate(@PathVariable String templateKey) {
         try {
