@@ -84,10 +84,6 @@ public class ApprovalServiceTest {
         Task mockTask = mock(Task.class);
         when(mockTask.getName()).thenReturn("校核");
         when(mockTask.getTaskDefinitionKey()).thenReturn("checker");
-        when(taskService.createTaskQuery().processInstanceId("PROCESS-001")).thenReturn(mock org.flowable.engine.TaskQuery() {{
-            // 模拟返回查询
-        }});
-
         // 使用完整的查询模拟
         org.flowable.engine.TaskQuery taskQuery = mock(org.flowable.engine.TaskQuery.class);
         when(taskService.createTaskQuery()).thenReturn(taskQuery);
