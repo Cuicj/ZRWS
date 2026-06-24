@@ -6,7 +6,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
  * 智壤卫士 - 审批服务
- * <p>基于 Flowable 6.8 + Spring AI 1.0 的智能审批流程微服务
+ * <p>基于 Flowable 7.0 + Spring AI 1.0 的智能审批流程微服务
  */
 @SpringBootApplication
 @EnableFeignClients(basePackages = "com.zrws.**.feign")
@@ -22,7 +22,7 @@ public class ZrwsApprovalApplication {
                 ║                                                           ║
                 ║     Spring Boot: 3.2.5                                    ║
                 ║     Spring Cloud: 2023.0.1                                ║
-                ║     Flowable: 6.8.1                                       ║
+                ║*     Flowable: 7.0.0                                       ║
                 ║     Spring AI: 1.0.0-M2                                   ║
                 ║     Java: 17                                              ║
                 ║                                                           ║

@@ -48,7 +48,7 @@ spring:
       max-file-size: 50MB
       max-request-size: 100MB
 
-# Flowable 6.8.1 配置
+# Flowable 7.0.0 配置
 flowable:
   database-schema-update: true
   async-executor-activate: true

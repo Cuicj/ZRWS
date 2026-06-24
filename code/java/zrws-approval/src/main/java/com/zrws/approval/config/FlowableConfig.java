@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Flowable 6.8.1 流程引擎配置
+ * Flowable 7.0.0 流程引擎配置
  * <p>本项目采用 Spring Boot Starter 自动装配，实际流程引擎 bean (processEngine / runtimeService 等)
  * 由 flowable-spring-boot-starter-process 自动创建，此处仅提供：
  * <ul>
