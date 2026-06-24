@@ -41,20 +41,20 @@ spring:
           min-idle: 5
           max-wait: -1
 
-  # Flowable 6.8.1 配置
-  flowable:
-    database-schema-update: true
-    async-executor-activate: true
-    history-level: full
-    rest-api:
-      enabled: true
-
   # 文件上传配置
   servlet:
     multipart:
       enabled: true
       max-file-size: 50MB
       max-request-size: 100MB
+
+# Flowable 6.8.1 配置
+flowable:
+  database-schema-update: true
+  async-executor-activate: true
+  history-level: full
+  rest-api:
+    enabled: true
 
 server:
   port: 5571

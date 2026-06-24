@@ -1,9 +1,9 @@
 package com.zrws.approval.config;
 
 import com.zrws.approval.service.FlowableDeployService;
-import org.flowable.engine.ProcessEngine;
 import org.flowable.engine.RepositoryService;
-import org.flowable.engine.repository.Deployment;
+import org.flowable.engine.RuntimeService;
+import org.flowable.engine.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
@@ -31,7 +31,10 @@ public class FlowableConfig implements CommandLineRunner {
     private RepositoryService repositoryService;
 
     @Autowired
-    private ProcessEngine processEngine;
+    private RuntimeService runtimeService;
+
+    @Autowired
+    private TaskService taskService;
 
     @Autowired
     private FlowableDeployService deployService;
@@ -44,7 +47,6 @@ public class FlowableConfig implements CommandLineRunner {
         System.out.println("\n=====================================================");
         System.out.println("  [Flowable] 流程引擎初始化开始...");
         
-        // 自动部署所有BPMN流程
         List<Map<String, Object>> deployResults = deployService.deployAllFromClasspath();
         
         long count = repositoryService.createProcessDefinitionQuery().count();
@@ -53,24 +55,18 @@ public class FlowableConfig implements CommandLineRunner {
             System.out.println("  - " + result.get("processKey") + " (" + result.get("processName") + ") v" + result.get("version"));
         }
         
-        // 打印流程引擎状态
-        System.out.println("  [Flowable] 引擎状态: " + processEngine.getName());
+        System.out.println("  [Flowable] 引擎初始化完成");
         System.out.println("=====================================================\n");
     }
 
-    /**
-     * 为标准审批流程创建默认变量映射
-     */
     public Map<String, Object> buildStandardVariables(String applicant, String bizTitle) {
         Map<String, Object> vars = new HashMap<>();
-        // 标准审批流程：按角色分配（实际可从用户/角色表查询）
-        vars.put("checker", "1020");          // 校核人
-        vars.put("reviewer", "1030");          // 审核人
-        vars.put("approver", "1040");          // 批准人
-        vars.put("archiver", "1050");          // 归档人
-        vars.put("applicant", applicant);      // 申请人
-        vars.put("bizTitle", bizTitle);        // 业务标题
-        // SLA deadline (由前端传入或在此处计算)
+        vars.put("checker", "1020");
+        vars.put("reviewer", "1030");
+        vars.put("approver", "1040");
+        vars.put("archiver", "1050");
+        vars.put("applicant", applicant);
+        vars.put("bizTitle", bizTitle);
         vars.put("dueDateChecker", null);
         vars.put("dueDateReviewer", null);
         vars.put("dueDateApprover", null);
@@ -83,7 +79,7 @@ public class FlowableConfig implements CommandLineRunner {
         vars.put("warehouse", "1011");
         vars.put("leader", "1040");
         vars.put("applicant", applicant);
-        vars.put("stockStatus", "SUFFICIENT"); // 默认充足，可由人工/外部接口实际判断
+        vars.put("stockStatus", "SUFFICIENT");
         return vars;
     }
 
