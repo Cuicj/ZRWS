@@ -111,8 +111,18 @@ let mapChart = null;
 let pieChart = null;
 let barChart = null;
 
-// 注册中国地图
-registerChinaMap(echarts);
+const isMapLoaded = ref(false);
+
+// 异步注册中国地图
+onMounted(async () => {
+  const { loadChinaMap } = await import('@/assets/chinaMap.js');
+  const geoJSON = await loadChinaMap();
+  echarts.registerMap('china', geoJSON);
+  isMapLoaded.value = true;
+  initMap();
+  initPie();
+  initBar();
+});
 
 const legendTitle = computed(() => {
  const titles = {
@@ -195,7 +205,7 @@ const getRatioColor = (ratio) => {
  return '#ff4d4f';
 };
 const initMap = () => {
- if (!mapRef.value)
+ if (!mapRef.value || !isMapLoaded.value)
  return;
  mapChart = echarts.init(mapRef.value);
  const getMapValue = (item) => {
@@ -400,12 +410,7 @@ const handleResize = () => {
  pieChart?.resize();
  barChart?.resize();
 };
-onMounted(() => {
- initMap();
- initPie();
- initBar();
- window.addEventListener('resize', handleResize);
-});
+window.addEventListener('resize', handleResize);
 </script>
 
 <style scoped>
