@@ -11,6 +11,13 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    open: '/#/login'
+    open: '/#/login',
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5571/approval',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
   }
 });

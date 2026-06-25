@@ -56,8 +56,9 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { getMenuTree } from '@/api/menu';
 
 const props = defineProps({
   collapsed: Boolean
@@ -68,23 +69,10 @@ defineEmits(['toggle']);
 const route = useRoute();
 
 const expandedGroups = ref(['总览']);
+const navGroups = ref([]);
+const loading = ref(true);
 
-const toggleGroup = (title) => {
-  const index = expandedGroups.value.indexOf(title);
-  if (index > -1) {
-    if (expandedGroups.value.length > 1) {
-      expandedGroups.value.splice(index, 1);
-    }
-  } else {
-    expandedGroups.value = [title];
-  }
-};
-
-const isActive = (path) => {
-  return route.path === `/app/${path}`;
-};
-
-const navGroups = [
+const defaultMenus = [
   {
     title: '总览',
     items: [
@@ -134,10 +122,49 @@ const navGroups = [
   {
     title: '系统',
     items: [
-      { path: 'device', name: '设备管理', icon: '⊞' }
+      { path: 'device', name: '设备管理', icon: '⊞' },
+      { path: 'user-manage', name: '用户管理', icon: '◉' },
+      { path: 'role-manage', name: '角色管理', icon: '◆' },
+      { path: 'sys-config', name: '系统配置', icon: '⚙' },
+      { path: 'announcement', name: '公告管理', icon: '✉' }
     ]
   }
 ];
+
+const toggleGroup = (title) => {
+  const index = expandedGroups.value.indexOf(title);
+  if (index > -1) {
+    if (expandedGroups.value.length > 1) {
+      expandedGroups.value.splice(index, 1);
+    }
+  } else {
+    expandedGroups.value = [title];
+  }
+};
+
+const isActive = (path) => {
+  return route.path === `/app/${path}`;
+};
+
+const loadMenus = async () => {
+  try {
+    const res = await getMenuTree();
+    if (res && res.success && res.data && res.data.length > 0) {
+      navGroups.value = res.data;
+    } else {
+      navGroups.value = defaultMenus;
+    }
+  } catch (e) {
+    console.warn('加载菜单失败，使用默认菜单:', e.message);
+    navGroups.value = defaultMenus;
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadMenus();
+});
 </script>
 
 <style scoped>

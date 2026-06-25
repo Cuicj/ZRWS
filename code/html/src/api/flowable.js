@@ -45,6 +45,13 @@ export function getDraftList() {
   });
 }
 
+export function getDraft(processKey) {
+  return request({
+    url: `/v1/designer/drafts/${processKey}`,
+    method: 'get'
+  });
+}
+
 export function saveDraft(data) {
   return request({
     url: '/v1/designer/drafts',
@@ -79,5 +86,31 @@ export function deployPublished(processKey) {
   return request({
     url: `/v1/designer/drafts/${processKey}/deploy`,
     method: 'post'
+  });
+}
+
+export function createFromTemplate(templateKey) {
+  return request({
+    url: `/v1/designer/template/${templateKey}/create`,
+    method: 'post'
+  });
+}
+
+export function xmlToJson(xml) {
+  return request({
+    url: '/v1/designer/xml-to-json',
+    method: 'post',
+    data: xml,
+    headers: {
+      'Content-Type': 'application/xml'
+    }
+  });
+}
+
+export function jsonToXml(json) {
+  return request({
+    url: '/v1/designer/json-to-xml',
+    method: 'post',
+    data: json
   });
 }

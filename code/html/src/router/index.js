@@ -148,6 +148,38 @@ const routes = [
         name: 'Device',
         component: () => import('@/views/pages/Device.vue'),
         meta: { group: '系统', title: '设备管理', icon: '⊞' }
+      },
+
+      // 用户管理
+      {
+        path: 'user-manage',
+        name: 'UserManage',
+        component: () => import('@/views/pages/UserManage.vue'),
+        meta: { group: '系统', title: '用户管理', icon: '◉' }
+      },
+
+      // 角色管理
+      {
+        path: 'role-manage',
+        name: 'RoleManage',
+        component: () => import('@/views/pages/RoleManage.vue'),
+        meta: { group: '系统', title: '角色管理', icon: '◆' }
+      },
+
+      // 系统配置
+      {
+        path: 'sys-config',
+        name: 'SysConfig',
+        component: () => import('@/views/pages/SysConfig.vue'),
+        meta: { group: '系统', title: '系统配置', icon: '⚙' }
+      },
+
+      // 公告管理
+      {
+        path: 'announcement',
+        name: 'Announcement',
+        component: () => import('@/views/pages/Announcement.vue'),
+        meta: { group: '系统', title: '公告管理', icon: '✉' }
       }
     ]
   },
