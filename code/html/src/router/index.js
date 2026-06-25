@@ -88,24 +88,30 @@ const routes = [
         meta: { group: '处理', title: '3D 重建', icon: '◰' }
       },
 
-      // AI 智能分析
+      // 土地资源管理
+      {
+        path: 'land-map',
+        name: 'LandMap',
+        component: () => import('@/views/pages/LandMap.vue'),
+        meta: { group: '土地资源', title: '土地地图', icon: '◍' }
+      },
       {
         path: 'soil-classify',
         name: 'SoilClassify',
         component: () => import('@/views/pages/SoilClassify.vue'),
-        meta: { group: 'AI', title: '土质分类', icon: '✦' }
+        meta: { group: '土地资源', title: '土质分类', icon: '✦' }
       },
       {
         path: 'disaster-risk',
         name: 'DisasterRisk',
         component: () => import('@/views/pages/DisasterRisk.vue'),
-        meta: { group: 'AI', title: '灾害风险', icon: '◬' }
+        meta: { group: '土地资源', title: '灾害风险', icon: '◬' }
       },
       {
         path: 'area-calc',
         name: 'AreaCalc',
         component: () => import('@/views/pages/AreaCalc.vue'),
-        meta: { group: 'AI', title: '面积计算', icon: '◭' }
+        meta: { group: '土地资源', title: '面积计算', icon: '◭' }
       },
 
       // CAD 图纸管理

@@ -1,14 +1,10 @@
 <template>
   <div class="app-shell">
-    <!-- 顶栏 -->
     <AppHeader />
 
-    <!-- 侧边栏 -->
     <AppSidebar :collapsed="sidebarCollapsed" @toggle="sidebarCollapsed = !sidebarCollapsed" />
 
-    <!-- 主内容区 -->
     <main class="shell-main" :class="{ expanded: sidebarCollapsed }">
-      <!-- 面包屑 -->
       <div class="breadcrumb-bar">
         <span class="mono">工作台</span>
         <span class="sep">/</span>
@@ -17,7 +13,6 @@
         <span>{{ currentRoute.meta?.title || currentRoute.name }}</span>
       </div>
 
-      <!-- 子路由内容 -->
       <div class="content-area">
         <router-view v-slot="{ Component }">
           <transition name="slide" mode="out-in">
@@ -30,10 +25,6 @@
 </template>
 
 <script setup>
-/**
- * AppShell.vue - 应用框架壳
- * 包含：顶栏 + 侧边栏 + 主内容区
- */
 import { ref, computed } from 'vue';
 import { useRoute } from 'vue-router';
 import AppHeader from './AppHeader.vue';
@@ -47,20 +38,22 @@ const sidebarCollapsed = ref(false);
 
 <style scoped>
 .app-shell {
-  display: grid;
-  grid-template-columns: auto 1fr;
-  grid-template-rows: 56px 1fr;
+  display: flex;
   min-height: 100vh;
 }
 
 .shell-main {
-  grid-column: 2;
-  grid-row: 2;
+  flex: 1;
+  margin-left: 220px;
   background: var(--ink-900);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   transition: margin-left var(--transition-normal);
+}
+
+.shell-main.expanded {
+  margin-left: 48px;
 }
 
 .breadcrumb-bar {
@@ -72,6 +65,9 @@ const sidebarCollapsed = ref(false);
   display: flex;
   align-items: center;
   gap: var(--s-2);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .sep {

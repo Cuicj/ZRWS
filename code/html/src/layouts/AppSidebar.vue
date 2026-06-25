@@ -1,25 +1,44 @@
 <template>
   <aside class="app-sidebar" :class="{ collapsed }">
-    <!-- 折叠按钮 -->
     <div class="sidebar-toggle" @click="$emit('toggle')">
       <el-icon :size="16">
         <component :is="collapsed ? 'Expand' : 'Fold'" />
       </el-icon>
     </div>
 
-    <!-- 导航分组 -->
     <nav class="sidebar-nav">
       <div v-for="group in navGroups" :key="group.title" class="nav-group">
-        <!-- 分组标题 -->
-        <div class="group-title mono" v-if="!collapsed">{{ group.title }}</div>
+        <div 
+          class="group-title mono" 
+          v-if="!collapsed"
+          @click="toggleGroup(group.title)"
+        >
+          <span class="title-text">{{ group.title }}</span>
+          <el-icon :size="14" class="expand-icon">
+            <component :is="expandedGroups.includes(group.title) ? 'ArrowDown' : 'ArrowRight'" />
+          </el-icon>
+        </div>
 
-        <!-- 分组项 -->
+        <div class="group-items" v-show="!collapsed && expandedGroups.includes(group.title)">
+          <router-link
+            v-for="item in group.items"
+            :key="item.path"
+            :to="`/app/${item.path}`"
+            class="nav-item"
+            :class="{ active: isActive(item.path) }"
+          >
+            <span class="item-icon">{{ item.icon }}</span>
+            <span class="item-name">{{ item.name }}</span>
+          </router-link>
+        </div>
+
         <router-link
           v-for="item in group.items"
           :key="item.path"
           :to="`/app/${item.path}`"
-          class="nav-item"
+          class="nav-item collapsed-item"
           :class="{ active: isActive(item.path) }"
+          v-show="collapsed"
         >
           <span class="item-icon">{{ item.icon }}</span>
           <span class="item-name" v-if="!collapsed">{{ item.name }}</span>
@@ -27,7 +46,6 @@
       </div>
     </nav>
 
-    <!-- 底部：返回门户 -->
     <div class="sidebar-footer">
       <router-link to="/" class="nav-item">
         <span class="item-icon">↩</span>
@@ -38,10 +56,7 @@
 </template>
 
 <script setup>
-/**
- * AppSidebar.vue - 应用侧边栏
- */
-import { computed } from 'vue';
+import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 const props = defineProps({
@@ -52,7 +67,23 @@ defineEmits(['toggle']);
 
 const route = useRoute();
 
-// 导航分组配置
+const expandedGroups = ref(['总览']);
+
+const toggleGroup = (title) => {
+  const index = expandedGroups.value.indexOf(title);
+  if (index > -1) {
+    if (expandedGroups.value.length > 1) {
+      expandedGroups.value.splice(index, 1);
+    }
+  } else {
+    expandedGroups.value = [title];
+  }
+};
+
+const isActive = (path) => {
+  return route.path === `/app/${path}`;
+};
+
 const navGroups = [
   {
     title: '总览',
@@ -78,8 +109,9 @@ const navGroups = [
     ]
   },
   {
-    title: 'AI',
+    title: '土地资源',
     items: [
+      { path: 'land-map', name: '土地地图', icon: '◍' },
       { path: 'soil-classify', name: '土质分类', icon: '✦' },
       { path: 'disaster-risk', name: '灾害风险', icon: '◬' },
       { path: 'area-calc', name: '面积计算', icon: '◭' }
@@ -106,11 +138,6 @@ const navGroups = [
     ]
   }
 ];
-
-// 判断是否激活
-const isActive = (path) => {
-  return route.path === `/app/${path}`;
-};
 </script>
 
 <style scoped>
@@ -123,7 +150,11 @@ const isActive = (path) => {
   display: flex;
   flex-direction: column;
   transition: width var(--transition-normal);
-  overflow-y: auto;
+  position: fixed;
+  top: 56px;
+  left: 0;
+  bottom: 0;
+  z-index: 100;
 }
 
 .app-sidebar.collapsed {
@@ -148,10 +179,11 @@ const isActive = (path) => {
 .sidebar-nav {
   flex: 1;
   padding: var(--s-3) 0;
+  overflow-y: auto;
 }
 
 .nav-group {
-  margin-bottom: var(--s-4);
+  margin-bottom: var(--s-2);
 }
 
 .group-title {
@@ -159,6 +191,28 @@ const isActive = (path) => {
   font-size: 10px;
   color: var(--signal-dim);
   letter-spacing: 0.15em;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: all var(--transition-fast);
+}
+
+.group-title:hover {
+  color: var(--signal);
+  background: var(--ink-700);
+}
+
+.title-text {
+  flex: 1;
+}
+
+.expand-icon {
+  transition: transform var(--transition-fast);
+}
+
+.group-items {
+  overflow: hidden;
 }
 
 .nav-item {
@@ -184,6 +238,11 @@ const isActive = (path) => {
   background: var(--ink-700);
 }
 
+.nav-item.collapsed-item {
+  justify-content: center;
+  padding: 10px 0;
+}
+
 .item-icon {
   width: 16px;
   height: 16px;
@@ -202,8 +261,11 @@ const isActive = (path) => {
   border-top: var(--line);
 }
 
-/* 折叠状态 */
 .app-sidebar.collapsed .group-title {
+  display: none;
+}
+
+.app-sidebar.collapsed .group-items {
   display: none;
 }
 

@@ -72,15 +72,18 @@ const handleLogout = async () => {
 
 <style scoped>
 .app-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 var(--s-5);
   background: var(--ink-800);
   border-bottom: var(--line);
-  z-index: 100;
+  z-index: 200;
 }
 
 .header-left {
