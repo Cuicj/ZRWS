@@ -1,13 +1,24 @@
-﻿{
-  "name": "smart-soil-guardian",
+{
+  "name": "zrws-frontend",
   "version": "1.0.0",
-  "description": "智壤卫士 - 无人机地形数据采集与土质分析社会服务平台",
-  "main": "code/main.js",
+  "description": "智壤卫士前端 - Vue 3 + Vite",
   "scripts": {
-    "start": "node code/main.js",
-    "demo": "node -e \"const App = require('./code/main'); new App().init('UAV-001').then(a => console.log('系统就绪'))\""
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
-  "keywords": ["drone", "soil-analysis", "terrain-mapping", "GPS", "social-service"],
-  "author": "智壤卫士团队",
-  "license": "MIT"
+  "dependencies": {
+    "vue": "^3.4.0",
+    "vue-router": "^4.3.0",
+    "pinia": "^2.1.0",
+    "element-plus": "^2.9.0",
+    "echarts": "^5.5.0",
+    "@element-plus/icons-vue": "^2.3.0",
+    "axios": "^1.7.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "vite": "^5.4.0",
+    "sass": "^1.77.0"
+  }
 }
