@@ -4,20 +4,20 @@
    ============================================ */
 
 :root {
-  /* 颜色系统 */
-  --ink-900: #0A0E14;
-  --ink-800: #131922;
-  --ink-700: #1C222E;
-  --ink-600: #2A303D;
-  --ink-500: #3D4452;
-  --ink-400: #5C6371;
+  /* 颜色系统 - 优化提升可读性 */
+  --ink-900: #0F1419;
+  --ink-800: #1A1F2E;
+  --ink-700: #252B3B;
+  --ink-600: #323A4D;
+  --ink-500: #454D65;
+  --ink-400: #5C647A;
   
-  --sand-500: #C9A45C;
-  --sand-400: #D4B47A;
-  --sand-600: #A88742;
+  --sand-500: #D4A853;
+  --sand-400: #E0BC6D;
+  --sand-600: #B8923F;
   
-  --signal: #E8E6E1;
-  --signal-dim: #B8B6B0;
+  --signal: #F0EDE6;
+  --signal-dim: #A8A59D;
   
   --danger: #D14D3A;
   --info: #4A7C9E;
@@ -66,7 +66,8 @@ html, body {
   color: var(--signal);
   font-family: var(--font-body);
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.8;
+  letter-spacing: 0.02em;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -138,11 +139,24 @@ td { padding: 12px 10px; border-bottom: var(--line-soft); }
 .status-warn { color: var(--warn); border: 1px solid var(--warn); }
 .status-dim { color: var(--signal-dim); border: 1px solid var(--ink-500); }
 
-/* 滚动条 */
-::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: var(--ink-800); }
-::-webkit-scrollbar-thumb { background: var(--ink-500); border-radius: 3px; }
+/* 滚动条 - 优化可见性 */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--ink-800); border-radius: 4px; }
+::-webkit-scrollbar-thumb { background: var(--ink-500); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--ink-400); }
+
+/* 卡片样式 */
+.card {
+  background: var(--ink-800);
+  border: var(--line);
+  border-radius: var(--radius-md);
+  padding: var(--s-5);
+}
+
+.card:hover {
+  border-color: var(--sand-500);
+  transition: border-color var(--transition-fast);
+}
 
 /* Vue 过渡 */
 .fade-enter-active, .fade-leave-active { transition: opacity 0.3s ease; }

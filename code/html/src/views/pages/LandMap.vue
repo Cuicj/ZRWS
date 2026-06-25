@@ -99,6 +99,8 @@
 
 <script setup>import { ref, onMounted, computed } from 'vue';
 import * as echarts from 'echarts';
+import { registerChinaMap } from '@/assets/chinaMap.js';
+
 const mapRef = ref(null);
 const pieRef = ref(null);
 const barRef = ref(null);
@@ -108,6 +110,10 @@ const panelExpanded = ref(true);
 let mapChart = null;
 let pieChart = null;
 let barChart = null;
+
+// 注册中国地图
+registerChinaMap(echarts);
+
 const legendTitle = computed(() => {
  const titles = {
  area: '土地面积分布',
