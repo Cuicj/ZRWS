@@ -1,9 +1,10 @@
 import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
+import cesium from 'vite-plugin-cesium';
 
 export default defineConfig({
-  plugins: [vue()],
+  plugins: [vue(), cesium()],
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')
@@ -17,6 +18,15 @@ export default defineConfig({
         target: 'http://localhost:5571/approval',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, '/api')
+      }
+    }
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          cesium: ['cesium']
+        }
       }
     }
   }

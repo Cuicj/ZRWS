@@ -318,6 +318,99 @@ public class AnnouncementController {
     }
 
     // ============================================================
+    // AI分析与行政区域
+    // ============================================================
+
+    /**
+     * 获取所有行政区域级别
+     */
+    @GetMapping("/admin-levels")
+    public ResponseEntity<Map<String, Object>> getAdminLevels() {
+        return success(Map.of(
+                "success", true,
+                "list", announcementService.getAllAdminLevels()
+        ));
+    }
+
+    /**
+     * 按行政区域级别获取公告
+     */
+    @GetMapping("/by-level")
+    public ResponseEntity<Map<String, Object>> getByAdminLevel(@RequestParam String level) {
+        return success(Map.of(
+                "success", true,
+                "list", announcementService.getAnnouncementsByAdminLevel(level)
+        ));
+    }
+
+    /**
+     * 按行政区域获取公告
+     */
+    @GetMapping("/by-region")
+    public ResponseEntity<Map<String, Object>> getByRegion(
+            @RequestParam(required = false) String province,
+            @RequestParam(required = false) String city,
+            @RequestParam(required = false) String county,
+            @RequestParam(required = false) String township) {
+        return success(Map.of(
+                "success", true,
+                "list", announcementService.getAnnouncementsByRegion(province, city, county, township)
+        ));
+    }
+
+    /**
+     * AI分析单条公告
+     */
+    @PostMapping("/{id}/analyze")
+    public ResponseEntity<Map<String, Object>> analyzeWithAI(@PathVariable Long id) {
+        try {
+            Announcement analyzed = announcementService.analyzeWithAI(id);
+            return success(Map.of(
+                    "success", true,
+                    "message", "AI分析完成",
+                    "announcement", analyzed
+            ));
+        } catch (Exception e) {
+            log.error("AI分析失败", e);
+            return error("AI分析失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 批量AI分析
+     */
+    @PostMapping("/batch-analyze")
+    public ResponseEntity<Map<String, Object>> batchAnalyzeWithAI(@RequestBody Map<String, Object> request) {
+        try {
+            @SuppressWarnings("unchecked")
+            List<Long> ids = (List<Long>) request.get("ids");
+            if (ids == null || ids.isEmpty()) {
+                return error("请选择要分析的公告");
+            }
+            int count = announcementService.batchAnalyzeWithAI(ids);
+            return success(Map.of(
+                    "success", true,
+                    "message", "成功分析 " + count + " 条公告",
+                    "count", count
+            ));
+        } catch (Exception e) {
+            log.error("批量AI分析失败", e);
+            return error("批量AI分析失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取统计信息
+     */
+    @GetMapping("/statistics")
+    public ResponseEntity<Map<String, Object>> getStatistics() {
+        return success(Map.of(
+                "success", true,
+                "statistics", announcementService.getStatistics()
+        ));
+    }
+
+    // ============================================================
     // 私有方法
     // ============================================================
 

@@ -236,9 +236,8 @@ public class SchemaSyncService {
                 StringBuilder colDef = new StringBuilder();
                 colDef.append("  `").append(col.getName()).append("` ");
                 colDef.append(col.getType());
-                // VARCHAR/DECIMAL 需要长度/精度，BOOLEAN 特殊处理
                 String upperType = col.getType().toUpperCase();
-                if (upperType.startsWith("VARCHAR") && col.getLength() != null) {
+                if (upperType.startsWith("VARCHAR") && !col.getType().contains("(") && col.getLength() != null) {
                     colDef.append("(").append(col.getLength()).append(")");
                 }
                 if (upperType.startsWith("DECIMAL") && !col.getType().contains("(")) {
@@ -273,6 +272,10 @@ public class SchemaSyncService {
                 sql.append(" COMMENT='").append(table.getComment().replace("'", "''")).append("'");
             }
 
+            if (properties.isVerbose()) {
+                log.debug("[DBA] 创建表 SQL:\n{}", sql);
+            }
+
             jdbcTemplate.execute(sql.toString());
             result.createdTableCount++;
             result.createdTables.add(table.getTableName());
@@ -280,6 +283,8 @@ public class SchemaSyncService {
         } catch (Exception e) {
             String msg = "创建表失败: " + table.getTableName() + " - " + e.getMessage();
             log.error("[DBA] ❌ {}", msg);
+            log.error("[DBA] 表 {} 字段列表: {}", table.getTableName(), 
+                    table.getColumns().keySet());
             result.errors.add(msg);
         }
     }
@@ -304,7 +309,7 @@ public class SchemaSyncService {
                 sql.append("ADD COLUMN `").append(col.getName()).append("` ");
                 sql.append(col.getType());
                 String upperType = col.getType().toUpperCase();
-                if (upperType.startsWith("VARCHAR") && col.getLength() != null) {
+                if (upperType.startsWith("VARCHAR") && !col.getType().contains("(") && col.getLength() != null) {
                     sql.append("(").append(col.getLength()).append(")");
                 }
                 if (upperType.startsWith("DECIMAL") && !col.getType().contains("(")) {

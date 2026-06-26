@@ -11,6 +11,8 @@ import org.springframework.core.type.filter.AnnotationTypeFilter;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 实体类扫描器
@@ -20,6 +22,7 @@ import java.util.*;
 public class EntityClassScanner {
 
     private final String basePackage;
+    private static final Pattern CAMEL_CASE_PATTERN = Pattern.compile("([a-z])([A-Z])");
 
     public EntityClassScanner(String basePackage) {
         this.basePackage = basePackage;
@@ -65,55 +68,71 @@ public class EntityClassScanner {
         table.setTableName(tableNameAnno.value());
         table.setSource("ENTITY");
 
-        // 解析字段
+        List<Field> allFields = new ArrayList<>();
         Class<?> current = clazz;
         while (current != null && current != Object.class) {
-            for (Field field : current.getDeclaredFields()) {
-                if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
-
-                ColumnMetadata col = parseField(field);
-                if (col != null) {
-                    table.addColumn(col);
-                }
+            Field[] fields = current.getDeclaredFields();
+            for (int i = fields.length - 1; i >= 0; i--) {
+                allFields.add(0, fields[i]);
             }
             current = current.getSuperclass();
         }
 
-        log.debug("扫描实体: {} -> {}", clazz.getSimpleName(), table.getTableName());
+        for (Field field : allFields) {
+            if (java.lang.reflect.Modifier.isStatic(field.getModifiers())) continue;
+            if (field.isSynthetic()) continue;
+
+            ColumnMetadata col = parseField(field);
+            if (col != null) {
+                table.addColumn(col);
+            }
+        }
+
+        log.debug("扫描实体: {} -> {} ({} 字段)", clazz.getSimpleName(), table.getTableName(), table.getColumns().size());
         return table;
     }
 
     private ColumnMetadata parseField(Field field) {
         ColumnMetadata col = new ColumnMetadata();
-        col.setName(field.getName());
+        col.setName(camelToSnake(field.getName()));
 
         TableField tableField = field.getAnnotation(TableField.class);
         TableId tableId = field.getAnnotation(TableId.class);
 
-        // 跳过非数据库字段
         if (tableField != null && !tableField.exist()) {
             return null;
         }
 
-        // 字段名
         if (tableField != null && !tableField.value().isEmpty()) {
             col.setName(tableField.value());
         }
 
-        // 主键
         if (tableId != null) {
             col.setPrimaryKey(true);
             IdType idType = tableId.type();
             col.setAutoIncrement(idType == IdType.AUTO);
+            if (tableId.value() != null && !tableId.value().isEmpty()) {
+                col.setName(tableId.value());
+            }
         }
 
-        // 字段类型与长度
         Class<?> javaType = field.getType();
         col.setType(mapJavaTypeToSql(javaType));
         col.setLength(getDefaultLength(javaType));
         col.setNullable(!col.isPrimaryKey());
 
         return col;
+    }
+
+    private String camelToSnake(String camel) {
+        if (camel == null || camel.isEmpty()) return camel;
+        Matcher matcher = CAMEL_CASE_PATTERN.matcher(camel);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(sb, matcher.group(1) + "_" + matcher.group(2).toLowerCase());
+        }
+        matcher.appendTail(sb);
+        return sb.toString().toLowerCase();
     }
 
     private String mapJavaTypeToSql(Class<?> javaType) {

@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.zrws.approval.domain.entity.Announcement;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -68,4 +69,28 @@ public interface AnnouncementMapper extends BaseMapper<Announcement> {
      * 增加点赞次数
      */
     int incrementLikeCount(@Param("announcementId") Long announcementId);
+
+    /**
+     * 按行政区域级别获取公告
+     */
+    @Select("SELECT * FROM zrws_announcement WHERE admin_level = #{adminLevel} AND status = 'PUBLISHED' ORDER BY publish_time DESC")
+    List<Announcement> selectByAdminLevel(@Param("adminLevel") String adminLevel);
+
+    /**
+     * 按行政区域获取公告（支持多级查询）
+     */
+    @Select("<script>" +
+        "SELECT * FROM zrws_announcement WHERE status = 'PUBLISHED' " +
+        "<if test='province != null'> AND province = #{province} </if>" +
+        "<if test='city != null'> AND city = #{city} </if>" +
+        "<if test='county != null'> AND county = #{county} </if>" +
+        "<if test='township != null'> AND township = #{township} </if>" +
+        "ORDER BY publish_time DESC" +
+        "</script>")
+    List<Announcement> selectByRegion(
+        @Param("province") String province,
+        @Param("city") String city,
+        @Param("county") String county,
+        @Param("township") String township
+    );
 }

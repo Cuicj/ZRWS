@@ -1,9 +1,18 @@
 <template>
   <div class="login-page">
-    <div class="login-bg"></div>
+    <div class="login-bg">
+      <div class="bg-img"></div>
+      <div class="bg-overlay"></div>
+      <div class="bg-grid"></div>
+      <div class="bg-particles">
+        <span v-for="n in 20" :key="n" class="particle" :style="getParticleStyle(n)"></span>
+      </div>
+    </div>
     <div class="login-card">
       <div class="login-head">
-        <span class="brand-mark">◐</span>
+        <div class="brand-logo">
+          <span class="brand-mark">◐</span>
+        </div>
         <h1 class="login-title display">智壤卫士</h1>
         <div class="login-sub mono">ZIRANG SHIELD v1.0</div>
       </div>
@@ -22,7 +31,10 @@
             <el-option label="审批员" value="approver" />
           </el-select>
         </el-form-item>
-        <el-button type="primary" size="large" class="login-btn" @click="handleLogin">登录</el-button>
+        <el-button type="primary" size="large" class="login-btn" @click="handleLogin">
+          <span>登录</span>
+          <span class="btn-arrow">→</span>
+        </el-button>
       </el-form>
 
       <div class="login-hint mono">
@@ -40,6 +52,22 @@ const router = useRouter();
 const username = ref('admin');
 const password = ref('admin');
 const role = ref('admin');
+
+const getParticleStyle = (n) => {
+  const left = Math.random() * 100;
+  const delay = Math.random() * 8;
+  const duration = 8 + Math.random() * 12;
+  const size = 2 + Math.random() * 4;
+  const opacity = 0.2 + Math.random() * 0.4;
+  return {
+    left: `${left}%`,
+    animationDelay: `${delay}s`,
+    animationDuration: `${duration}s`,
+    width: `${size}px`,
+    height: `${size}px`,
+    opacity: opacity
+  };
+};
 
 // 初始化默认数据
 const initDefaultData = () => {
@@ -123,24 +151,108 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   position: relative;
+  overflow: hidden;
 }
 
 .login-bg {
   position: absolute;
   inset: 0;
+  z-index: 0;
+}
+
+.bg-img {
+  position: absolute;
+  inset: 0;
+  background-image: url('https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=aerial%20view%20of%20agricultural%20fields%20with%20soil%20texture%20patterns%2C%20dark%20moody%20atmosphere%2C%20golden%20hour%20lighting%2C%20topographic%20contour%20lines%20overlay%2C%20deep%20earthy%20tones%2C%20charcoal%20grey%20and%20warm%20amber%20accents%2C%20cinematic%20landscape%2C%20ultra%20detailed%2C%208k%20quality&image_size=landscape_16_9');
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.25) contrast(1.1) saturate(0.8);
+  animation: bgKenBurns 20s ease-in-out infinite alternate;
+}
+
+@keyframes bgKenBurns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  100% {
+    transform: scale(1.08) translate(-1%, -1%);
+  }
+}
+
+.bg-overlay {
+  position: absolute;
+  inset: 0;
   background:
-    radial-gradient(circle at 30% 70%, rgba(201, 164, 92, 0.1) 0%, transparent 50%),
-    radial-gradient(circle at 70% 30%, rgba(74, 124, 158, 0.1) 0%, transparent 50%);
+    radial-gradient(ellipse at 30% 70%, rgba(201, 164, 92, 0.15) 0%, transparent 50%),
+    radial-gradient(ellipse at 70% 30%, rgba(74, 124, 158, 0.12) 0%, transparent 50%),
+    linear-gradient(180deg, rgba(15, 18, 24, 0.85) 0%, rgba(15, 18, 24, 0.95) 100%);
+}
+
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(61, 68, 82, 0.3) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(61, 68, 82, 0.3) 1px, transparent 1px);
+  background-size: 60px 60px;
+  mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(ellipse at center, black 30%, transparent 80%);
+}
+
+.bg-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
 }
 
+.particle {
+  position: absolute;
+  bottom: -10px;
+  background: var(--sand-500);
+  border-radius: 50%;
+  box-shadow: 0 0 6px var(--sand-500);
+  animation: floatUp linear infinite;
+}
+
+@keyframes floatUp {
+  0% {
+    transform: translateY(0) translateX(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.4;
+  }
+  100% {
+    transform: translateY(-100vh) translateX(30px);
+    opacity: 0;
+  }
+}
+
 .login-card {
-  width: 400px;
+  width: 420px;
   padding: var(--s-7);
-  background: var(--ink-800);
+  background: rgba(28, 34, 46, 0.85);
   border: var(--line);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   position: relative;
   z-index: 2;
+  animation: cardFadeIn 0.8s ease-out;
+}
+
+@keyframes cardFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .login-head {
@@ -148,11 +260,33 @@ onMounted(() => {
   margin-bottom: var(--s-6);
 }
 
+.brand-logo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--sand-500) 0%, var(--sand-600) 100%);
+  margin-bottom: var(--s-4);
+  animation: logoPulse 3s ease-in-out infinite;
+  box-shadow: 0 0 30px rgba(201, 164, 92, 0.3);
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    box-shadow: 0 0 30px rgba(201, 164, 92, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 50px rgba(201, 164, 92, 0.5);
+  }
+}
+
 .brand-mark {
-  font-size: 48px;
-  color: var(--sand-500);
+  font-size: 32px;
+  color: var(--ink-900);
   display: block;
-  margin-bottom: var(--s-3);
+  line-height: 1;
 }
 
 .login-title {
@@ -177,10 +311,25 @@ onMounted(() => {
   color: var(--ink-900);
   font-family: var(--font-mono);
   letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all var(--transition-fast);
 }
 
 .login-btn:hover {
   background: var(--sand-400);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 20px rgba(201, 164, 92, 0.3);
+}
+
+.btn-arrow {
+  transition: transform var(--transition-fast);
+}
+
+.login-btn:hover .btn-arrow {
+  transform: translateX(4px);
 }
 
 .login-hint {

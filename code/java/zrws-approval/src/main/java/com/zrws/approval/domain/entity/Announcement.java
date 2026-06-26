@@ -73,6 +73,42 @@ public class Announcement implements Serializable {
 
     private Integer priority;
 
+    /** 行政区域级别: PROVINCE/CITY/COUNTY/TOWNSHIP */
+    private String adminLevel;
+
+    /** 所属省份 */
+    private String province;
+
+    /** 所属城市 */
+    private String city;
+
+    /** 所属县区 */
+    private String county;
+
+    /** 所属乡镇 */
+    private String township;
+
+    /** 地理坐标 - 经度 */
+    private Double longitude;
+
+    /** 地理坐标 - 纬度 */
+    private Double latitude;
+
+    /** AI分析摘要 */
+    private String aiSummary;
+
+    /** AI分析时间线（JSON格式） */
+    private String aiTimeline;
+
+    /** AI分析关键词 */
+    private String aiKeywords;
+
+    /** 相关土地类型 */
+    private String landType;
+
+    /** 关联的土地资源ID */
+    private Long landResourceId;
+
     @TableLogic
     private Integer isDeleted;
 
@@ -119,6 +155,26 @@ public class Announcement implements Serializable {
         private final String desc;
 
         AuditStatus(String desc) {
+            this.desc = desc;
+        }
+
+        public String getDesc() {
+            return desc;
+        }
+    }
+
+    /**
+     * 行政区域级别枚举
+     */
+    public enum AdminLevel {
+        PROVINCE("省级"),
+        CITY("市级"),
+        COUNTY("县级"),
+        TOWNSHIP("乡级");
+
+        private final String desc;
+
+        AdminLevel(String desc) {
             this.desc = desc;
         }
 

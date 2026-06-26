@@ -71,7 +71,7 @@ public class SysMenuService {
             case "采集" -> 2;
             case "处理" -> 3;
             case "土地资源" -> 4;
-            case "CAD" -> 5;
+            case "GIS" -> 5;
             case "审批" -> 6;
             case "系统" -> 7;
             default -> 99;

@@ -100,15 +100,16 @@ const defaultMenus = [
     title: '土地资源',
     items: [
       { path: 'land-map', name: '土地地图', icon: '◍' },
+      { path: 'announcement-board', name: '公告栏', icon: '📰' },
       { path: 'soil-classify', name: '土质分类', icon: '✦' },
       { path: 'disaster-risk', name: '灾害风险', icon: '◬' },
       { path: 'area-calc', name: '面积计算', icon: '◭' }
     ]
   },
   {
-    title: 'CAD',
+    title: 'GIS',
     items: [
-      { path: 'cad-viewer', name: '图纸查看器', icon: '▣' },
+      { path: 'cad-viewer', name: '三维地球', icon: '🌍' },
       { path: 'cad-compare', name: '图纸对比', icon: '◫' }
     ]
   },

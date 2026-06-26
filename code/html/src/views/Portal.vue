@@ -17,6 +17,16 @@
 
     <!-- 主视觉区 -->
     <section class="hero">
+      <div class="hero-slides">
+        <div
+          v-for="(slide, index) in heroSlides"
+          :key="index"
+          class="hero-slide"
+          :class="{ active: currentSlide === index }"
+          :style="{ backgroundImage: `url(${slide.image})` }"
+        ></div>
+      </div>
+      <div class="hero-overlay"></div>
       <div class="hero-grid"></div>
       <div class="hero-content">
         <div class="hero-meta mono">
@@ -57,6 +67,15 @@
           <div class="stat-num display">94.1%</div>
           <div class="stat-label">质检合格率</div>
         </div>
+      </div>
+      <div class="hero-dots">
+        <span
+          v-for="(slide, index) in heroSlides"
+          :key="index"
+          class="dot"
+          :class="{ active: currentSlide === index }"
+          @click="currentSlide = index"
+        ></span>
       </div>
     </section>
 
@@ -127,7 +146,41 @@
  * Portal.vue - 门户首页
  * 杂志式模块陈列，极简测绘美学
  */
-import { ref } from 'vue';
+import { ref, onMounted, onUnmounted } from 'vue';
+
+const IMG_BASE = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image';
+
+const heroSlides = ref([
+  {
+    image: `${IMG_BASE}?prompt=aerial%20drone%20photography%20of%20vast%20agricultural%20fields%2C%20patchwork%20of%20golden%20and%20green%20farmland%2C%20top%20down%20bird%20eye%20view%2C%20golden%20hour%20sunlight%2C%20cinematic%20landscape%2C%20ultra%20detailed%2C%208k%20quality%2C%20professional%20photography&image_size=landscape_16_9`,
+    title: '无人机航空测绘'
+  },
+  {
+    image: `${IMG_BASE}?prompt=close%20up%20of%20rich%20soil%20texture%20with%20organic%20matter%2C%20dark%20earthy%20tones%2C%20golden%20light%20rays%2C%20macro%20photography%2C%20scientific%20analysis%20aesthetic%2C%20depth%20of%20field%2C%20ultra%20detailed%2C%20cinematic&image_size=landscape_16_9`,
+    title: 'AI 土质智能分析'
+  },
+  {
+    image: `${IMG_BASE}?prompt=technical%20blueprint%20CAD%20drawing%20of%20land%20surveying%20with%20contour%20lines%20and%20measurements%2C%20warm%20amber%20light%20on%20dark%20background%2C%20engineering%20aesthetic%2C%20architectural%20style%2C%20ultra%20detailed&image_size=landscape_16_9`,
+    title: 'CAD 图纸与工程'
+  }
+]);
+
+const currentSlide = ref(0);
+let slideTimer = null;
+
+const startAutoSlide = () => {
+  slideTimer = setInterval(() => {
+    currentSlide.value = (currentSlide.value + 1) % heroSlides.value.length;
+  }, 5000);
+};
+
+onMounted(() => {
+  startAutoSlide();
+});
+
+onUnmounted(() => {
+  if (slideTimer) clearInterval(slideTimer);
+});
 
 // 模块配置
 const modules = ref([

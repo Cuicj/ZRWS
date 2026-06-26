@@ -39,13 +39,14 @@ INSERT INTO zrws_sys_menu (parent_id, menu_name, menu_path, menu_icon, menu_type
 
 -- 土地资源
 (0, '土地地图', 'land-map', '◍', 'MENU', '土地资源', 1, 1),
-(0, '土质分类', 'soil-classify', '✦', 'MENU', '土地资源', 2, 1),
-(0, '灾害风险', 'disaster-risk', '◬', 'MENU', '土地资源', 3, 1),
-(0, '面积计算', 'area-calc', '◭', 'MENU', '土地资源', 4, 1),
+(0, '公告栏', 'announcement-board', '📰', 'MENU', '土地资源', 2, 1),
+(0, '土质分类', 'soil-classify', '✦', 'MENU', '土地资源', 3, 1),
+(0, '灾害风险', 'disaster-risk', '◬', 'MENU', '土地资源', 4, 1),
+(0, '面积计算', 'area-calc', '◭', 'MENU', '土地资源', 5, 1),
 
--- CAD
-(0, '图纸查看器', 'cad-viewer', '▣', 'MENU', 'CAD', 1, 1),
-(0, '图纸对比', 'cad-compare', '◫', 'MENU', 'CAD', 2, 1),
+-- GIS
+(0, '三维地球', 'cad-viewer', '🌍', 'MENU', 'GIS', 1, 1),
+(0, '图纸对比', 'cad-compare', '◫', 'MENU', 'GIS', 2, 1),
 
 -- 审批
 (0, '审批列表', 'approval-list', '◐', 'MENU', '审批', 1, 1),

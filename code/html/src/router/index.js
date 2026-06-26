@@ -114,18 +114,26 @@ const routes = [
         meta: { group: '土地资源', title: '面积计算', icon: '◭' }
       },
 
-      // CAD 图纸管理
+      // 土地资源公告栏
+      {
+        path: 'announcement-board',
+        name: 'AnnouncementBoard',
+        component: () => import('@/views/pages/AnnouncementBoard.vue'),
+        meta: { group: '土地资源', title: '公告栏', icon: '📰' }
+      },
+
+      // GIS 地理信息
       {
         path: 'cad-viewer',
         name: 'CadViewer',
         component: () => import('@/views/pages/CadViewer.vue'),
-        meta: { group: 'CAD', title: '图纸查看器', icon: '▣' }
+        meta: { group: 'GIS', title: '三维地球', icon: '🌍' }
       },
       {
         path: 'cad-compare',
         name: 'CadCompare',
         component: () => import('@/views/pages/CadCompare.vue'),
-        meta: { group: 'CAD', title: '图纸对比', icon: '◫' }
+        meta: { group: 'GIS', title: '图纸对比', icon: '◫' }
       },
 
       // 审批与工作流
