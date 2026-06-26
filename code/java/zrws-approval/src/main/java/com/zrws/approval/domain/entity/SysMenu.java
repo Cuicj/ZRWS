@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("sys_menu")
+@TableName("zrws_sys_menu")
 public class SysMenu implements Serializable {
 
     private static final long serialVersionUID = 1L;

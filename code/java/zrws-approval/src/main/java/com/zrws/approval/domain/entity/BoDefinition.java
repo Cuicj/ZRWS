@@ -14,7 +14,7 @@ import java.util.List;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("bo_definition")
+@TableName("zrws_bo_definition")
 public class BoDefinition implements Serializable {
 
     private static final long serialVersionUID = 1L;

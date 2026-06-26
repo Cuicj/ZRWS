@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("enum_config")
+@TableName("zrws_enum_config")
 public class EnumConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;

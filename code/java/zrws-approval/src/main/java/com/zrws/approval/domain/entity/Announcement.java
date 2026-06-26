@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("announcement")
+@TableName("zrws_announcement")
 public class Announcement implements Serializable {
 
     private static final long serialVersionUID = 1L;

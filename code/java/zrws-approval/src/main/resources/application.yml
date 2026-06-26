@@ -54,7 +54,7 @@ flowable:
   async-executor-activate: true
   history-level: full
   rest-api:
-    enabled: true
+    enabled: false
 
 server:
   port: 5571
@@ -132,3 +132,27 @@ logging:
     org.springframework.cloud.openfeign: debug
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# DBA 数据库 Schema 自动同步
+zrws:
+  dba:
+    # 是否启用
+    enabled: true
+    # 启动时自动执行同步
+    auto-sync-on-startup: true
+    # 实体类扫描包
+    entity-package: com.zrws.approval.domain.entity
+    # Mapper XML 扫描路径
+    mapper-locations: classpath*:/mapper/**/*.xml
+    # 初始化 SQL 脚本路径
+    sql-init-location: classpath*:/sql/*.sql
+    # 排除的表前缀（Flowable 等框架表）
+    exclude-table-prefixes:
+      - ACT_
+      - act_
+      - FLW_
+      - flw_
+    # 是否打印详细日志
+    verbose: true
+    # 同步失败是否中断启动
+    fail-on-sync-error: false

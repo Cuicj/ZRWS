@@ -425,6 +425,7 @@ public class FlowableDesignerService {
         Map<String, Object> draft = new HashMap<>();
         draft.put("processKey", processKey);
         draft.put("processName", json.get("processName"));
+        draft.put("xml", json.get("xml"));
         draft.put("json", json);
         draft.put("status", "DRAFT");
         draft.put("version", 1);
@@ -514,15 +515,50 @@ public class FlowableDesignerService {
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> saveAndDeploy(Map<String, Object> json) {
-        String xml = jsonToBpmnXml(json);
-        List<Map<String, Object>> processes = (List<Map<String, Object>>) json.get("processes");
-        if (processes != null && !processes.isEmpty()) {
-            String processKey = (String) processes.get(0).get("id");
-            String processName = (String) processes.get(0).get("name");
-            InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-            return deployService.deployBPMN(processKey, processName, inputStream);
+        String xml;
+        String processKey;
+        String processName;
+
+        if (json.containsKey("xml") && json.get("xml") != null) {
+            xml = (String) json.get("xml");
+            processKey = (String) json.getOrDefault("processKey", "");
+            processName = (String) json.getOrDefault("processName", "未命名流程");
+
+            if (processKey.isEmpty()) {
+                try {
+                    BpmnModel model = parseBpmnXml(xml);
+                    if (!model.getProcesses().isEmpty()) {
+                        Process process = model.getProcesses().get(0);
+                        processKey = process.getId();
+                        processName = process.getName() != null ? process.getName() : processKey;
+                    }
+                } catch (Exception e) {
+                    throw new IllegalArgumentException("解析BPMN XML失败: " + e.getMessage());
+                }
+            }
+        } else {
+            xml = jsonToBpmnXml(json);
+            List<Map<String, Object>> processes = (List<Map<String, Object>>) json.get("processes");
+            if (processes != null && !processes.isEmpty()) {
+                processKey = (String) processes.get(0).get("id");
+                processName = (String) processes.get(0).get("name");
+            } else {
+                throw new IllegalArgumentException("流程定义为空");
+            }
         }
-        throw new IllegalArgumentException("流程定义为空");
+
+        if (processKey == null || processKey.isEmpty()) {
+            throw new IllegalArgumentException("流程Key不能为空");
+        }
+
+        InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
+        return deployService.deployBPMN(processKey, processName, inputStream);
+    }
+
+    private BpmnModel parseBpmnXml(String xml) throws Exception {
+        XMLInputFactory factory = XMLInputFactory.newInstance();
+        XMLStreamReader reader = factory.createXMLStreamReader(new ByteArrayInputStream(xml.getBytes()));
+        return bpmnXMLConverter.convertToBpmnModel(reader);
     }
 
     // ============================================================

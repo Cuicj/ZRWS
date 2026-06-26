@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("sys_config")
+@TableName("zrws_sys_config")
 public class SysConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;

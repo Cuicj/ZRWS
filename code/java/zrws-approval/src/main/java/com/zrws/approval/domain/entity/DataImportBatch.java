@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("data_import_batch")
+@TableName("zrws_data_import_batch")
 public class DataImportBatch implements Serializable {
 
     private static final long serialVersionUID = 1L;

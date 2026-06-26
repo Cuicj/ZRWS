@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("bo_field")
+@TableName("zrws_bo_field")
 public class BoField implements Serializable {
 
     private static final long serialVersionUID = 1L;

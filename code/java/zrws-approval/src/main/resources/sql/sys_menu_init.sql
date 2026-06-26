@@ -1,5 +1,5 @@
 -- 系统菜单表
-CREATE TABLE IF NOT EXISTS sys_menu (
+CREATE TABLE IF NOT EXISTS zrws_sys_menu (
     menu_id BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '菜单ID',
     parent_id BIGINT DEFAULT 0 COMMENT '父菜单ID',
     menu_name VARCHAR(100) NOT NULL COMMENT '菜单名称',
@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS sys_menu (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统菜单表';
 
 -- 初始化菜单数据
-INSERT INTO sys_menu (parent_id, menu_name, menu_path, menu_icon, menu_type, menu_group, sort_order, status) VALUES
+INSERT INTO zrws_sys_menu (parent_id, menu_name, menu_path, menu_icon, menu_type, menu_group, sort_order, status) VALUES
 -- 总览
 (0, '运行仪表盘', 'dashboard', '◧', 'MENU', '总览', 1, 1),
 

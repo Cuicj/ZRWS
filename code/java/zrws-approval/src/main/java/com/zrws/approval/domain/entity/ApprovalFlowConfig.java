@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
  */
 @Data
 @EqualsAndHashCode(callSuper = false)
-@TableName("approval_flow_config")
+@TableName("zrws_approval_flow_config")
 public class ApprovalFlowConfig implements Serializable {
 
     private static final long serialVersionUID = 1L;
