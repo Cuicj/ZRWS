@@ -25,7 +25,9 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          cesium: ['cesium']
+          'element-plus': ['element-plus'],
+          echarts: ['echarts'],
+          'bpmn-js': ['bpmn-js']
         }
       }
     }
