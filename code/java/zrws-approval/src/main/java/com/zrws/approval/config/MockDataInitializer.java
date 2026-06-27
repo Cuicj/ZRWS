@@ -379,7 +379,7 @@ public class MockDataInitializer {
                     "]",
                 "{\"structure\":\"单斜构造\",\"dip\":\"15°\",\"dipDirection\":\"135°\",\"fractures\":2}",
                 "[]",
-                RockStratumAnalysis.AIAlgorithm.DEEP_LEARNING.name(), "v2.1.0", 94.8,
+                RockStratumAnalysis.AiAlgorithm.DEEP_LEARNING.name(), "v2.1.0", 94.8,
                 "AI分析结果显示：该区域岩层结构较为稳定，从上到下依次为第四系覆盖层、强风化泥岩、中风化泥岩、微风化石灰岩。岩层倾角约15°，整体为单斜构造。50米以下为硬质石灰岩，承载力较高。",
                 "{" +
                     "\"boreholeCount\":6," +
@@ -398,7 +398,7 @@ public class MockDataInitializer {
                 "[{\"name\":\"耕植土层\",\"depth\":\"0-2m\"},{\"name\":\"粉质黏土层\",\"depth\":\"2-10m\"},{\"name\":\"强风化砂岩层\",\"depth\":\"10-20m\"},{\"name\":\"中风化砂岩层\",\"depth\":\"20-30m\"}]",
                 "{\"structure\":\"层状结构\",\"dip\":\"10°\",\"dipDirection\":\"210°\"}",
                 "[{\"name\":\"F1断层\",\"type\":\"正断层\",\"strike\":\"NE30°\",\"dip\":\"60°\"}]",
-                RockStratumAnalysis.AIAlgorithm.CNN.name(), "v1.8.0", 87.3,
+                RockStratumAnalysis.AiAlgorithm.CNN.name(), "v1.8.0", 87.3,
                 "地质雷达探测结果显示：该区域存在一条小型正断层（F1），位于地表下15-20米处，断距约2米。岩层整体为砂岩地层，风化程度随深度增加而降低。建议对断层附近区域进行重点监测。",
                 "{\"gprFrequency\":500,\"penetrationDepth\":30,\"resolution\":\"0.5m\"}",
                 "建议对F1断层附近区域进行加密监测，防止不均匀沉降",

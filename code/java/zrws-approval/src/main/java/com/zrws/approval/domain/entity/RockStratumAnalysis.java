@@ -34,6 +34,8 @@ public class RockStratumAnalysis implements Serializable {
 
     private Double longitude;
 
+    private Double elevation;
+
     private String analysisType;
 
     private String dataSource;
@@ -50,7 +52,11 @@ public class RockStratumAnalysis implements Serializable {
 
     private String structureData;
 
+    private String faultData;
+
     private String aiAlgorithm;
+
+    private String aiModelVersion;
 
     private Double aiConfidence;
 
@@ -65,6 +71,8 @@ public class RockStratumAnalysis implements Serializable {
     private String analyst;
 
     private LocalDateTime analysisTime;
+
+    private LocalDateTime reportTime;
 
     private String status;
 
@@ -87,6 +95,7 @@ public class RockStratumAnalysis implements Serializable {
         COMPREHENSIVE("综合分析"),
         BOREHOLE("钻孔分析"),
         GEOPHYSICAL("物探分析"),
+        GPR("地质雷达"),
         SAMPLING("取样分析");
 
         private final String desc;
