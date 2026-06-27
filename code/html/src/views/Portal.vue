@@ -5,7 +5,7 @@
       <div class="brand">
         <span class="brand-mark">◐</span>
         <span class="brand-name display">智壤卫士</span>
-        <span class="brand-meta mono">ZIRANG SHIELD v1.0</span>
+        <span class="brand-meta mono">ZIRANG SHIELD v{{ appVersion }}</span>
       </div>
       <nav class="portal-nav">
         <a class="nav-link active" href="#modules">模块</a>
@@ -148,6 +148,7 @@
  */
 import { ref, onMounted, onUnmounted } from 'vue';
 
+const appVersion = __APP_VERSION__;
 const IMG_BASE = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image';
 
 const heroSlides = ref([

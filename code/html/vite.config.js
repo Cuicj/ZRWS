@@ -2,9 +2,13 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { resolve } from 'path';
 import cesium from 'vite-plugin-cesium';
+import pkg from './package.json';
 
 export default defineConfig({
   plugins: [vue(), cesium()],
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version)
+  },
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src')

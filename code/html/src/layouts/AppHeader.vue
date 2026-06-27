@@ -5,7 +5,7 @@
       <router-link to="/" class="brand">
         <span class="brand-mark">◐</span>
         <span class="brand-name display">智壤卫士</span>
-        <span class="brand-meta mono">ZRWS v1.0</span>
+        <span class="brand-meta mono">ZRWS v{{ appVersion }}</span>
       </router-link>
     </div>
 
@@ -45,6 +45,7 @@ import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
 
 const router = useRouter();
+const appVersion = __APP_VERSION__;
 
 // 用户信息
 const user = ref({

@@ -14,7 +14,7 @@
           <span class="brand-mark">◐</span>
         </div>
         <h1 class="login-title display">智壤卫士</h1>
-        <div class="login-sub mono">ZIRANG SHIELD v1.0</div>
+        <div class="login-sub mono">ZIRANG SHIELD v{{ appVersion }}</div>
       </div>
 
       <el-form class="login-form" @submit.prevent="handleLogin">
@@ -49,6 +49,7 @@ import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const router = useRouter();
+const appVersion = __APP_VERSION__;
 const username = ref('admin');
 const password = ref('admin');
 const role = ref('admin');
