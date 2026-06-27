@@ -102,6 +102,7 @@ const defaultMenus = [
       { path: 'land-map', name: '土地地图', icon: '◍' },
       { path: 'announcement-board', name: '公告栏', icon: '📰' },
       { path: 'soil-classify', name: '土质分类', icon: '✦' },
+      { path: 'rock-stratum', name: '岩层分析', icon: '🪨' },
       { path: 'disaster-risk', name: '灾害风险', icon: '◬' },
       { path: 'area-calc', name: '面积计算', icon: '◭' }
     ]

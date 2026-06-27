@@ -174,7 +174,7 @@ import * as Cesium from 'cesium';
 const containerRef = ref(null);
 const cadCanvas = ref(null);
 const cesiumContainer = ref(null);
-const viewMode = ref('3d');
+const viewMode = ref('2d');
 const showTerrain = ref(true);
 const showBuilding = ref(false);
 const imageryLayer = ref('osm');
