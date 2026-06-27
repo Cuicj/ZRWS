@@ -21,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -75,10 +76,10 @@ public class DataAnalyzerController {
             definitions = boDefinitionMapper.selectActiveList();
         }
 
-        return success(Map.of(
-                "success", true,
-                "list", definitions
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", definitions);
+        return success(result);
     }
 
     /**
@@ -96,10 +97,10 @@ public class DataAnalyzerController {
         List<BoField> fields = boFieldMapper.selectByBoId(bo.getBoId());
         bo.setFields(fields);
 
-        return success(Map.of(
-                "success", true,
-                "bo", bo
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("bo", bo);
+        return success(result);
     }
 
     /**
@@ -115,10 +116,10 @@ public class DataAnalyzerController {
 
         List<BoField> fields = boFieldMapper.selectByBoId(bo.getBoId());
 
-        return success(Map.of(
-                "success", true,
-                "fields", fields
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("fields", fields);
+        return success(result);
     }
 
     // ============================================================
@@ -215,10 +216,7 @@ public class DataAnalyzerController {
         try {
             var mappings = aiAnalyzerService.intelligentFieldMapping(headers, boCode);
 
-            return success(Map.of(
-                    "success", true,
-                    "mappings", mappings
-            ));
+            return success(Collections.singletonMap("mappings", mappings));
 
         } catch (Exception e) {
             log.error("字段映射失败", e);
@@ -338,10 +336,10 @@ public class DataAnalyzerController {
                     .toList();
         }
 
-        return success(Map.of(
-                "success", true,
-                "batches", batches
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("batches", batches);
+        return success(result);
     }
 
     /**
@@ -355,10 +353,10 @@ public class DataAnalyzerController {
             return error("批次不存在: " + batchNo);
         }
 
-        return success(Map.of(
-                "success", true,
-                "batch", batch
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("batch", batch);
+        return success(result);
     }
 
     // ============================================================
@@ -384,11 +382,11 @@ public class DataAnalyzerController {
 
             String report = aiAnalyzerService.generateAnalysisReport(request, analysisResponse);
 
-            return success(Map.of(
-                    "success", true,
-                    "report", report,
-                    "analysis", analysisResponse
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("report", report);
+            result.put("analysis", analysisResponse);
+            return success(result);
 
         } catch (Exception e) {
             log.error("生成AI报告失败", e);
@@ -407,10 +405,10 @@ public class DataAnalyzerController {
     @GetMapping("/approval-configs")
     public ResponseEntity<Map<String, Object>> listApprovalConfigs() {
         List<ApprovalFlowConfig> configs = approvalFlowConfigService.getAllConfigs();
-        return success(Map.of(
-                "success", true,
-                "configs", configs
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("configs", configs);
+        return success(result);
     }
 
     /**
@@ -420,10 +418,10 @@ public class DataAnalyzerController {
     @GetMapping("/approval-configs/bo/{boCode}")
     public ResponseEntity<Map<String, Object>> getApprovalConfigsByBo(@PathVariable String boCode) {
         List<ApprovalFlowConfig> configs = approvalFlowConfigService.getConfigsByBoCode(boCode);
-        return success(Map.of(
-                "success", true,
-                "configs", configs
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("configs", configs);
+        return success(result);
     }
 
     /**
@@ -434,10 +432,10 @@ public class DataAnalyzerController {
     public ResponseEntity<Map<String, Object>> getApprovalConfig(@PathVariable Long configId) {
         ApprovalFlowConfig config = approvalFlowConfigService.getConfig(null, null);
         // 需要在Service中添加根据ID查询的方法
-        return success(Map.of(
-                "success", true,
-                "config", config
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("config", config);
+        return success(result);
     }
 
     /**
@@ -448,10 +446,10 @@ public class DataAnalyzerController {
     public ResponseEntity<Map<String, Object>> saveApprovalConfig(@RequestBody ApprovalFlowConfig config) {
         try {
             ApprovalFlowConfig saved = approvalFlowConfigService.saveConfig(config);
-            return success(Map.of(
-                    "success", true,
-                    "config", saved
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("config", saved);
+            return success(result);
         } catch (Exception e) {
             log.error("保存审批配置失败", e);
             return error("保存失败: " + e.getMessage());
@@ -466,10 +464,7 @@ public class DataAnalyzerController {
     public ResponseEntity<Map<String, Object>> updateApprovalConfig(@RequestBody ApprovalFlowConfig config) {
         try {
             approvalFlowConfigService.updateConfig(config.getConfigId(), config);
-            return success(Map.of(
-                    "success", true,
-                    "message", "更新成功"
-            ));
+            return success(Collections.singletonMap("message", "更新成功"));
         } catch (Exception e) {
             log.error("更新审批配置失败", e);
             return error("更新失败: " + e.getMessage());
@@ -484,10 +479,7 @@ public class DataAnalyzerController {
     public ResponseEntity<Map<String, Object>> deleteApprovalConfig(@PathVariable Long configId) {
         try {
             approvalFlowConfigService.deleteConfig(configId);
-            return success(Map.of(
-                    "success", true,
-                    "message", "删除成功"
-            ));
+            return success(Collections.singletonMap("message", "删除成功"));
         } catch (Exception e) {
             log.error("删除审批配置失败", e);
             return error("删除失败: " + e.getMessage());
@@ -506,10 +498,7 @@ public class DataAnalyzerController {
             config.setConfigId(configId);
             config.setEnableApproval(body.get("enableApproval"));
             approvalFlowConfigService.updateConfig(configId, config);
-            return success(Map.of(
-                    "success", true,
-                    "message", "操作成功"
-            ));
+            return success(Collections.singletonMap("message", "操作成功"));
         } catch (Exception e) {
             log.error("切换审批配置状态失败", e);
             return error("操作失败: " + e.getMessage());
@@ -527,11 +516,11 @@ public class DataAnalyzerController {
         boolean needApproval = approvalFlowConfigService.needApproval(boCode, operationType);
         String processKey = approvalFlowConfigService.getApprovalProcessKey(boCode, operationType);
 
-        return success(Map.of(
-                "success", true,
-                "needApproval", needApproval,
-                "processKey", processKey
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("needApproval", needApproval);
+        result.put("processKey", processKey);
+        return success(result);
     }
 
     // ============================================================
@@ -601,10 +590,10 @@ public class DataAnalyzerController {
             @RequestParam String startDate,
             @RequestParam String endDate) {
         try {
-            return success(Map.of(
-                    "success", true,
-                    "stats", dataStatisticsService.getStatsByDateRange(startDate, endDate)
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("stats", dataStatisticsService.getStatsByDateRange(startDate, endDate));
+            return success(result);
         } catch (Exception e) {
             log.error("获取日期范围统计失败", e);
             return error("获取统计失败: " + e.getMessage());
@@ -618,10 +607,10 @@ public class DataAnalyzerController {
     @GetMapping("/stats/bo/{boCode}")
     public ResponseEntity<Map<String, Object>> getStatsByBoCode(@PathVariable String boCode) {
         try {
-            return success(Map.of(
-                    "success", true,
-                    "stats", dataStatisticsService.getStatsByBoCode(boCode)
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("stats", dataStatisticsService.getStatsByBoCode(boCode));
+            return success(result);
         } catch (Exception e) {
             log.error("获取BO统计失败", e);
             return error("获取统计失败: " + e.getMessage());
@@ -658,9 +647,9 @@ public class DataAnalyzerController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }

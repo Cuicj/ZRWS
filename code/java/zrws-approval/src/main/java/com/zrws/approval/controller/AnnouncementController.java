@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,10 @@ public class AnnouncementController {
         } else {
             list = announcementService.getPublishedAnnouncements();
         }
-        return success(Map.of("success", true, "list", list));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", list);
+        return success(result);
     }
 
     /**
@@ -58,7 +62,10 @@ public class AnnouncementController {
         }
         // 增加浏览次数
         announcementService.viewAnnouncement(id);
-        return success(Map.of("success", true, "announcement", announcement));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("announcement", announcement);
+        return success(result);
     }
 
     /**
@@ -66,10 +73,10 @@ public class AnnouncementController {
      */
     @GetMapping("/top")
     public ResponseEntity<Map<String, Object>> getTop() {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getTopAnnouncements()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getTopAnnouncements());
+        return success(result);
     }
 
     /**
@@ -77,10 +84,10 @@ public class AnnouncementController {
      */
     @GetMapping("/recommend")
     public ResponseEntity<Map<String, Object>> getRecommend() {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getRecommendAnnouncements()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getRecommendAnnouncements());
+        return success(result);
     }
 
     /**
@@ -88,10 +95,10 @@ public class AnnouncementController {
      */
     @GetMapping("/hot")
     public ResponseEntity<Map<String, Object>> getHot() {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getHotAnnouncements()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getHotAnnouncements());
+        return success(result);
     }
 
     /**
@@ -99,10 +106,10 @@ public class AnnouncementController {
      */
     @GetMapping("/latest")
     public ResponseEntity<Map<String, Object>> getLatest(@RequestParam(defaultValue = "10") int limit) {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getLatestAnnouncements(limit)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getLatestAnnouncements(limit));
+        return success(result);
     }
 
     /**
@@ -111,7 +118,10 @@ public class AnnouncementController {
     @PostMapping("/{id}/like")
     public ResponseEntity<Map<String, Object>> like(@PathVariable Long id) {
         announcementService.likeAnnouncement(id);
-        return success(Map.of("success", true, "message", "点赞成功"));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("message", "点赞成功");
+        return success(result);
     }
 
     // ============================================================
@@ -123,10 +133,10 @@ public class AnnouncementController {
      */
     @GetMapping("/category")
     public ResponseEntity<Map<String, Object>> getCategories() {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getActiveCategories()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getActiveCategories());
+        return success(result);
     }
 
     /**
@@ -136,7 +146,10 @@ public class AnnouncementController {
     public ResponseEntity<Map<String, Object>> saveCategory(@RequestBody AnnouncementCategory category) {
         try {
             AnnouncementCategory saved = announcementService.saveCategory(category);
-            return success(Map.of("success", true, "category", saved));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("category", saved);
+            return success(result);
         } catch (Exception e) {
             log.error("保存分类失败", e);
             return error("保存失败: " + e.getMessage());
@@ -150,7 +163,10 @@ public class AnnouncementController {
     public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable Long id) {
         try {
             announcementService.deleteCategory(id);
-            return success(Map.of("success", true, "message", "删除成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "删除成功");
+            return success(result);
         } catch (Exception e) {
             log.error("删除分类失败", e);
             return error("删除失败: " + e.getMessage());
@@ -174,7 +190,10 @@ public class AnnouncementController {
         } else {
             list = announcementService.getPublishedAnnouncements();
         }
-        return success(Map.of("success", true, "list", list));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", list);
+        return success(result);
     }
 
     /**
@@ -184,7 +203,10 @@ public class AnnouncementController {
     public ResponseEntity<Map<String, Object>> save(@RequestBody Announcement announcement) {
         try {
             Announcement saved = announcementService.saveAnnouncement(announcement);
-            return success(Map.of("success", true, "announcement", saved));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("announcement", saved);
+            return success(result);
         } catch (Exception e) {
             log.error("保存公告失败", e);
             return error("保存失败: " + e.getMessage());
@@ -198,7 +220,10 @@ public class AnnouncementController {
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
         try {
             announcementService.deleteAnnouncement(id);
-            return success(Map.of("success", true, "message", "删除成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "删除成功");
+            return success(result);
         } catch (Exception e) {
             log.error("删除公告失败", e);
             return error("删除失败: " + e.getMessage());
@@ -221,7 +246,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.submitForAudit(id, operatorId, operatorName);
-            return success(Map.of("success", true, "message", "提交审核成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "提交审核成功");
+            return success(result);
         } catch (Exception e) {
             log.error("提交审核失败", e);
             return error("提交失败: " + e.getMessage());
@@ -241,7 +269,10 @@ public class AnnouncementController {
             String auditorName = (String) auditInfo.getOrDefault("auditorName", "管理员");
             String comment = (String) auditInfo.get("comment");
             announcementService.approve(id, auditorId, auditorName, comment);
-            return success(Map.of("success", true, "message", "审批通过"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "审批通过");
+            return success(result);
         } catch (Exception e) {
             log.error("审批失败", e);
             return error("审批失败: " + e.getMessage());
@@ -261,7 +292,10 @@ public class AnnouncementController {
             String auditorName = (String) auditInfo.getOrDefault("auditorName", "管理员");
             String reason = (String) auditInfo.get("reason");
             announcementService.reject(id, auditorId, auditorName, reason);
-            return success(Map.of("success", true, "message", "已驳回"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "已驳回");
+            return success(result);
         } catch (Exception e) {
             log.error("驳回失败", e);
             return error("驳回失败: " + e.getMessage());
@@ -280,7 +314,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.publish(id, operatorId, operatorName);
-            return success(Map.of("success", true, "message", "发布成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "发布成功");
+            return success(result);
         } catch (Exception e) {
             log.error("发布失败", e);
             return error("发布失败: " + e.getMessage());
@@ -299,7 +336,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.offline(id, operatorId, operatorName);
-            return success(Map.of("success", true, "message", "下线成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "下线成功");
+            return success(result);
         } catch (Exception e) {
             log.error("下线失败", e);
             return error("下线失败: " + e.getMessage());
@@ -311,10 +351,10 @@ public class AnnouncementController {
      */
     @GetMapping("/{id}/audit")
     public ResponseEntity<Map<String, Object>> getAuditRecords(@PathVariable Long id) {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getAuditRecords(id)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getAuditRecords(id));
+        return success(result);
     }
 
     // ============================================================
@@ -326,10 +366,10 @@ public class AnnouncementController {
      */
     @GetMapping("/admin-levels")
     public ResponseEntity<Map<String, Object>> getAdminLevels() {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getAllAdminLevels()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getAllAdminLevels());
+        return success(result);
     }
 
     /**
@@ -337,10 +377,10 @@ public class AnnouncementController {
      */
     @GetMapping("/by-level")
     public ResponseEntity<Map<String, Object>> getByAdminLevel(@RequestParam String level) {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getAnnouncementsByAdminLevel(level)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getAnnouncementsByAdminLevel(level));
+        return success(result);
     }
 
     /**
@@ -352,10 +392,10 @@ public class AnnouncementController {
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String county,
             @RequestParam(required = false) String township) {
-        return success(Map.of(
-                "success", true,
-                "list", announcementService.getAnnouncementsByRegion(province, city, county, township)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", announcementService.getAnnouncementsByRegion(province, city, county, township));
+        return success(result);
     }
 
     /**
@@ -365,11 +405,11 @@ public class AnnouncementController {
     public ResponseEntity<Map<String, Object>> analyzeWithAI(@PathVariable Long id) {
         try {
             Announcement analyzed = announcementService.analyzeWithAI(id);
-            return success(Map.of(
-                    "success", true,
-                    "message", "AI分析完成",
-                    "announcement", analyzed
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "AI分析完成");
+            result.put("announcement", analyzed);
+            return success(result);
         } catch (Exception e) {
             log.error("AI分析失败", e);
             return error("AI分析失败: " + e.getMessage());
@@ -388,11 +428,11 @@ public class AnnouncementController {
                 return error("请选择要分析的公告");
             }
             int count = announcementService.batchAnalyzeWithAI(ids);
-            return success(Map.of(
-                    "success", true,
-                    "message", "成功分析 " + count + " 条公告",
-                    "count", count
-            ));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("message", "成功分析 " + count + " 条公告");
+            result.put("count", count);
+            return success(result);
         } catch (Exception e) {
             log.error("批量AI分析失败", e);
             return error("批量AI分析失败: " + e.getMessage());
@@ -404,10 +444,10 @@ public class AnnouncementController {
      */
     @GetMapping("/statistics")
     public ResponseEntity<Map<String, Object>> getStatistics() {
-        return success(Map.of(
-                "success", true,
-                "statistics", announcementService.getStatistics()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("statistics", announcementService.getStatistics());
+        return success(result);
     }
 
     // ============================================================
@@ -426,9 +466,9 @@ public class AnnouncementController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }

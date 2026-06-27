@@ -528,7 +528,7 @@ public class FlowableDesignerService {
                 try {
                     BpmnModel model = parseBpmnXml(xml);
                     if (!model.getProcesses().isEmpty()) {
-                        Process process = model.getProcesses().get(0);
+                        org.flowable.bpmn.model.Process process = model.getProcesses().get(0);
                         processKey = process.getId();
                         processName = process.getName() != null ? process.getName() : processKey;
                     }

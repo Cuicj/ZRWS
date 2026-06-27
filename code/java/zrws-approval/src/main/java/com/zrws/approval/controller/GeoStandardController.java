@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,7 +45,10 @@ public class GeoStandardController {
             }
             wrapper.orderByAsc(GeoStandard::getSortOrder);
             List<GeoStandard> list = geoStandardMapper.selectList(wrapper);
-            return success(Map.of("list", list, "total", list.size()));
+            Map<String, Object> result = new HashMap<>();
+            result.put("list", list);
+            result.put("total", list.size());
+            return success(result);
         } catch (Exception e) {
             log.error("查询地质标准失败", e);
             return error("查询失败: " + e.getMessage());
@@ -58,7 +62,7 @@ public class GeoStandardController {
             if (standard == null) {
                 return error("标准不存在");
             }
-            return success(Map.of("data", standard));
+            return success(Collections.singletonMap("data", standard));
         } catch (Exception e) {
             log.error("查询地质标准详情失败", e);
             return error("查询失败: " + e.getMessage());
@@ -69,7 +73,10 @@ public class GeoStandardController {
     public ResponseEntity<Map<String, Object>> getByCategory(@PathVariable String category) {
         try {
             List<GeoStandard> list = geoStandardMapper.selectByCategory(category);
-            return success(Map.of("list", list, "total", list.size()));
+            Map<String, Object> result = new HashMap<>();
+            result.put("list", list);
+            result.put("total", list.size());
+            return success(result);
         } catch (Exception e) {
             log.error("按分类查询地质标准失败", e);
             return error("查询失败: " + e.getMessage());
@@ -80,7 +87,10 @@ public class GeoStandardController {
     public ResponseEntity<Map<String, Object>> search(@RequestParam String keyword) {
         try {
             List<GeoStandard> list = geoStandardMapper.searchByName(keyword);
-            return success(Map.of("list", list, "total", list.size()));
+            Map<String, Object> result = new HashMap<>();
+            result.put("list", list);
+            result.put("total", list.size());
+            return success(result);
         } catch (Exception e) {
             log.error("搜索地质标准失败", e);
             return error("搜索失败: " + e.getMessage());
@@ -93,7 +103,10 @@ public class GeoStandardController {
             standard.setStatus("ACTIVE");
             standard.setIsDeleted(0);
             geoStandardMapper.insert(standard);
-            return success(Map.of("data", standard, "message", "创建成功"));
+            Map<String, Object> result = new HashMap<>();
+            result.put("data", standard);
+            result.put("message", "创建成功");
+            return success(result);
         } catch (Exception e) {
             log.error("创建地质标准失败", e);
             return error("创建失败: " + e.getMessage());
@@ -105,7 +118,7 @@ public class GeoStandardController {
         try {
             standard.setStandardId(id);
             geoStandardMapper.updateById(standard);
-            return success(Map.of("message", "更新成功"));
+            return success(Collections.singletonMap("message", "更新成功"));
         } catch (Exception e) {
             log.error("更新地质标准失败", e);
             return error("更新失败: " + e.getMessage());
@@ -116,7 +129,7 @@ public class GeoStandardController {
     public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
         try {
             geoStandardMapper.deleteById(id);
-            return success(Map.of("message", "删除成功"));
+            return success(Collections.singletonMap("message", "删除成功"));
         } catch (Exception e) {
             log.error("删除地质标准失败", e);
             return error("删除失败: " + e.getMessage());
@@ -134,9 +147,9 @@ public class GeoStandardController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }

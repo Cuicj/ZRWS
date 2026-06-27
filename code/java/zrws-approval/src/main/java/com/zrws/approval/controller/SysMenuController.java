@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,10 +29,10 @@ public class SysMenuController {
      */
     @GetMapping("/tree")
     public ResponseEntity<Map<String, Object>> getMenuTree() {
-        return success(Map.of(
-                "success", true,
-                "data", menuService.getMenuTree()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("data", menuService.getMenuTree());
+        return success(result);
     }
 
     /**
@@ -39,10 +40,10 @@ public class SysMenuController {
      */
     @GetMapping("/list")
     public ResponseEntity<Map<String, Object>> getMenuList() {
-        return success(Map.of(
-                "success", true,
-                "list", menuService.getAllMenus()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", menuService.getAllMenus());
+        return success(result);
     }
 
     /**
@@ -52,7 +53,10 @@ public class SysMenuController {
     public ResponseEntity<Map<String, Object>> getMenu(@PathVariable Long id) {
         SysMenu menu = menuService.getMenuById(id);
         if (menu != null) {
-            return success(Map.of("success", true, "menu", menu));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("menu", menu);
+            return success(result);
         } else {
             return error("菜单不存在");
         }
@@ -65,7 +69,10 @@ public class SysMenuController {
     public ResponseEntity<Map<String, Object>> saveMenu(@RequestBody SysMenu menu) {
         try {
             menuService.saveMenu(menu);
-            return success(Map.of("success", true, "menu", menu));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("menu", menu);
+            return success(result);
         } catch (Exception e) {
             log.error("保存菜单失败", e);
             return error("保存失败: " + e.getMessage());
@@ -79,7 +86,10 @@ public class SysMenuController {
     public ResponseEntity<Map<String, Object>> deleteMenu(@PathVariable Long id) {
         boolean result = menuService.deleteMenu(id);
         if (result) {
-            return success(Map.of("success", true, "message", "删除成功"));
+            Map<String, Object> map = new HashMap<>();
+            map.put("success", true);
+            map.put("message", "删除成功");
+            return success(map);
         } else {
             return error("删除失败");
         }
@@ -96,9 +106,9 @@ public class SysMenuController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }

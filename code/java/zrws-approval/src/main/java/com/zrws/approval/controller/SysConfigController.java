@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,10 +33,10 @@ public class SysConfigController {
      */
     @GetMapping
     public ResponseEntity<Map<String, Object>> getAllConfigs() {
-        return success(Map.of(
-                "success", true,
-                "list", configService.getAllConfigs()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", configService.getAllConfigs());
+        return success(result);
     }
 
     /**
@@ -43,10 +44,10 @@ public class SysConfigController {
      */
     @GetMapping("/group/{group}")
     public ResponseEntity<Map<String, Object>> getByGroup(@PathVariable String group) {
-        return success(Map.of(
-                "success", true,
-                "list", configService.getByGroup(group)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("list", configService.getByGroup(group));
+        return success(result);
     }
 
     /**
@@ -54,10 +55,10 @@ public class SysConfigController {
      */
     @GetMapping("/global")
     public ResponseEntity<Map<String, Object>> getGlobalSettings() {
-        return success(Map.of(
-                "success", true,
-                "settings", configService.getGlobalSettings()
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("settings", configService.getGlobalSettings());
+        return success(result);
     }
 
     /**
@@ -65,10 +66,10 @@ public class SysConfigController {
      */
     @GetMapping("/value/{key}")
     public ResponseEntity<Map<String, Object>> getValue(@PathVariable String key) {
-        return success(Map.of(
-                "success", true,
-                "value", configService.getValue(key)
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("value", configService.getValue(key));
+        return success(result);
     }
 
     /**
@@ -81,7 +82,7 @@ public class SysConfigController {
         String value = body.get("value");
         boolean result = configService.updateConfig(key, value);
         if (result) {
-            return success(Map.of("success", true, "message", "更新成功"));
+            return success(Collections.singletonMap("message", "更新成功"));
         } else {
             return error("更新失败");
         }
@@ -94,7 +95,10 @@ public class SysConfigController {
     public ResponseEntity<Map<String, Object>> saveConfig(@RequestBody SysConfig config) {
         try {
             configService.saveConfig(config);
-            return success(Map.of("success", true, "config", config));
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", true);
+            result.put("config", config);
+            return success(result);
         } catch (Exception e) {
             log.error("保存配置失败", e);
             return error("保存失败: " + e.getMessage());
@@ -110,7 +114,7 @@ public class SysConfigController {
             for (Map.Entry<String, String> entry : configs.entrySet()) {
                 configService.updateConfig(entry.getKey(), entry.getValue());
             }
-            return success(Map.of("success", true, "message", "批量更新成功"));
+            return success(Collections.singletonMap("message", "批量更新成功"));
         } catch (Exception e) {
             log.error("批量更新失败", e);
             return error("批量更新失败: " + e.getMessage());
@@ -128,9 +132,9 @@ public class SysConfigController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }

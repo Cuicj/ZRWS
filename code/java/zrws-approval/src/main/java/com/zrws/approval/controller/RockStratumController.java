@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -41,7 +42,10 @@ public class RockStratumController {
             } else {
                 list = analysisMapper.selectAll();
             }
-            return success(Map.of("list", list, "total", list.size()));
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", list);
+            data.put("total", list.size());
+            return success(data);
         } catch (Exception e) {
             log.error("查询岩层分析列表失败", e);
             return error("查询失败: " + e.getMessage());
@@ -55,7 +59,7 @@ public class RockStratumController {
             if (analysis == null) {
                 return error("分析任务不存在");
             }
-            return success(Map.of("data", analysis));
+            return success(Collections.singletonMap("data", analysis));
         } catch (Exception e) {
             log.error("查询岩层分析详情失败", e);
             return error("查询失败: " + e.getMessage());
@@ -68,7 +72,10 @@ public class RockStratumController {
             analysis.setStatus("ACTIVE");
             analysis.setIsDeleted(0);
             analysisMapper.insert(analysis);
-            return success(Map.of("data", analysis, "message", "创建成功"));
+            Map<String, Object> data = new HashMap<>();
+            data.put("data", analysis);
+            data.put("message", "创建成功");
+            return success(data);
         } catch (Exception e) {
             log.error("创建岩层分析失败", e);
             return error("创建失败: " + e.getMessage());
@@ -82,7 +89,7 @@ public class RockStratumController {
         try {
             analysis.setAnalysisId(id);
             analysisMapper.updateById(analysis);
-            return success(Map.of("message", "更新成功"));
+            return success(Collections.singletonMap("message", "更新成功"));
         } catch (Exception e) {
             log.error("更新岩层分析失败", e);
             return error("更新失败: " + e.getMessage());
@@ -93,7 +100,7 @@ public class RockStratumController {
     public ResponseEntity<Map<String, Object>> deleteAnalysis(@PathVariable Long id) {
         try {
             analysisMapper.deleteById(id);
-            return success(Map.of("message", "删除成功"));
+            return success(Collections.singletonMap("message", "删除成功"));
         } catch (Exception e) {
             log.error("删除岩层分析失败", e);
             return error("删除失败: " + e.getMessage());
@@ -117,7 +124,10 @@ public class RockStratumController {
                         .eq(RockSample::getIsDeleted, 0)
                         .orderByDesc(RockSample::getCreatedTime));
             }
-            return success(Map.of("list", list, "total", list.size()));
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", list);
+            data.put("total", list.size());
+            return success(data);
         } catch (Exception e) {
             log.error("查询岩矿样品列表失败", e);
             return error("查询失败: " + e.getMessage());
@@ -131,7 +141,7 @@ public class RockStratumController {
             if (sample == null) {
                 return error("样品不存在");
             }
-            return success(Map.of("data", sample));
+            return success(Collections.singletonMap("data", sample));
         } catch (Exception e) {
             log.error("查询岩矿样品详情失败", e);
             return error("查询失败: " + e.getMessage());
@@ -144,7 +154,10 @@ public class RockStratumController {
             sample.setStatus("ACTIVE");
             sample.setIsDeleted(0);
             sampleMapper.insert(sample);
-            return success(Map.of("data", sample, "message", "创建成功"));
+            Map<String, Object> data = new HashMap<>();
+            data.put("data", sample);
+            data.put("message", "创建成功");
+            return success(data);
         } catch (Exception e) {
             log.error("创建岩矿样品失败", e);
             return error("创建失败: " + e.getMessage());
@@ -158,7 +171,7 @@ public class RockStratumController {
         try {
             sample.setSampleId(id);
             sampleMapper.updateById(sample);
-            return success(Map.of("message", "更新成功"));
+            return success(Collections.singletonMap("message", "更新成功"));
         } catch (Exception e) {
             log.error("更新岩矿样品失败", e);
             return error("更新失败: " + e.getMessage());
@@ -169,7 +182,7 @@ public class RockStratumController {
     public ResponseEntity<Map<String, Object>> deleteSample(@PathVariable Long id) {
         try {
             sampleMapper.deleteById(id);
-            return success(Map.of("message", "删除成功"));
+            return success(Collections.singletonMap("message", "删除成功"));
         } catch (Exception e) {
             log.error("删除岩矿样品失败", e);
             return error("删除失败: " + e.getMessage());
@@ -187,9 +200,9 @@ public class RockStratumController {
     }
 
     private ResponseEntity<Map<String, Object>> error(String message) {
-        return ResponseEntity.badRequest().body(Map.of(
-                "success", false,
-                "error", message
-        ));
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", false);
+        result.put("error", message);
+        return ResponseEntity.badRequest().body(result);
     }
 }
