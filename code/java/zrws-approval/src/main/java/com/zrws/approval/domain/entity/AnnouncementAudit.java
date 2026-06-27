@@ -40,6 +40,8 @@ public class AnnouncementAudit implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    private Long tenantId;
+
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdTime;
 

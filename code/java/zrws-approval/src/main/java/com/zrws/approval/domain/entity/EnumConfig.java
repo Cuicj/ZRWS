@@ -44,6 +44,8 @@ public class EnumConfig implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    private Long tenantId;
+
     /** 创建时间 */
     @TableField(fill = FieldFill.INSERT)
     private LocalDateTime createdTime;

@@ -68,6 +68,8 @@ public class ApprovalFlowConfig implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    private Long tenantId;
+
     /** 创建者 */
     private Long createdBy;
 

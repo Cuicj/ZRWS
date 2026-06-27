@@ -37,6 +37,8 @@ public class AnnouncementCategory implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    private Long tenantId;
+
     private Long createdBy;
 
     @TableField(fill = FieldFill.INSERT)

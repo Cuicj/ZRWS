@@ -3,9 +3,11 @@ package com.zrws.approval.config;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zrws.approval.domain.entity.*;
 import com.zrws.approval.mapper.*;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -17,7 +19,8 @@ import java.util.Arrays;
  */
 @Slf4j
 @Component
-public class MockDataInitializer {
+@Order(3)
+public class MockDataInitializer implements ApplicationRunner {
 
     @Autowired
     private FlightMissionMapper flightMissionMapper;
@@ -37,9 +40,15 @@ public class MockDataInitializer {
     private DeviceMapper deviceMapper;
     @Autowired
     private QualityCheckMapper qualityCheckMapper;
+    @Autowired
+    private AnnouncementMapper announcementMapper;
+    @Autowired
+    private AnnouncementCategoryMapper announcementCategoryMapper;
+    @Autowired
+    private ApprovalTaskMapper approvalTaskMapper;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void run(ApplicationArguments args) {
         try {
             initFlightMissions();
             initSoilSamples();
@@ -50,19 +59,22 @@ public class MockDataInitializer {
             initDisasterRisks();
             initDevices();
             initQualityChecks();
-            log.info("Mock数据初始化完成");
+            initAnnouncementCategories();
+            initAnnouncements();
+            initApprovalTasks();
+            log.info("[Mock数据] Mock数据初始化完成");
         } catch (Exception e) {
-            log.warn("Mock数据初始化失败（可能表不存在）: {}", e.getMessage());
+            log.warn("[Mock数据] Mock数据初始化失败（可能表不存在）: {}", e.getMessage());
         }
     }
 
     private void initFlightMissions() {
         Long count = flightMissionMapper.selectCount(new LambdaQueryWrapper<FlightMission>());
         if (count != null && count > 0) {
-            log.info("飞行任务数据已存在，跳过初始化");
+            log.info("[Mock数据] 飞行任务数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化飞行任务Mock数据...");
+        log.info("[Mock数据] 开始初始化飞行任务Mock数据...");
         FlightMission[] missions = {
             createMission("ZRS-2026-0617-001", "望城区乔口镇", "UAV-DJI-M350-003", "王工",
                 LocalDateTime.of(2026, 6, 17, 8, 30), 42, 860.0, 120.0, 0.8, 0.65,
@@ -88,7 +100,7 @@ public class MockDataInitializer {
         for (FlightMission mission : missions) {
             flightMissionMapper.insert(mission);
         }
-        log.info("飞行任务Mock数据初始化完成，共 {} 条", missions.length);
+        log.info("[Mock数据] 飞行任务Mock数据初始化完成，共 {} 条", missions.length);
     }
 
     private FlightMission createMission(String code, String area, String droneId, String operator,
@@ -124,10 +136,10 @@ public class MockDataInitializer {
     private void initSoilSamples() {
         Long count = soilSampleMapper.selectCount(new LambdaQueryWrapper<SoilSample>());
         if (count != null && count > 0) {
-            log.info("土壤采样数据已存在，跳过初始化");
+            log.info("[Mock数据] 土壤采样数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化土壤采样Mock数据...");
+        log.info("[Mock数据] 开始初始化土壤采样Mock数据...");
         SoilSample[] samples = {
             createSample("SP-001", "ZRS-2026-0617-001", 28.45672, 112.83521, 35.2,
                 6.8, 0.32, 245, SoilSample.SoilType.LOAM.name(), "壤土", 3.2, 1.5, 0.8, 2.1,
@@ -151,7 +163,7 @@ public class MockDataInitializer {
         for (SoilSample sample : samples) {
             soilSampleMapper.insert(sample);
         }
-        log.info("土壤采样Mock数据初始化完成，共 {} 条", samples.length);
+        log.info("[Mock数据] 土壤采样Mock数据初始化完成，共 {} 条", samples.length);
     }
 
     private SoilSample createSample(String code, String missionCode, double lat, double lng, double elev,
@@ -184,10 +196,10 @@ public class MockDataInitializer {
     private void initGpsTrackPoints() {
         Long count = gpsTrackPointMapper.selectCount(new LambdaQueryWrapper<GpsTrackPoint>());
         if (count != null && count > 0) {
-            log.info("GPS航迹点数据已存在，跳过初始化");
+            log.info("[Mock数据] GPS航迹点数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化GPS航迹点Mock数据...");
+        log.info("[Mock数据] 开始初始化GPS航迹点Mock数据...");
         String missionCode = "ZRS-2026-0617-001";
         GpsTrackPoint[] points = {
             createTrackPoint(1, missionCode, 28.456720, 112.835210, 120.0, 8.5, 0.0, "08:30:01", 18, "FIXED", 0.012, 0.021, GpsTrackPoint.PointType.TAKEOFF.name()),
@@ -204,7 +216,7 @@ public class MockDataInitializer {
         for (GpsTrackPoint point : points) {
             gpsTrackPointMapper.insert(point);
         }
-        log.info("GPS航迹点Mock数据初始化完成，共 {} 条", points.length);
+        log.info("[Mock数据] GPS航迹点Mock数据初始化完成，共 {} 条", points.length);
     }
 
     private GpsTrackPoint createTrackPoint(int seq, String missionCode, double lat, double lng, double alt,
@@ -231,10 +243,10 @@ public class MockDataInitializer {
     private void initLandPlots() {
         Long count = landPlotMapper.selectCount(new LambdaQueryWrapper<LandPlot>());
         if (count != null && count > 0) {
-            log.info("地块数据已存在，跳过初始化");
+            log.info("[Mock数据] 地块数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化地块Mock数据...");
+        log.info("[Mock数据] 开始初始化地块Mock数据...");
         LandPlot[] plots = {
             createPlot("P-001", "张三家承包地", "张三", "耕地", "旱地", 8.62, 8.5, 0.12,
                 LandPlot.Status.NORMAL.name(), "望城区乔口镇", "湖南省", "长沙市", "望城区", "乔口镇", "盘龙岭村",
@@ -255,7 +267,7 @@ public class MockDataInitializer {
         for (LandPlot plot : plots) {
             landPlotMapper.insert(plot);
         }
-        log.info("地块Mock数据初始化完成，共 {} 条", plots.length);
+        log.info("[Mock数据] 地块Mock数据初始化完成，共 {} 条", plots.length);
     }
 
     private LandPlot createPlot(String code, String name, String owner, String landType, String landUse,
@@ -290,10 +302,10 @@ public class MockDataInitializer {
     private void initSoilClassifications() {
         Long count = soilClassificationMapper.selectCount(new LambdaQueryWrapper<SoilClassification>());
         if (count != null && count > 0) {
-            log.info("土质分类数据已存在，跳过初始化");
+            log.info("[Mock数据] 土质分类数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化土质分类Mock数据...");
+        log.info("[Mock数据] 开始初始化土质分类Mock数据...");
         SoilClassification[] classifications = {
             createSoilClassification("SC-2026-0617-001", "ZRS-2026-0617-001", "乔口镇土壤分类", 36,
                 SoilClassification.SoilType.PADDY_SOIL.name(), "潴育型水稻土", 96.5,
@@ -317,7 +329,7 @@ public class MockDataInitializer {
         for (SoilClassification sc : classifications) {
             soilClassificationMapper.insert(sc);
         }
-        log.info("土质分类Mock数据初始化完成，共 {} 条", classifications.length);
+        log.info("[Mock数据] 土质分类Mock数据初始化完成，共 {} 条", classifications.length);
     }
 
     private SoilClassification createSoilClassification(String code, String missionCode, String name, int sampleCount,
@@ -361,10 +373,10 @@ public class MockDataInitializer {
     private void initRockStratumAnalyses() {
         Long count = rockStratumAnalysisMapper.selectCount(new LambdaQueryWrapper<RockStratumAnalysis>());
         if (count != null && count > 0) {
-            log.info("岩层结构分析数据已存在，跳过初始化");
+            log.info("[Mock数据] 岩层结构分析数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化岩层结构分析Mock数据...");
+        log.info("[Mock数据] 开始初始化岩层结构分析Mock数据...");
         RockStratumAnalysis[] analyses = {
             createRockAnalysis("RSA-2026-0617-001", "ZRS-2026-0617-001", "乔口镇综合地质勘察",
                 "望城区乔口镇盘龙岭村", 28.45672, 112.83521, 35.2,
@@ -408,7 +420,7 @@ public class MockDataInitializer {
         for (RockStratumAnalysis ra : analyses) {
             rockStratumAnalysisMapper.insert(ra);
         }
-        log.info("岩层结构分析Mock数据初始化完成，共 {} 条", analyses.length);
+        log.info("[Mock数据] 岩层结构分析Mock数据初始化完成，共 {} 条", analyses.length);
     }
 
     private RockStratumAnalysis createRockAnalysis(String code, String missionCode, String projectName,
@@ -457,10 +469,10 @@ public class MockDataInitializer {
     private void initDisasterRisks() {
         Long count = disasterRiskMapper.selectCount(new LambdaQueryWrapper<DisasterRisk>());
         if (count != null && count > 0) {
-            log.info("灾害风险数据已存在，跳过初始化");
+            log.info("[Mock数据] 灾害风险数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化灾害风险Mock数据...");
+        log.info("[Mock数据] 开始初始化灾害风险Mock数据...");
         DisasterRisk[] risks = {
             createDisasterRisk("DR-2026-0617-001", "ZRS-2026-0617-001", "望城区乔口镇",
                 28.45672, 112.83521, DisasterRisk.DisasterType.LANDSLIDE.name(),
@@ -502,7 +514,7 @@ public class MockDataInitializer {
         for (DisasterRisk risk : risks) {
             disasterRiskMapper.insert(risk);
         }
-        log.info("灾害风险Mock数据初始化完成，共 {} 条", risks.length);
+        log.info("[Mock数据] 灾害风险Mock数据初始化完成，共 {} 条", risks.length);
     }
 
     private DisasterRisk createDisasterRisk(String code, String missionCode, String region,
@@ -538,10 +550,10 @@ public class MockDataInitializer {
     private void initDevices() {
         Long count = deviceMapper.selectCount(new LambdaQueryWrapper<Device>());
         if (count != null && count > 0) {
-            log.info("设备数据已存在，跳过初始化");
+            log.info("[Mock数据] 设备数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化设备Mock数据...");
+        log.info("[Mock数据] 开始初始化设备Mock数据...");
         Device[] devices = {
             createDevice("DEV-001", "M350-003", Device.DeviceType.DRONE.name(), "DJI Matrice 350 RTK", "大疆创新",
                 "SN-M350-202603-003", Device.Status.ONLINE.name(), 78, 95, 45, 28.5,
@@ -583,7 +595,7 @@ public class MockDataInitializer {
         for (Device device : devices) {
             deviceMapper.insert(device);
         }
-        log.info("设备Mock数据初始化完成，共 {} 条", devices.length);
+        log.info("[Mock数据] 设备Mock数据初始化完成，共 {} 条", devices.length);
     }
 
     private Device createDevice(String code, String name, String type, String model, String manufacturer,
@@ -623,10 +635,10 @@ public class MockDataInitializer {
     private void initQualityChecks() {
         Long count = qualityCheckMapper.selectCount(new LambdaQueryWrapper<QualityCheck>());
         if (count != null && count > 0) {
-            log.info("质量校验数据已存在，跳过初始化");
+            log.info("[Mock数据] 质量校验数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化质量校验Mock数据...");
+        log.info("[Mock数据] 开始初始化质量校验Mock数据...");
         QualityCheck[] checks = {
             createQualityCheck("QC-2026-0617-001", 1L, "ZRS-2026-0617-001",
                 QualityCheck.CheckType.PHOTO_QUALITY.name(), "照片质量检测",
@@ -657,7 +669,7 @@ public class MockDataInitializer {
         for (QualityCheck check : checks) {
             qualityCheckMapper.insert(check);
         }
-        log.info("质量校验Mock数据初始化完成，共 {} 条", checks.length);
+        log.info("[Mock数据] 质量校验Mock数据初始化完成，共 {} 条", checks.length);
     }
 
     private QualityCheck createQualityCheck(String code, Long batchId, String missionCode,
@@ -681,5 +693,278 @@ public class MockDataInitializer {
         qc.setCheckTime(checkTime);
         qc.setIsDeleted(0);
         return qc;
+    }
+
+    private void initAnnouncementCategories() {
+        Long count = announcementCategoryMapper.selectCount(new LambdaQueryWrapper<AnnouncementCategory>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 公告分类数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化公告分类Mock数据...");
+        AnnouncementCategory[] categories = {
+            createAnnouncementCategory("POLICY", "政策法规", "policy", "#1890ff", "国家及地方土地相关政策法规", 1),
+            createAnnouncementCategory("LAND_REHAB", "土地整治", "land", "#52c41a", "土地整治项目相关公告", 2),
+            createAnnouncementCategory("DISASTER", "灾害预警", "disaster", "#f5222d", "地质灾害预警信息", 3),
+            createAnnouncementCategory("TECH", "技术动态", "tech", "#722ed1", "土地资源监测技术动态", 4),
+            createAnnouncementCategory("PROJECT", "项目公示", "project", "#fa8c16", "项目招标及结果公示", 5)
+        };
+        for (AnnouncementCategory category : categories) {
+            announcementCategoryMapper.insert(category);
+        }
+        log.info("[Mock数据] 公告分类Mock数据初始化完成，共 {} 条", categories.length);
+    }
+
+    private AnnouncementCategory createAnnouncementCategory(String code, String name, String icon, String color,
+                                                             String description, int sortOrder) {
+        AnnouncementCategory ac = new AnnouncementCategory();
+        ac.setCategoryCode(code);
+        ac.setCategoryName(name);
+        ac.setIcon(icon);
+        ac.setColor(color);
+        ac.setDescription(description);
+        ac.setSortOrder(sortOrder);
+        ac.setStatus(1);
+        ac.setIsDeleted(0);
+        return ac;
+    }
+
+    private void initAnnouncements() {
+        Long count = announcementMapper.selectCount(new LambdaQueryWrapper<Announcement>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 公告数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化公告Mock数据...");
+        Announcement[] announcements = {
+            createAnnouncement("湖南省土地整治规划（2026-2030年）征求意见稿",
+                "为贯彻落实国家关于土地资源保护与利用的总体要求，结合我省实际，省自然资源厅组织编制了《湖南省土地整治规划（2026-2030年）》（征求意见稿），现向社会公开征求意见。",
+                "湖南省自然资源厅发布土地整治规划征求意见稿，规划期为2026-2030年，涉及全省14个市州，重点推进高标准农田建设、农村建设用地整理等六大工程。",
+                1L, "政策法规", "省自然资源厅", "湖南省自然资源厅官网",
+                "湖南省", "长沙市", Announcement.AdminLevel.PROVINCE.name(),
+                "土地整治,规划,政策", "政策,规划", 1, 1, 1,
+                "AI分析显示该规划覆盖全省范围，重点关注高标准农田建设和生态修复，预计将对全省土地利用格局产生深远影响。",
+                "[{\"time\":\"2026-01-15\",\"event\":\"规划编制启动\"},{\"time\":\"2026-03-20\",\"event\":\"初稿完成\"},{\"time\":\"2026-06-25\",\"event\":\"公开征求意见\"},{\"time\":\"2026-08-01\",\"event\":\"预计正式发布\"}]",
+                "土地整治,高标准农田,生态修复,规划",
+                LocalDateTime.of(2026, 6, 25, 9, 0), 28.2282, 112.9388),
+            createAnnouncement("长沙市2026年第二批土地整治项目招标公告",
+                "长沙市自然资源和规划局决定对长沙市2026年第二批土地整治项目进行公开招标，项目涉及望城区、长沙县、浏阳市共8个乡镇，总投资约2.5亿元。",
+                "长沙市发布2026年第二批土地整治项目招标公告，涉及3个区县8个乡镇，总投资2.5亿元，主要建设内容包括高标准农田建设、灌溉设施改造等。",
+                5L, "项目公示", "市自然资源和规划局", "长沙市公共资源交易中心",
+                "湖南省", "长沙市", Announcement.AdminLevel.CITY.name(),
+                "招标,土地整治,项目", "招标,项目", 0, 1, 0,
+                "AI分析：本批次项目集中在长沙东部和北部地区，有望显著提升区域农业生产条件和土地利用效率。",
+                "[{\"time\":\"2026-06-20\",\"event\":\"招标公告发布\"},{\"time\":\"2026-07-10\",\"event\":\"投标截止\"},{\"time\":\"2026-07-15\",\"event\":\"开标\"},{\"time\":\"2026-07-20\",\"event\":\"中标公示\"}]",
+                "招标,土地整治,高标准农田",
+                LocalDateTime.of(2026, 6, 20, 10, 30), 28.2282, 112.9388),
+            createAnnouncement("望城区地质灾害气象风险预警",
+                "根据气象部门预报，未来24小时望城区部分区域将出现强降雨天气，发生地质灾害的风险较高。请相关部门和群众做好防范准备。",
+                "望城区发布地质灾害气象风险预警，预警级别为黄色，受影响区域包括乔口镇、铜官街道等5个乡镇街道，提醒当地居民注意防范滑坡、泥石流等地质灾害。",
+                3L, "灾害预警", "区应急管理局", "望城区气象局",
+                "湖南省", "长沙市", "望城区", Announcement.AdminLevel.COUNTY.name(),
+                "地质灾害,预警,降雨", "预警,灾害", 1, 0, 1,
+                "AI分析显示强降雨主要集中在西北部山区，该区域地形坡度较大，土层较厚，滑坡风险较高。建议重点监测坡脚和沟口区域。",
+                "[{\"time\":\"2026-06-27 08:00\",\"event\":\"预警发布\"},{\"time\":\"2026-06-27 14:00\",\"event\":\"预计强降雨开始\"},{\"time\":\"2026-06-28 02:00\",\"event\":\"预计降雨最强时段\"},{\"time\":\"2026-06-28 20:00\",\"event\":\"预计预警解除\"}]",
+                "地质灾害,滑坡,降雨,预警",
+                LocalDateTime.of(2026, 6, 27, 8, 0), 28.4567, 112.8352),
+            createAnnouncement("无人机激光雷达在土地监测中的应用进展",
+                "随着无人机技术和激光雷达技术的快速发展，土地资源监测手段正在发生革命性变化。本文综述了近年来无人机LiDAR技术在土地调查、灾害监测等领域的应用进展。",
+                "技术动态文章综述无人机激光雷达技术在土地监测中的应用进展，涵盖地形测绘、土地利用调查、地质灾害监测等多个应用场景，技术精度和效率显著提升。",
+                4L, "技术动态", "技术部", "自然资源学报",
+                "湖南省", "长沙市", Announcement.AdminLevel.PROVINCE.name(),
+                "无人机,激光雷达,土地监测", "技术,无人机", 0, 1, 0,
+                "AI分析：无人机LiDAR技术已成为土地监测的重要手段，点云密度可达200点/平方米以上，高程精度优于5cm，工作效率是传统方法的10-20倍。",
+                "[{\"time\":\"2020\",\"event\":\"技术起步阶段\"},{\"time\":\"2023\",\"event\":\"规模化应用\"},{\"time\":\"2025\",\"event\":\"AI智能分析普及\"},{\"time\":\"2026\",\"event\":\"实时监测成为可能\"}]",
+                "无人机,LiDAR,激光雷达,土地监测,遥感",
+                LocalDateTime.of(2026, 6, 15, 14, 0), 28.2282, 112.9388),
+            createAnnouncement("乔口镇盘龙岭村土地整治项目公示",
+                "根据望城区人民政府批复，乔口镇盘龙岭村土地整治项目已完成立项，现将项目基本情况予以公示，公示期为7天。项目建设规模1200亩，总投资480万元。",
+                "乔口镇盘龙岭村土地整治项目公示，建设规模1200亩，总投资480万元，主要建设内容包括田块整治、灌溉排水、田间道路等，预计新增耕地面积50亩。",
+                2L, "土地整治", "乔口镇政府", "望城区政府官网",
+                "湖南省", "长沙市", "望城区", "乔口镇", Announcement.AdminLevel.TOWNSHIP.name(),
+                "土地整治,盘龙岭村,公示", "土地整治,项目", 0, 0, 0,
+                "AI分析：该项目实施后预计可新增耕地约50亩，耕地质量平均提升0.5个等级，农业生产条件将得到显著改善。",
+                "[{\"time\":\"2026-06-10\",\"event\":\"项目立项\"},{\"time\":\"2026-06-25\",\"event\":\"项目公示\"},{\"time\":\"2026-07-05\",\"event\":\"预计开工\"},{\"time\":\"2026-12-31\",\"event\":\"预计竣工\"}]",
+                "土地整治,盘龙岭村,高标准农田",
+                LocalDateTime.of(2026, 6, 25, 16, 0), 28.4567, 112.8352),
+            createAnnouncement("湖南省自然资源厅关于加强耕地保护的实施意见",
+                "为深入贯彻党中央、国务院关于耕地保护的决策部署，坚决遏制耕地'非农化'、防止'非粮化'，结合我省实际，现就加强耕地保护工作提出如下实施意见。",
+                "湖南省自然资源厅发布加强耕地保护实施意见，提出严格耕地用途管制、加强耕地占补平衡、强化耕地执法监督等八项具体措施，严守耕地保护红线。",
+                1L, "政策法规", "省自然资源厅", "湖南省人民政府办公厅",
+                "湖南省", "长沙市", Announcement.AdminLevel.PROVINCE.name(),
+                "耕地保护,政策,实施意见", "政策,耕地", 1, 1, 0,
+                "AI分析：该政策从多维度强化耕地保护，预计将有效遏制耕地减少趋势，对保障粮食安全具有重要意义。政策执行重点在城乡结合部和主要交通沿线。",
+                "[{\"time\":\"2026-05-20\",\"event\":\"政策起草\"},{\"time\":\"2026-06-10\",\"event\":\"省政府审议通过\"},{\"time\":\"2026-06-28\",\"event\":\"正式发布实施\"}]",
+                "耕地保护,非农化,非粮化,粮食安全",
+                LocalDateTime.of(2026, 6, 28, 9, 0), 28.2282, 112.9388),
+            createAnnouncement("岳麓区2026年地质灾害排查工作启动",
+                "岳麓区自然资源局决定在全区范围内开展2026年度地质灾害隐患排查工作，全面掌握全区地质灾害隐患点分布及变化情况，保障人民群众生命财产安全。",
+                "岳麓区启动2026年地质灾害排查工作，排查范围覆盖全区所有乡镇街道，重点排查山区、矿区、交通沿线等区域，采用无人机遥感+地面核查相结合的方式。",
+                3L, "灾害预警", "区自然资源局", "岳麓区政府官网",
+                "湖南省", "长沙市", "岳麓区", Announcement.AdminLevel.COUNTY.name(),
+                "地质灾害,排查,岳麓区", "灾害,排查", 0, 0, 0,
+                "AI分析显示岳麓区西部山区地质灾害风险较高，本次排查预计将新发现隐患点15-20处，需重点关注滑坡和崩塌类型。",
+                "[{\"time\":\"2026-06-20\",\"event\":\"工作部署\"},{\"time\":\"2026-06-25\",\"event\":\"排查启动\"},{\"time\":\"2026-07-15\",\"event\":\"外业完成\"},{\"time\":\"2026-07-31\",\"event\":\"报告提交\"}]",
+                "地质灾害,隐患排查,岳麓区",
+                LocalDateTime.of(2026, 6, 20, 11, 0), 28.3857, 112.7893),
+            createAnnouncement("土地资源智能监测技术研讨会在长沙召开",
+                "由湖南省自然资源学会主办的'2026土地资源智能监测技术研讨会'于6月22日在长沙召开，来自全国各地的300余名专家学者参会，共同探讨土地监测新技术、新方法。",
+                "土地资源智能监测技术研讨会在长沙召开，会议围绕AI+遥感、大数据分析、实时监测等热点话题展开交流，展示了多项最新技术成果。",
+                4L, "技术动态", "学会秘书处", "湖南省自然资源学会",
+                "湖南省", "长沙市", Announcement.AdminLevel.CITY.name(),
+                "研讨会,技术,智能监测", "技术,会议", 0, 1, 0,
+                "AI分析：本次会议反映了土地监测技术向智能化、实时化方向快速发展的趋势，AI技术已深度融入土地调查、监测、评价等各个环节。",
+                "[{\"time\":\"2026-06-22 09:00\",\"event\":\"开幕式\"},{\"time\":\"2026-06-22 14:00\",\"event\":\"主题报告\"},{\"time\":\"2026-06-23 09:00\",\"event\":\"分论坛\"},{\"time\":\"2026-06-23 16:00\",\"event\":\"闭幕式\"}]",
+                "智能监测,AI,遥感,大数据,研讨会",
+                LocalDateTime.of(2026, 6, 22, 9, 0), 28.2282, 112.9388)
+        };
+        for (Announcement announcement : announcements) {
+            announcementMapper.insert(announcement);
+        }
+        log.info("[Mock数据] 公告Mock数据初始化完成，共 {} 条", announcements.length);
+    }
+
+    private Announcement createAnnouncement(String title, String content, String summary,
+                                             Long categoryId, String categoryName,
+                                             String author, String source,
+                                             String province, String city, String adminLevel,
+                                             String keywords, String tags,
+                                             int isTop, int isRecommend, int isHot,
+                                             String aiSummary, String aiTimeline, String aiKeywords,
+                                             LocalDateTime publishTime, double lat, double lng) {
+        return createAnnouncement(title, content, summary, categoryId, categoryName, author, source,
+            province, city, null, null, adminLevel, keywords, tags, isTop, isRecommend, isHot,
+            aiSummary, aiTimeline, aiKeywords, publishTime, lat, lng);
+    }
+
+    private Announcement createAnnouncement(String title, String content, String summary,
+                                             Long categoryId, String categoryName,
+                                             String author, String source,
+                                             String province, String city, String county, String adminLevel,
+                                             String keywords, String tags,
+                                             int isTop, int isRecommend, int isHot,
+                                             String aiSummary, String aiTimeline, String aiKeywords,
+                                             LocalDateTime publishTime, double lat, double lng) {
+        return createAnnouncement(title, content, summary, categoryId, categoryName, author, source,
+            province, city, county, null, adminLevel, keywords, tags, isTop, isRecommend, isHot,
+            aiSummary, aiTimeline, aiKeywords, publishTime, lat, lng);
+    }
+
+    private Announcement createAnnouncement(String title, String content, String summary,
+                                             Long categoryId, String categoryName,
+                                             String author, String source,
+                                             String province, String city, String county, String township,
+                                             String adminLevel,
+                                             String keywords, String tags,
+                                             int isTop, int isRecommend, int isHot,
+                                             String aiSummary, String aiTimeline, String aiKeywords,
+                                             LocalDateTime publishTime, double lat, double lng) {
+        Announcement a = new Announcement();
+        a.setTitle(title);
+        a.setContent(content);
+        a.setSummary(summary);
+        a.setCategoryId(categoryId);
+        a.setCategoryName(categoryName);
+        a.setAuthor(author);
+        a.setSource(source);
+        a.setProvince(province);
+        a.setCity(city);
+        a.setCounty(county);
+        a.setTownship(township);
+        a.setAdminLevel(adminLevel);
+        a.setKeywords(keywords);
+        a.setTags(tags);
+        a.setIsTop(isTop);
+        a.setIsRecommend(isRecommend);
+        a.setIsHot(isHot);
+        a.setAiSummary(aiSummary);
+        a.setAiTimeline(aiTimeline);
+        a.setAiKeywords(aiKeywords);
+        a.setLatitude(lat);
+        a.setLongitude(lng);
+        a.setStatus(Announcement.Status.PUBLISHED.name());
+        a.setAuditStatus(Announcement.AuditStatus.PASSED.name());
+        a.setPublishTime(publishTime);
+        a.setViewCount((int)(Math.random() * 1000 + 100));
+        a.setLikeCount((int)(Math.random() * 100 + 10));
+        a.setCommentCount((int)(Math.random() * 50 + 5));
+        a.setPriority(isTop == 1 ? 1 : 0);
+        a.setIsDeleted(0);
+        return a;
+    }
+
+    private void initApprovalTasks() {
+        Long count = approvalTaskMapper.selectCount(new LambdaQueryWrapper<ApprovalTask>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 审批任务数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化审批任务Mock数据...");
+        ApprovalTask[] tasks = {
+            createApprovalTask("STANDARD", "望城区乔口镇盘龙岭村土地整治项目立项审批",
+                "张三", "土地整治科", "科室负责人审核", "dept_leader",
+                "PROCESSING", 2,
+                "{\"projectName\":\"盘龙岭村土地整治项目\",\"projectArea\":1200,\"investment\":480,\"location\":\"望城区乔口镇盘龙岭村\"}",
+                LocalDateTime.of(2026, 6, 28, 17, 0),
+                LocalDateTime.of(2026, 6, 25, 9, 0)),
+            createApprovalTask("MATERIAL", "无人机LiDAR设备采购申请",
+                "李四", "技术装备科", "财务审核", "finance_review",
+                "PROCESSING", 1,
+                "{\"item\":\"DJI Matrice 350 RTK + LiDAR套装\",\"quantity\":2,\"amount\":680000,\"supplier\":\"某某科技有限公司\"}",
+                LocalDateTime.of(2026, 6, 30, 17, 0),
+                LocalDateTime.of(2026, 6, 26, 14, 0)),
+            createApprovalTask("DRONE_FLIGHT", "岳麓区莲花镇无人机飞行任务审批",
+                "王五", "外业采集部", "空域管制审批", "airspace_approval",
+                "PASSED", 2,
+                "{\"missionCode\":\"ZRS-2026-0630-001\",\"location\":\"岳麓区莲花镇\",\"flightTime\":\"2026-06-30\",\"altitude\":120,\"duration\":60}",
+                LocalDateTime.of(2026, 6, 29, 12, 0),
+                LocalDateTime.of(2026, 6, 24, 10, 0)),
+            createApprovalTask("EMERGENCY", "望城区乔口镇地质灾害应急调查任务",
+                "赵六", "应急监测科", "—", "—",
+                "PASSED", 3,
+                "{\"event\":\"乔口镇滑坡隐患\",\"level\":\"二级\",\"location\":\"望城区乔口镇盘龙岭村\",\"team\":\"应急调查一组\"}",
+                LocalDateTime.of(2026, 6, 27, 14, 0),
+                LocalDateTime.of(2026, 6, 27, 8, 30)),
+            createApprovalTask("STANDARD", "长沙县土地质量地球化学调查项目立项",
+                "钱七", "调查评价科", "分管领导审批", "leader_review",
+                "REJECTED", 1,
+                "{\"projectName\":\"长沙县土地质量地球化学调查\",\"surveyArea\":500,\"budget\":1200000,\"period\":\"2026.07-2026.12\"}",
+                LocalDateTime.of(2026, 6, 28, 17, 0),
+                LocalDateTime.of(2026, 6, 20, 15, 0)),
+            createApprovalTask("DRONE_FLIGHT", "开福区青竹湖无人机航摄任务",
+                "孙八", "外业采集部", "部门负责人审批", "dept_leader",
+                "PROCESSING", 1,
+                "{\"missionCode\":\"ZRS-2026-0702-001\",\"location\":\"开福区青竹湖\",\"flightTime\":\"2026-07-02\",\"altitude\":150,\"duration\":45}",
+                LocalDateTime.of(2026, 7, 1, 17, 0),
+                LocalDateTime.of(2026, 6, 27, 11, 0))
+        };
+        for (ApprovalTask task : tasks) {
+            approvalTaskMapper.insert(task);
+        }
+        log.info("[Mock数据] 审批任务Mock数据初始化完成，共 {} 条", tasks.length);
+    }
+
+    private ApprovalTask createApprovalTask(String bizType, String bizTitle,
+                                             String applicantName, String applicantDept,
+                                             String curStep, String curStepKey,
+                                             String status, int priority,
+                                             String bizData,
+                                             LocalDateTime slaDeadline, LocalDateTime createdTime) {
+        ApprovalTask t = new ApprovalTask();
+        t.setBizType(bizType);
+        t.setBizTitle(bizTitle);
+        t.setApplicantId((long)(Math.random() * 100 + 1));
+        t.setApplicantName(applicantName);
+        t.setApplicantDept(applicantDept);
+        t.setCurStep(curStep);
+        t.setCurStepKey(curStepKey);
+        t.setStatus(status);
+        t.setPriority(priority);
+        t.setBizData(bizData);
+        t.setSlaDeadline(slaDeadline);
+        t.setCreatedTime(createdTime);
+        t.setUpdatedTime(createdTime);
+        t.setIsDeleted(0);
+        return t;
     }
 }

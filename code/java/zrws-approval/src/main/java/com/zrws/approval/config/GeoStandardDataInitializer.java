@@ -7,9 +7,11 @@ import com.zrws.approval.domain.entity.RockStratumAnalysis;
 import com.zrws.approval.mapper.GeoStandardMapper;
 import com.zrws.approval.mapper.RockSampleMapper;
 import com.zrws.approval.mapper.RockStratumAnalysisMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -22,7 +24,8 @@ import java.util.List;
  */
 @Slf4j
 @Component
-public class GeoStandardDataInitializer {
+@Order(4)
+public class GeoStandardDataInitializer implements ApplicationRunner {
 
     @Autowired
     private GeoStandardMapper geoStandardMapper;
@@ -31,25 +34,25 @@ public class GeoStandardDataInitializer {
     @Autowired
     private RockStratumAnalysisMapper analysisMapper;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void run(ApplicationArguments args) {
         try {
             initGeoStandards();
             initRockAnalyses();
             initRockSamples();
-            log.info("地质标准数据初始化完成");
+            log.info("[地质标准] 地质标准数据初始化完成");
         } catch (Exception e) {
-            log.warn("地质标准数据初始化失败（可能表不存在）: {}", e.getMessage());
+            log.warn("[地质标准] 地质标准数据初始化失败（可能表不存在）: {}", e.getMessage());
         }
     }
 
     private void initGeoStandards() {
         Long count = geoStandardMapper.selectCount(new LambdaQueryWrapper<GeoStandard>());
         if (count != null && count > 0) {
-            log.info("地质标准数据已存在，跳过初始化");
+            log.info("[地质标准] 地质标准数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化地质标准数据...");
+        log.info("[地质标准] 开始初始化地质标准数据...");
         List<GeoStandard> standards = new ArrayList<>();
 
         // ===== 中国土壤分类 =====
@@ -258,7 +261,7 @@ public class GeoStandardDataInitializer {
         for (GeoStandard standard : standards) {
             geoStandardMapper.insert(standard);
         }
-        log.info("地质标准数据初始化完成，共 {} 条", standards.size());
+        log.info("[地质标准] 地质标准数据初始化完成，共 {} 条", standards.size());
     }
 
     private GeoStandard createSoilChina(String code, String name, String subcategory, String parentMaterial,
@@ -350,10 +353,10 @@ public class GeoStandardDataInitializer {
     private void initRockSamples() {
         Long count = rockSampleMapper.selectCount(new LambdaQueryWrapper<RockSample>());
         if (count != null && count > 0) {
-            log.info("岩矿样品数据已存在，跳过初始化");
+            log.info("[地质标准] 岩矿样品数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化岩矿样品Mock数据...");
+        log.info("[地质标准] 开始初始化岩矿样品Mock数据...");
         RockSample[] samples = {
             createSample("RS-2026-0617-001", 1L, "RSA-2026-0617-001", "ZRS-2026-0617-001",
                 "ZK1-01", RockSample.SampleType.ROCK.name(),
@@ -419,7 +422,7 @@ public class GeoStandardDataInitializer {
         for (RockSample sample : samples) {
             rockSampleMapper.insert(sample);
         }
-        log.info("岩矿样品Mock数据初始化完成，共 {} 条", samples.length);
+        log.info("[地质标准] 岩矿样品Mock数据初始化完成，共 {} 条", samples.length);
     }
 
     private RockSample createSample(String code, Long analysisId, String analysisCode, String missionCode,
@@ -472,10 +475,10 @@ public class GeoStandardDataInitializer {
     private void initRockAnalyses() {
         Long count = analysisMapper.selectCount(new LambdaQueryWrapper<RockStratumAnalysis>());
         if (count != null && count > 0) {
-            log.info("岩层分析数据已存在，跳过初始化");
+            log.info("[地质标准] 岩层分析数据已存在，跳过初始化");
             return;
         }
-        log.info("开始初始化岩层分析Mock数据...");
+        log.info("[地质标准] 开始初始化岩层分析Mock数据...");
         RockStratumAnalysis[] analyses = {
             createAnalysis("RSA-2026-0617-001", 1L, "ZRS-2026-0617-001",
                 "乔口镇综合地质勘察", "望城区乔口镇盘龙岭村", 28.45672, 112.83521,
@@ -503,7 +506,7 @@ public class GeoStandardDataInitializer {
         for (RockStratumAnalysis analysis : analyses) {
             analysisMapper.insert(analysis);
         }
-        log.info("岩层分析Mock数据初始化完成，共 {} 条", analyses.length);
+        log.info("[地质标准] 岩层分析Mock数据初始化完成，共 {} 条", analyses.length);
     }
 
     private RockStratumAnalysis createAnalysis(String code, Long missionId, String missionCode,

@@ -57,6 +57,8 @@ public class BoDefinition implements Serializable {
     @TableLogic
     private Integer isDeleted;
 
+    private Long tenantId;
+
     /** 创建者 */
     private Long createdBy;
 

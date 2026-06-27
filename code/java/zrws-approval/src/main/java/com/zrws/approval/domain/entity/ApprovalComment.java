@@ -27,5 +27,6 @@ public class ApprovalComment {
     private String opinion;
 
     private Integer isDeleted;
+    private Long tenantId;
     private LocalDateTime createdTime;
 }

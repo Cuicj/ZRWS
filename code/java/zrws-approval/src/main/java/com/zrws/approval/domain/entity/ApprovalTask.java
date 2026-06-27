@@ -48,6 +48,7 @@ public class ApprovalTask {
     private String bizData;
 
     private Integer isDeleted;
+    private Long tenantId;
     private Long createdBy;
     private LocalDateTime createdTime;
     private Long updatedBy;
