@@ -102,6 +102,12 @@ const routes = [
         meta: { group: '土地资源', title: '土质分类', icon: '✦' }
       },
       {
+        path: 'rock-stratum',
+        name: 'RockStratumAnalysis',
+        component: () => import('@/views/pages/RockStratumAnalysis.vue'),
+        meta: { group: '土地资源', title: '岩层分析', icon: '🪨' }
+      },
+      {
         path: 'disaster-risk',
         name: 'DisasterRisk',
         component: () => import('@/views/pages/DisasterRisk.vue'),

@@ -48,34 +48,54 @@ const trendPrefix = computed(() => {
 </script>
 
 <style scoped>
+/* ===== 明亮柔和风格 ===== */
 .stat-card {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: var(--s-4);
-  background: var(--ink-800);
-  border-left: 2px solid var(--ink-600);
-  transition: all var(--transition-fast);
+  padding: 20px 24px;
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border-radius: 16px;
+  border: 1px solid #E8E2D9;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  transition: width 0.3s ease;
 }
 
 .stat-card:hover {
-  background: var(--ink-700);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(139, 115, 85, 0.12);
+  border-color: #D4C4B0;
 }
 
-.stat-card.accent {
-  border-left-color: var(--sand-500);
+.stat-card:hover::before {
+  width: 6px;
 }
 
-.stat-card.ok {
-  border-left-color: var(--ok);
+.stat-card.accent::before {
+  background: linear-gradient(180deg, #C9A86C 0%, #D4B87A 100%);
 }
-
-.stat-card.warn {
-  border-left-color: var(--warn);
+.stat-card.ok::before {
+  background: linear-gradient(180deg, #66BB6A 0%, #81C784 100%);
 }
-
-.stat-card.danger {
-  border-left-color: var(--danger);
+.stat-card.warn::before {
+  background: linear-gradient(180deg, #FFA726 0%, #FFB74D 100%);
+}
+.stat-card.danger::before {
+  background: linear-gradient(180deg, #EF5350 0%, #E57373 100%);
+}
+.stat-card.default::before {
+  background: linear-gradient(180deg, #8B7355 0%, #A89F91 100%);
 }
 
 .stat-info {
@@ -83,46 +103,52 @@ const trendPrefix = computed(() => {
 }
 
 .stat-label {
-  font-size: 10px;
-  color: var(--signal-dim);
-  letter-spacing: 0.15em;
-  margin-bottom: 4px;
+  font-size: 12px;
+  color: #8B7355;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
 }
 
 .stat-value {
-  font-size: 32px;
+  font-size: 36px;
   font-weight: 300;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  color: #5D4E37;
 }
 
 .stat-unit {
-  font-size: 12px;
-  color: var(--signal-dim);
-  margin-left: 2px;
+  font-size: 14px;
+  color: #A89F91;
+  margin-left: 4px;
 }
 
 .stat-trend {
-  font-size: 11px;
-  color: var(--signal-dim);
+  font-size: 12px;
+  color: #A89F91;
+  font-weight: 500;
 }
 
 .stat-trend.trend-up {
-  color: var(--ok);
+  color: #66BB6A;
 }
 
 .stat-trend.trend-down {
-  color: var(--danger);
+  color: #EF5350;
 }
 
 .stat-icon {
-  width: 40px;
-  height: 40px;
+  width: 48px;
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
-  color: var(--signal-dim);
-  background: var(--ink-700);
+  font-size: 22px;
+  color: #8B7355;
+  background: linear-gradient(135deg, #F5F2ED 0%, #EBE5DB 100%);
+  border-radius: 12px;
+  margin-left: 12px;
 }
 </style>

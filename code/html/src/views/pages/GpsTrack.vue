@@ -70,13 +70,65 @@ const trackPoints = ref([
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { display: flex; justify-content: space-between; padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.gps-row { display: grid; grid-template-columns: 1fr 2fr; gap: var(--s-3); }
-.coord-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--s-3); }
-.coord-item { padding: var(--s-3); background: var(--ink-700); }
-.coord-item .label { font-size: 10px; color: var(--signal-dim); letter-spacing: 0.1em; margin-bottom: 4px; }
-.coord-item .value { font-size: 14px; }
+.page-container {
+  padding: var(--s-5);
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid #E8E2D9;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #5D4E37;
+  font-family: var(--font-display);
+}
+.page-meta {
+  font-size: 11px;
+  color: #8B7355;
+  margin-top: 4px;
+  letter-spacing: 0.1em;
+  font-weight: 500;
+}
+.gps-row {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--s-3);
+}
+.coord-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--s-3);
+}
+.coord-item {
+  padding: var(--s-3);
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 12px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.06);
+}
+.coord-item:hover {
+  border-color: #C9A86C;
+  box-shadow: 0 4px 12px rgba(139, 115, 85, 0.1);
+  transform: translateY(-2px);
+}
+.coord-item .label {
+  font-size: 10px;
+  color: #8B7355;
+  letter-spacing: 0.1em;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+.coord-item .value {
+  font-size: 14px;
+  color: #5D4E37;
+  font-weight: 500;
+}
 </style>

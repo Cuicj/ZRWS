@@ -44,40 +44,55 @@ const sidebarCollapsed = ref(false);
 
 .shell-main {
   flex: 1;
-  margin-left: 220px;
-  background: var(--ink-900);
+  margin-left: 240px;
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  transition: margin-left var(--transition-normal);
+  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  padding-top: 64px;
 }
 
 .shell-main.expanded {
-  margin-left: 48px;
+  margin-left: 64px;
 }
 
 .breadcrumb-bar {
-  padding: 8px var(--s-5);
-  border-bottom: var(--line);
-  background: var(--ink-800);
+  padding: 12px 28px;
+  border-bottom: 1px solid #E8E2D9;
+  background: linear-gradient(180deg, #FAFAF8 0%, #F7F3ED 100%);
   font-size: 12px;
-  color: var(--signal-dim);
+  color: #8B7355;
   display: flex;
   align-items: center;
-  gap: var(--s-2);
+  gap: 8px;
   position: sticky;
-  top: 0;
+  top: 64px;
   z-index: 10;
+  font-weight: 500;
 }
 
 .sep {
-  color: var(--ink-500);
+  color: #D4C4B0;
 }
 
 .content-area {
   flex: 1;
   overflow-y: auto;
-  padding: var(--s-5);
+  padding: 24px 32px;
   position: relative;
+}
+
+/* 页面过渡动画优化 */
+.slide-enter-active, .slide-leave-active {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.slide-enter-from {
+  opacity: 0;
+  transform: translateY(10px);
+}
+.slide-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 </style>

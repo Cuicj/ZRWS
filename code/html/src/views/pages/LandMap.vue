@@ -173,18 +173,18 @@ const legendTitle = computed(() => {
 const legendItems = computed(() => {
   if (mapType.value === 'disaster') {
     return [
-      { label: '低风险', color: '#52c41a' },
-      { label: '中风险', color: '#faad14' },
-      { label: '高风险', color: '#ff4d4f' },
-      { label: '极高风险', color: '#722ed1' }
+      { label: '低风险', color: '#A8D5A2' },
+      { label: '中风险', color: '#E8C9A0' },
+      { label: '高风险', color: '#D4A574' },
+      { label: '极高风险', color: '#B8864A' }
     ];
   }
   return [
-    { label: '0-500万亩', color: '#E3F2FD' },
-    { label: '500-1000万亩', color: '#90CAF9' },
-    { label: '1000-2000万亩', color: '#42A5F5' },
-    { label: '2000-5000万亩', color: '#1976D2' },
-    { label: '5000万亩以上', color: '#0D47A1' }
+    { label: '0-500万亩', color: '#F5EFE6' },
+    { label: '500-1000万亩', color: '#E8DCC8' },
+    { label: '1000-2000万亩', color: '#D4B87A' },
+    { label: '2000-5000万亩', color: '#B89855' },
+    { label: '5000万亩以上', color: '#8B7355' }
   ];
 });
 const landData = ref([
@@ -260,21 +260,21 @@ const initMap = () => {
     backgroundColor: 'transparent',
     tooltip: {
       trigger: 'item',
-      backgroundColor: 'rgba(31, 38, 51, 0.95)',
-      borderColor: 'var(--ink-600)',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#E8E2D9',
       borderWidth: 1,
-      textStyle: { color: '#F5F0E6' },
+      textStyle: { color: '#5D4E37' },
       padding: [12, 16],
       formatter: (params) => {
         const item = landData.value.find(d => d.name === params.name);
         if (!item) return '';
         return `
-          <div style="font-weight:bold;margin-bottom:10px;font-size:15px;">${params.name}</div>
-          <div style="color:#B5AF9F;line-height:2;">总面积: <span style="color:#F5F0E6;font-weight:500;">${(item.area / 10000).toFixed(1)}万亩</span></div>
-          <div style="color:#B5AF9F;line-height:2;">耕地: <span style="color:#52c41a;font-weight:500;">${(item.cultivated / 10000).toFixed(1)}万亩</span></div>
-          <div style="color:#B5AF9F;line-height:2;">林地: <span style="color:#13c2c2;font-weight:500;">${(item.forest / 10000).toFixed(1)}万亩</span></div>
-          <div style="color:#B5AF9F;line-height:2;">建设用地: <span style="color:#faad14;font-weight:500;">${(item.construction / 10000).toFixed(1)}万亩</span></div>
-          <div style="color:#B5AF9F;line-height:2;">灾害风险: <span style="color:${item.disaster === '高' ? '#ff4d4f' : '#52c41a'};font-weight:500;">${item.disaster}</span></div>
+          <div style="font-weight:bold;margin-bottom:10px;font-size:15px;color:#5D4E37;">${params.name}</div>
+          <div style="color:#8B7355;line-height:2;">总面积: <span style="color:#5D4E37;font-weight:500;">${(item.area / 10000).toFixed(1)}万亩</span></div>
+          <div style="color:#8B7355;line-height:2;">耕地: <span style="color:#A8D5A2;font-weight:500;">${(item.cultivated / 10000).toFixed(1)}万亩</span></div>
+          <div style="color:#8B7355;line-height:2;">林地: <span style="color:#D4B87A;font-weight:500;">${(item.forest / 10000).toFixed(1)}万亩</span></div>
+          <div style="color:#8B7355;line-height:2;">建设用地: <span style="color:#E8C9A0;font-weight:500;">${(item.construction / 10000).toFixed(1)}万亩</span></div>
+          <div style="color:#8B7355;line-height:2;">灾害风险: <span style="color:${item.disaster === '高' ? '#B8864A' : '#A8D5A2'};font-weight:500;">${item.disaster}</span></div>
         `;
       }
     },
@@ -285,14 +285,14 @@ const initMap = () => {
       bottom: 24,
       text: ['高', '低'],
       textStyle: {
-        color: '#B5AF9F',
+        color: '#8B7355',
         fontSize: 11,
         fontFamily: 'var(--font-mono)'
       },
       inRange: {
         color: mapType.value === 'disaster'
-          ? ['#52c41a', '#faad14', '#ff4d4f', '#722ed1']
-          : ['#E3F2FD', '#90CAF9', '#42A5F5', '#1976D2', '#0D47A1']
+          ? ['#A8D5A2', '#E8C9A0', '#D4A574', '#B8864A']
+          : ['#F5EFE6', '#E8DCC8', '#D4B87A', '#B89855', '#8B7355']
       },
       itemWidth: 14,
       itemHeight: 120
@@ -306,34 +306,32 @@ const initMap = () => {
         zoom: 1.2,
         label: {
           show: true,
-          color: '#F5F0E6',
+          color: '#5D4E37',
           fontSize: 11,
-          fontWeight: 500,
-          textBorderColor: 'rgba(0,0,0,0.5)',
-          textBorderWidth: 2
+          fontWeight: 500
         },
         itemStyle: {
-          borderColor: 'rgba(255,255,255,0.3)',
+          borderColor: 'rgba(201, 168, 108, 0.4)',
           borderWidth: 1,
-          areaColor: '#2B3447'
+          areaColor: '#F0EBE3'
         },
         emphasis: {
           label: {
-            color: '#fff',
+            color: '#5D4E37',
             fontSize: 13,
             fontWeight: 'bold'
           },
           itemStyle: {
-            areaColor: '#D4A853',
-            borderColor: '#fff',
+            areaColor: '#C9A86C',
+            borderColor: '#C9A86C',
             borderWidth: 2,
-            shadowColor: 'rgba(212, 168, 83, 0.5)',
+            shadowColor: 'rgba(201, 168, 108, 0.4)',
             shadowBlur: 20
           }
         },
         select: {
-          label: { color: '#fff' },
-          itemStyle: { areaColor: '#B8923F' }
+          label: { color: '#5D4E37' },
+          itemStyle: { areaColor: '#B89855' }
         },
         data: landData.value.map(item => ({
           name: item.name,
@@ -354,17 +352,17 @@ const initPie = () => {
     tooltip: {
       trigger: 'item',
       formatter: '{b}: {c}亩 ({d}%)',
-      backgroundColor: 'rgba(31, 38, 51, 0.95)',
-      borderColor: 'var(--ink-600)',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#E8E2D9',
       borderWidth: 1,
-      textStyle: { color: '#F5F0E6' }
+      textStyle: { color: '#5D4E37' }
     },
     legend: {
       orient: 'vertical',
       right: 10,
       top: 'center',
       textStyle: {
-        color: '#B5AF9F',
+        color: '#8B7355',
         fontSize: 12
       },
       itemWidth: 10,
@@ -380,7 +378,7 @@ const initPie = () => {
         avoidLabelOverlap: true,
         itemStyle: {
           borderRadius: 6,
-          borderColor: '#1F2633',
+          borderColor: '#FAFAF8',
           borderWidth: 3
         },
         label: {
@@ -391,22 +389,22 @@ const initPie = () => {
             show: true,
             fontSize: 14,
             fontWeight: 'bold',
-            color: '#F5F0E6'
+            color: '#5D4E37'
           },
           itemStyle: {
             shadowBlur: 20,
-            shadowColor: 'rgba(0, 0, 0, 0.5)'
+            shadowColor: 'rgba(139, 115, 85, 0.25)'
           }
         },
         labelLine: {
           show: false
         },
         data: [
-          { value: cultivatedArea.value, name: '耕地', itemStyle: { color: '#52c41a' } },
-          { value: forestArea.value, name: '林地', itemStyle: { color: '#13c2c2' } },
-          { value: constructionArea.value, name: '建设用地', itemStyle: { color: '#faad14' } },
-          { value: landData.value.reduce((sum, item) => sum + item.water, 0), name: '水域', itemStyle: { color: '#1890ff' } },
-          { value: total - cultivatedArea.value - forestArea.value - constructionArea.value - landData.value.reduce((sum, item) => sum + item.water, 0), name: '其他', itemStyle: { color: '#722ed1' } }
+          { value: cultivatedArea.value, name: '耕地', itemStyle: { color: '#A8D5A2' } },
+          { value: forestArea.value, name: '林地', itemStyle: { color: '#D4B87A' } },
+          { value: constructionArea.value, name: '建设用地', itemStyle: { color: '#E8C9A0' } },
+          { value: landData.value.reduce((sum, item) => sum + item.water, 0), name: '水域', itemStyle: { color: '#8FB8CA' } },
+          { value: total - cultivatedArea.value - forestArea.value - constructionArea.value - landData.value.reduce((sum, item) => sum + item.water, 0), name: '其他', itemStyle: { color: '#B89855' } }
         ]
       }
     ]
@@ -424,10 +422,10 @@ const initBar = () => {
     tooltip: {
       trigger: 'axis',
       axisPointer: { type: 'shadow' },
-      backgroundColor: 'rgba(31, 38, 51, 0.95)',
-      borderColor: 'var(--ink-600)',
+      backgroundColor: 'rgba(255, 255, 255, 0.95)',
+      borderColor: '#E8E2D9',
       borderWidth: 1,
-      textStyle: { color: '#F5F0E6' }
+      textStyle: { color: '#5D4E37' }
     },
     grid: {
       left: '3%',
@@ -440,23 +438,23 @@ const initBar = () => {
       type: 'category',
       data: sortedData.map(item => item.name),
       axisLabel: {
-        color: '#B5AF9F',
+        color: '#8B7355',
         rotate: 35,
         fontSize: 11
       },
-      axisLine: { lineStyle: { color: '#3D4863' } },
+      axisLine: { lineStyle: { color: '#E8E2D9' } },
       axisTick: { show: false }
     },
     yAxis: {
       type: 'value',
       name: '面积(万亩)',
       nameTextStyle: {
-        color: '#B5AF9F',
+        color: '#8B7355',
         fontSize: 11,
         fontFamily: 'var(--font-mono)'
       },
       axisLabel: {
-        color: '#B5AF9F',
+        color: '#8B7355',
         fontSize: 11,
         formatter: (value) => (value / 10000).toFixed(0)
       },
@@ -464,7 +462,7 @@ const initBar = () => {
       axisTick: { show: false },
       splitLine: {
         lineStyle: {
-          color: 'rgba(61, 72, 99, 0.3)',
+          color: 'rgba(232, 226, 217, 0.6)',
           type: 'dashed'
         }
       }
@@ -477,16 +475,16 @@ const initBar = () => {
         data: sortedData.map(item => item.area),
         itemStyle: {
           color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-            { offset: 0, color: '#42A5F5' },
-            { offset: 1, color: '#0D47A1' }
+            { offset: 0, color: '#D4B87A' },
+            { offset: 1, color: '#B89855' }
           ]),
           borderRadius: [6, 6, 0, 0]
         },
         emphasis: {
           itemStyle: {
             color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-              { offset: 0, color: '#D4A853' },
-              { offset: 1, color: '#B8923F' }
+              { offset: 0, color: '#E8C9A0' },
+              { offset: 1, color: '#C9A86C' }
             ])
           }
         }
@@ -522,6 +520,8 @@ window.addEventListener('resize', handleResize);
 <style scoped>
 .land-map-page {
   padding: var(--s-5);
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
 }
 
 .page-header {
@@ -530,7 +530,7 @@ window.addEventListener('resize', handleResize);
   align-items: flex-end;
   margin-bottom: var(--s-5);
   padding-bottom: var(--s-4);
-  border-bottom: var(--line);
+  border-bottom: 1px solid #E8E2D9;
 }
 
 .header-left {
@@ -542,13 +542,13 @@ window.addEventListener('resize', handleResize);
 .page-title {
   font-size: 28px;
   font-weight: 300;
-  color: var(--signal);
+  color: #5D4E37;
   margin: 0;
 }
 
 .page-sub {
   font-size: 11px;
-  color: var(--signal-dim);
+  color: #8B7355;
   letter-spacing: 0.15em;
 }
 
@@ -576,11 +576,12 @@ window.addEventListener('resize', handleResize);
 
 .map-container {
   position: relative;
-  background: var(--ink-800);
-  border: var(--line);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
   padding: var(--s-4);
   min-height: 520px;
+  box-shadow: 0 4px 16px rgba(139, 115, 85, 0.12);
 }
 
 .map-chart {
@@ -592,17 +593,18 @@ window.addEventListener('resize', handleResize);
   position: absolute;
   top: var(--s-4);
   right: var(--s-4);
-  background: rgba(31, 38, 51, 0.9);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  border: var(--line-soft);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(232, 226, 217, 0.8);
   padding: var(--s-3) var(--s-4);
-  border-radius: var(--radius-md);
+  border-radius: 12px;
   z-index: 10;
+  box-shadow: 0 4px 16px rgba(139, 115, 85, 0.12);
 }
 
 .legend-title {
-  color: var(--signal);
+  color: #5D4E37;
   font-size: 12px;
   font-weight: 600;
   margin-bottom: var(--s-2);
@@ -624,11 +626,11 @@ window.addEventListener('resize', handleResize);
   width: 24px;
   height: 14px;
   border-radius: 3px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(139, 115, 85, 0.2);
 }
 
 .legend-label {
-  color: var(--signal-dim);
+  color: #8B7355;
   font-size: 12px;
 }
 
@@ -637,7 +639,7 @@ window.addEventListener('resize', handleResize);
   bottom: var(--s-4);
   right: var(--s-4);
   font-size: 11px;
-  color: var(--signal-dim);
+  color: #8B7355;
   letter-spacing: 0.05em;
   opacity: 0.7;
 }
@@ -651,21 +653,22 @@ window.addEventListener('resize', handleResize);
 
 .stat-card {
   position: relative;
-  background: var(--ink-800);
-  border: var(--line);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
   padding: var(--s-5);
   display: flex;
   align-items: center;
   gap: var(--s-4);
   overflow: hidden;
-  transition: all var(--transition-normal);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.08);
 }
 
 .stat-card:hover {
-  border-color: var(--sand-500);
+  border-color: #C9A86C;
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 24px rgba(139, 115, 85, 0.16);
 }
 
 .stat-card-bg {
@@ -675,14 +678,14 @@ window.addEventListener('resize', handleResize);
   width: 100px;
   height: 100px;
   border-radius: 50%;
-  opacity: 0.08;
+  opacity: 0.12;
   filter: blur(20px);
 }
 
-.stat-card-1 .stat-card-bg { background: #D4A853; }
-.stat-card-2 .stat-card-bg { background: #52c41a; }
-.stat-card-3 .stat-card-bg { background: #13c2c2; }
-.stat-card-4 .stat-card-bg { background: #faad14; }
+.stat-card-1 .stat-card-bg { background: #C9A86C; }
+.stat-card-2 .stat-card-bg { background: #A8D5A2; }
+.stat-card-3 .stat-card-bg { background: #D4B87A; }
+.stat-card-4 .stat-card-bg { background: #E8C9A0; }
 
 .stat-icon {
   font-size: 36px;
@@ -697,14 +700,14 @@ window.addEventListener('resize', handleResize);
 }
 
 .stat-value {
-  color: var(--signal);
+  color: #5D4E37;
   font-size: 26px;
   font-weight: 300;
   line-height: 1.2;
 }
 
 .stat-label {
-  color: var(--signal-dim);
+  color: #8B7355;
   font-size: 13px;
   margin-top: 4px;
 }
@@ -720,15 +723,15 @@ window.addEventListener('resize', handleResize);
 }
 
 .stat-trend.up {
-  color: #52c41a;
-  background: rgba(82, 196, 26, 0.1);
-  border: 1px solid rgba(82, 196, 26, 0.2);
+  color: #A8D5A2;
+  background: rgba(168, 213, 162, 0.12);
+  border: 1px solid rgba(168, 213, 162, 0.2);
 }
 
 .stat-trend.down {
-  color: #ff4d4f;
-  background: rgba(255, 77, 79, 0.1);
-  border: 1px solid rgba(255, 77, 79, 0.2);
+  color: #D4A574;
+  background: rgba(212, 165, 116, 0.12);
+  border: 1px solid rgba(212, 165, 116, 0.2);
 }
 
 .content-row {
@@ -739,15 +742,18 @@ window.addEventListener('resize', handleResize);
 }
 
 .chart-card {
-  background: var(--ink-800);
-  border: var(--line);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
   padding: var(--s-5);
-  transition: all var(--transition-normal);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.08);
 }
 
 .chart-card:hover {
-  border-color: var(--ink-600);
+  border-color: #C9A86C;
+  box-shadow: 0 8px 24px rgba(139, 115, 85, 0.12);
+  transform: translateY(-2px);
 }
 
 .card-header {
@@ -758,7 +764,7 @@ window.addEventListener('resize', handleResize);
 }
 
 .card-title {
-  color: var(--signal);
+  color: #5D4E37;
   font-size: 16px;
   font-weight: 500;
   margin: 0;
@@ -766,10 +772,11 @@ window.addEventListener('resize', handleResize);
 
 .card-badge {
   font-size: 10px;
-  color: var(--sand-500);
+  color: #C9A86C;
   padding: 3px 10px;
-  border: 1px solid var(--sand-600);
+  border: 1px solid #C9A86C;
   letter-spacing: 0.15em;
+  border-radius: 8px;
 }
 
 .chart-content {
@@ -778,11 +785,12 @@ window.addEventListener('resize', handleResize);
 }
 
 .detail-panel {
-  background: var(--ink-800);
-  border: var(--line);
-  border-radius: var(--radius-md);
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
   padding: var(--s-5);
   margin-bottom: var(--s-5);
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.08);
 }
 
 .panel-header {
@@ -793,7 +801,7 @@ window.addEventListener('resize', handleResize);
 }
 
 .panel-title {
-  color: var(--signal);
+  color: #5D4E37;
   font-size: 16px;
   font-weight: 500;
   margin: 0;
@@ -806,47 +814,49 @@ window.addEventListener('resize', handleResize);
 
 .data-table {
   --el-table-bg-color: transparent;
-  --el-table-text-color: var(--signal);
+  --el-table-text-color: #5D4E37;
   --el-table-header-bg-color: transparent;
-  --el-table-row-hover-bg-color: rgba(212, 168, 83, 0.05);
+  --el-table-row-hover-bg-color: rgba(201, 168, 108, 0.06);
 }
 
 .data-table :deep(.el-table__header th) {
-  background: rgba(61, 72, 99, 0.3) !important;
-  color: var(--signal-dim) !important;
+  background: linear-gradient(180deg, #F7F3ED 0%, #F0EBE3 100%) !important;
+  color: #8B7355 !important;
   font-weight: 600;
   font-size: 12px;
+  border-bottom: 1px solid #E8E2D9 !important;
 }
 
 .data-table :deep(.el-table__body td) {
-  color: var(--signal) !important;
+  color: #5D4E37 !important;
+  border-bottom: 1px solid #E8E2D9 !important;
 }
 
 .data-table :deep(.el-table--striped .el-table__body tr.el-table__row--striped td) {
-  background: rgba(43, 52, 71, 0.5);
+  background: rgba(247, 243, 237, 0.6);
 }
 
 .ratio-tag {
   display: inline-block;
   padding: 3px 10px;
-  border-radius: 4px;
+  border-radius: 6px;
   font-size: 12px;
   font-weight: 600;
   font-family: var(--font-mono);
 }
 
 .ratio-high {
-  color: #52c41a;
-  background: rgba(82, 196, 26, 0.1);
+  color: #A8D5A2;
+  background: rgba(168, 213, 162, 0.12);
 }
 
 .ratio-mid {
-  color: #faad14;
-  background: rgba(250, 173, 20, 0.1);
+  color: #D4B87A;
+  background: rgba(212, 184, 122, 0.12);
 }
 
 .ratio-low {
-  color: #ff4d4f;
-  background: rgba(255, 77, 79, 0.1);
+  color: #B8864A;
+  background: rgba(184, 134, 74, 0.12);
 }
 </style>

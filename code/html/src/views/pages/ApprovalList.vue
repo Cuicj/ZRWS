@@ -33,7 +33,6 @@
       </table>
     </Panel>
 
-    <!-- 审批弹窗 -->
     <el-dialog v-model="showDialog" title="审批详情" width="600px">
       <el-descriptions :column="2" border v-if="currentApproval">
         <el-descriptions-item label="审批单号">{{ currentApproval.id }}</el-descriptions-item>
@@ -84,8 +83,274 @@ const reject = () => { if (currentApproval.value) currentApproval.value.status =
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { display: flex; justify-content: space-between; padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
+.page-container {
+  padding: 24px 32px;
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+
+.page-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #E8E2D9;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 400;
+  color: #5D4E37;
+  letter-spacing: -0.02em;
+}
+
+.page-meta {
+  font-size: 11px;
+  color: #8B7355;
+  margin-top: 6px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+th {
+  text-align: left;
+  padding: 14px 16px;
+  font-size: 11px;
+  color: #8B7355;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border-bottom: 1px solid #E8E2D9;
+  background: linear-gradient(180deg, #F7F3ED 0%, #F0EBE3 100%);
+}
+
+th:first-child {
+  border-top-left-radius: 12px;
+}
+
+th:last-child {
+  border-top-right-radius: 12px;
+}
+
+td {
+  padding: 16px;
+  border-bottom: 1px solid #F0EBE3;
+  color: #5D4E37;
+  font-size: 13px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+tr:hover td {
+  background: rgba(201, 168, 108, 0.06);
+}
+
+tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  border-radius: 12px;
+  box-shadow: 0 1px 4px rgba(139, 115, 85, 0.08);
+}
+
+.status-ok {
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%);
+  color: #2E7D32;
+  border: 1px solid #A5D6A7;
+}
+
+.status-proc {
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE0B2 100%);
+  color: #E65100;
+  border: 1px solid #FFCC80;
+}
+
+.status-err {
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%);
+  color: #C62828;
+  border: 1px solid #EF9A9A;
+}
+
+.status-dim {
+  background: linear-gradient(135deg, #F5F5F5 0%, #EEEEEE 100%);
+  color: #757575;
+  border: 1px solid #E0E0E0;
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid #E8E2D9;
+  color: #5D4E37;
+  cursor: pointer;
+  border-radius: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-ghost:hover {
+  border-color: #C9A86C;
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.15);
+}
+
+.btn-sm {
+  padding: 5px 12px;
+  font-size: 11px;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  font-size: 12px;
+}
+
+.display {
+  font-family: 'Fraunces', 'Source Han Serif SC', serif;
+}
+
+:deep(.el-select__wrapper) {
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 8px;
+  box-shadow: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.el-select__wrapper:hover) {
+  border-color: #C9A86C;
+}
+
+:deep(.el-select__wrapper.is-focused) {
+  border-color: #C9A86C;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.2);
+}
+
+:deep(.el-select__placeholder) {
+  color: #8B7355;
+  opacity: 0.6;
+}
+
+:deep(.el-select__selected-item) {
+  color: #5D4E37;
+}
+
+:deep(.el-dialog) {
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(139, 115, 85, 0.16);
+}
+
+:deep(.el-dialog__header) {
+  border-bottom: 1px solid #E8E2D9;
+  padding: 20px 24px;
+  margin-right: 0;
+}
+
+:deep(.el-dialog__title) {
+  color: #5D4E37;
+  font-family: 'Fraunces', 'Source Han Serif SC', serif;
+  font-weight: 400;
+  font-size: 18px;
+}
+
+:deep(.el-dialog__body) {
+  padding: 24px;
+  color: #5D4E37;
+}
+
+:deep(.el-dialog__footer) {
+  border-top: 1px solid #E8E2D9;
+  padding: 16px 24px;
+}
+
+:deep(.el-descriptions) {
+  --el-descriptions-bg-color: transparent;
+  --el-descriptions-text-color: #5D4E37;
+  --el-descriptions-label-text-color: #8B7355;
+  --el-descriptions-border-color: #E8E2D9;
+}
+
+:deep(.el-textarea__inner) {
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 8px;
+  color: #5D4E37;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.el-textarea__inner:hover) {
+  border-color: #C9A86C;
+}
+
+:deep(.el-textarea__inner:focus) {
+  border-color: #C9A86C;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.2);
+}
+
+:deep(.el-button--default) {
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  color: #5D4E37;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.el-button--default:hover) {
+  border-color: #C9A86C;
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.05);
+}
+
+:deep(.el-button--primary) {
+  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.el-button--primary:hover) {
+  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
+}
+
+:deep(.el-button--danger) {
+  background: linear-gradient(135deg, #EF5350 0%, #E57373 100%);
+  border: none;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+:deep(.el-button--danger:hover) {
+  background: linear-gradient(135deg, #E53935 0%, #EF5350 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
+}
 </style>

@@ -28,38 +28,54 @@ defineProps({
 </script>
 
 <style scoped>
+/* ===== 明亮柔和风格 ===== */
 .panel {
-  background: var(--ink-800);
-  border: var(--line);
-  margin-bottom: var(--s-4);
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(139, 115, 85, 0.06);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.panel:hover {
+  box-shadow: 0 6px 24px rgba(139, 115, 85, 0.1);
 }
 
 .panel-title {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: var(--s-4);
-  border-bottom: var(--line-soft);
+  padding: 18px 22px;
+  border-bottom: 1px solid #E8E2D9;
+  background: linear-gradient(180deg, #FEFBF6 0%, #F7F3ED 100%);
 }
 
 .panel-title h3 {
   font-size: 18px;
-  font-weight: 300;
+  font-weight: 600;
+  color: #5D4E37;
+  margin: 0;
 }
 
 .panel-actions {
   display: flex;
-  gap: var(--s-3);
+  gap: 12px;
   align-items: center;
 }
 
 .panel-meta {
-  font-size: 10px;
-  color: var(--signal-dim);
-  letter-spacing: 0.1em;
+  font-size: 11px;
+  color: #A89F91;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+  padding: 4px 10px;
+  background: rgba(139, 115, 85, 0.08);
+  border-radius: 10px;
 }
 
 .panel-content {
-  padding: var(--s-4);
+  padding: 20px;
 }
 </style>

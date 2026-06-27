@@ -13,20 +13,22 @@
     </div>
 
     <Panel title="采样点列表">
-      <table>
-        <thead><tr><th>ID</th><th>纬度</th><th>经度</th><th>pH</th><th>含水</th><th>电导率</th><th>土质</th></tr></thead>
-        <tbody>
-          <tr v-for="s in samples" :key="s.id">
-            <td class="mono">{{ s.id }}</td>
-            <td class="mono">{{ s.lat }}</td>
-            <td class="mono">{{ s.lng }}</td>
-            <td>{{ s.ph }}</td>
-            <td>{{ s.moisture }}%</td>
-            <td>{{ s.ec }}</td>
-            <td>{{ s.soilType }}</td>
-          </tr>
-        </tbody>
-      </table>
+      <div class="table-wrapper">
+        <table>
+          <thead><tr><th>ID</th><th>纬度</th><th>经度</th><th>pH</th><th>含水</th><th>电导率</th><th>土质</th></tr></thead>
+          <tbody>
+            <tr v-for="s in samples" :key="s.id">
+              <td class="mono">{{ s.id }}</td>
+              <td class="mono">{{ s.lat }}</td>
+              <td class="mono">{{ s.lng }}</td>
+              <td>{{ s.ph }}</td>
+              <td>{{ s.moisture }}%</td>
+              <td>{{ s.ec }}</td>
+              <td>{{ s.soilType }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </Panel>
   </div>
 </template>
@@ -46,9 +48,69 @@ const samples = ref([
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+.page-container {
+  padding: var(--s-5);
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100%;
+}
+.page-head {
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid #E8E2D9;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 200;
+  color: #5D4E37;
+}
+.page-meta {
+  font-size: 11px;
+  color: #8B7355;
+  margin-top: 4px;
+}
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 12px;
+  border: 1px solid #E8E2D9;
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+}
+thead {
+  background: linear-gradient(135deg, #F5F2ED 0%, #EDE9E0 100%);
+}
+th {
+  padding: 14px 16px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 600;
+  color: #5D4E37;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #E8E2D9;
+}
+td {
+  padding: 14px 16px;
+  font-size: 13px;
+  color: #5D4E37;
+  border-bottom: 1px solid #E8E2D9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+tbody tr:last-child td {
+  border-bottom: none;
+}
+tbody tr:hover td {
+  background: rgba(201, 168, 108, 0.08);
+}
+.mono {
+  font-family: 'SF Mono', 'Menlo', monospace;
+  color: #8B7355;
+}
 </style>

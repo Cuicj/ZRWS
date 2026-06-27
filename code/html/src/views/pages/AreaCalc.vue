@@ -21,7 +21,7 @@
             <td>{{ p.name }}</td>
             <td>{{ p.gpsArea }} 亩</td>
             <td>{{ p.regArea }} 亩</td>
-            <td :style="{ color: Math.abs(p.diff) > 5 ? 'var(--danger)' : 'var(--sand-500)' }">{{ p.diff > 0 ? '+' : '' }}{{ p.diff }}%</td>
+            <td :class="Math.abs(p.diff) > 5 ? 'diff-high' : 'diff-normal'">{{ p.diff > 0 ? '+' : '' }}{{ p.diff }}%</td>
             <td>{{ stats.avgAccuracy }} cm</td>
             <td class="mono">{{ p.measureTime }}</td>
           </tr>
@@ -45,9 +45,102 @@ const plots = ref([
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+.page-container {
+  padding: 32px;
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+
+.page-head {
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #E8E2D9;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #5D4E37;
+  margin: 0;
+}
+
+.page-meta {
+  font-size: 12px;
+  color: #8B7355;
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+  font-weight: 500;
+}
+
+.stat-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  font-size: 14px;
+}
+
+thead th {
+  background: linear-gradient(180deg, #FEFBF6 0%, #F7F3ED 100%);
+  color: #5D4E37;
+  font-weight: 600;
+  text-align: left;
+  padding: 14px 16px;
+  border-bottom: 1px solid #E8E2D9;
+  font-size: 13px;
+  letter-spacing: 0.3px;
+}
+
+thead th:first-child {
+  border-top-left-radius: 12px;
+}
+
+thead th:last-child {
+  border-top-right-radius: 12px;
+}
+
+tbody td {
+  padding: 14px 16px;
+  color: #5D4E37;
+  border-bottom: 1px solid #E8E2D9;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+tbody tr:hover td {
+  background: rgba(201, 168, 108, 0.06);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
+}
+
+.mono {
+  font-family: 'SF Mono', 'Menlo', 'Monaco', 'Consolas', monospace;
+  font-size: 13px;
+  color: #8B7355;
+}
+
+.diff-normal {
+  color: #8B7355;
+  font-weight: 500;
+}
+
+.diff-high {
+  color: #E53935;
+  font-weight: 600;
+}
 </style>

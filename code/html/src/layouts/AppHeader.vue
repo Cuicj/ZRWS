@@ -76,14 +76,15 @@ const handleLogout = async () => {
   top: 0;
   left: 0;
   right: 0;
-  height: 56px;
+  height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 var(--s-5);
-  background: var(--ink-800);
-  border-bottom: var(--line);
+  padding: 0 28px;
+  background: linear-gradient(180deg, #FEFBF6 0%, #F7F3ED 100%);
+  border-bottom: 1px solid #E8E2D9;
   z-index: 200;
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.06);
 }
 
 .header-left {
@@ -93,49 +94,65 @@ const handleLogout = async () => {
 
 .brand {
   display: flex;
-  align-items: baseline;
-  gap: var(--s-3);
+  align-items: center;
+  gap: 12px;
   text-decoration: none;
-  color: var(--signal);
+  color: #5D4E37;
 }
 
 .brand-mark {
-  font-size: 24px;
-  color: var(--sand-500);
+  font-size: 28px;
+  color: #C9A86C;
+  filter: drop-shadow(0 2px 4px rgba(201, 168, 108, 0.3));
 }
 
 .brand-name {
-  font-size: 18px;
-  font-weight: 300;
+  font-size: 22px;
+  font-weight: 400;
+  letter-spacing: -0.5px;
 }
 
 .brand-meta {
-  font-size: 10px;
-  color: var(--signal-dim);
-  letter-spacing: 0.2em;
+  font-size: 11px;
+  color: #A89F91;
+  letter-spacing: 0.15em;
+  padding: 2px 8px;
+  background: rgba(139, 115, 85, 0.08);
+  border-radius: 10px;
+  font-weight: 500;
 }
 
 .header-right {
   display: flex;
   align-items: center;
-  gap: var(--s-3);
+  gap: 16px;
 }
 
 .icon-btn {
-  color: var(--signal-dim);
+  color: #8B7355;
   cursor: pointer;
-  transition: color var(--transition-fast);
+  transition: all 0.2s ease;
+  padding: 6px;
+  border-radius: 8px;
 }
 
 .icon-btn:hover {
-  color: var(--signal);
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.1);
+  transform: translateY(-1px);
+}
+
+.notification-badge {
+  margin-right: 4px;
 }
 
 .user-avatar {
-  background: var(--sand-500);
-  color: var(--ink-900);
-  font-family: var(--font-mono);
-  font-size: 12px;
+  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
 }
 
 .user-info {
@@ -146,24 +163,30 @@ const handleLogout = async () => {
 
 .user-name {
   font-size: 13px;
-  color: var(--signal);
+  color: #5D4E37;
+  font-weight: 500;
 }
 
 .user-role {
-  font-size: 10px;
-  color: var(--signal-dim);
+  font-size: 11px;
+  color: #A89F91;
 }
 
 .btn-logout {
   background: transparent;
-  border: var(--line);
-  color: var(--signal-dim);
-  font-family: var(--font-mono);
-  font-size: 11px;
+  border: 1px solid #D4C4B0;
+  color: #8B7355;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: all 0.2s ease;
 }
 
 .btn-logout:hover {
-  border-color: var(--danger);
-  color: var(--danger);
+  border-color: #E57373;
+  color: #E57373;
+  background: rgba(229, 115, 115, 0.05);
+  transform: translateY(-1px);
 }
 </style>

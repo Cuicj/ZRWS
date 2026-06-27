@@ -110,10 +110,181 @@ const sensors = ref([
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { display: flex; justify-content: space-between; padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
-.device-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--s-3); margin-bottom: var(--s-4); }
+.page-container { 
+  padding: 24px 32px; 
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+
+.page-head { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-end; 
+  padding-bottom: 20px; 
+  margin-bottom: 24px; 
+  border-bottom: 1px solid #E8E2D9;
+}
+.page-title { 
+  font-size: 32px; 
+  font-weight: 300; 
+  color: #5D4E37;
+  letter-spacing: -0.5px;
+}
+.page-meta { 
+  font-size: 12px; 
+  color: #8B7355; 
+  margin-top: 6px;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.stat-row { 
+  display: grid; 
+  grid-template-columns: repeat(4, 1fr); 
+  gap: 20px; 
+  margin-bottom: 24px;
+}
+
+.device-row { 
+  display: grid; 
+  grid-template-columns: repeat(3, 1fr); 
+  gap: 24px; 
+  margin-bottom: 24px;
+}
+
+table { 
+  width: 100%; 
+  border-collapse: separate; 
+  border-spacing: 0;
+  font-size: 13px;
+  color: #5D4E37;
+}
+th, td { 
+  padding: 14px 16px; 
+  text-align: left; 
+  border-bottom: 1px solid #E8E2D9;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+th { 
+  color: #8B7355; 
+  font-weight: 600; 
+  font-size: 11px; 
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+  border-bottom: 1px solid #E8E2D9;
+}
+th:first-child {
+  border-top-left-radius: 12px;
+}
+th:last-child {
+  border-top-right-radius: 12px;
+}
+tr:hover td {
+  background: rgba(201, 168, 108, 0.06);
+}
+tr:last-child td {
+  border-bottom: none;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.status-ok { 
+  background: linear-gradient(135deg, #E8F5E9 0%, #C8E6C9 100%); 
+  color: #2E7D32;
+  border: 1px solid #A5D6A7;
+  box-shadow: 0 2px 6px rgba(46, 125, 50, 0.1);
+}
+.status-dim { 
+  background: linear-gradient(135deg, #F5F2ED 0%, #EDE8E0 100%); 
+  color: #8B7355;
+  border: 1px solid #D4C4B0;
+  box-shadow: 0 2px 6px rgba(139, 115, 85, 0.08);
+  opacity: 0.7;
+}
+.status-warn { 
+  background: linear-gradient(135deg, #FFF8E1 0%, #FFE0B2 100%); 
+  color: #E65100;
+  border: 1px solid #FFCC80;
+  box-shadow: 0 2px 6px rgba(245, 124, 0, 0.1);
+}
+.status-danger { 
+  background: linear-gradient(135deg, #FFEBEE 0%, #FFCDD2 100%); 
+  color: #C62828;
+  border: 1px solid #EF9A9A;
+  box-shadow: 0 2px 6px rgba(198, 40, 40, 0.1);
+}
+.status-accent { 
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%); 
+  color: #E65100;
+  border: 1px solid #FFCC80;
+  box-shadow: 0 2px 6px rgba(230, 81, 0, 0.1);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 18px;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 500;
+  background: transparent;
+  border: 1px solid #E8E2D9;
+  color: #5D4E37;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-ghost:hover {
+  border-color: #C9A86C;
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.08);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.15);
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 12px;
+}
+
+.mono {
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.display {
+  font-family: 'Fraunces', 'Source Han Serif SC', serif;
+}
 </style>

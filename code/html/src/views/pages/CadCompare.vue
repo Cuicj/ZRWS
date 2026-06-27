@@ -38,9 +38,9 @@ const renderCanvas = (canvas, version) => {
   canvas.width = canvas.offsetWidth;
   canvas.height = 300;
   const ctx = canvas.getContext('2d');
-  ctx.fillStyle = '#0A0E14';
+  ctx.fillStyle = '#FEFBF6';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.strokeStyle = version === 'old' ? '#5C6371' : '#C9A45C';
+  ctx.strokeStyle = version === 'old' ? '#B8A98F' : '#C9A86C';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(100, 80);
@@ -59,11 +59,44 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.compare-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); margin-bottom: var(--s-4); }
-.compare-canvas { width: 100%; height: 300px; display: block; }
-.diff-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--s-3); }
+.page-container {
+  padding: var(--s-5);
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+.page-head {
+  padding-bottom: var(--s-4);
+  margin-bottom: var(--s-5);
+  border-bottom: 1px solid #E8E2D9;
+}
+.page-title {
+  font-size: 28px;
+  font-weight: 200;
+  color: #5D4E37;
+}
+.page-meta {
+  font-size: 11px;
+  color: #8B7355;
+  margin-top: 4px;
+}
+.compare-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--s-3);
+  margin-bottom: var(--s-4);
+}
+.compare-canvas {
+  width: 100%;
+  height: 300px;
+  display: block;
+  border-radius: 12px;
+}
+.diff-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--s-3);
+}
+.mono {
+  color: #8B7355;
+}
 </style>

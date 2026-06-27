@@ -57,16 +57,143 @@ const analysis = ref([
 </script>
 
 <style scoped>
-.page-container { padding: var(--s-5); }
-.page-head { padding-bottom: var(--s-4); margin-bottom: var(--s-5); border-bottom: var(--line); }
-.page-title { font-size: 28px; font-weight: 200; }
-.page-meta { font-size: 11px; color: var(--signal-dim); margin-top: 4px; }
-.ai-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--s-3); }
-.result-grid { display: grid; gap: var(--s-3); }
-.result-card { padding: var(--s-4); background: var(--ink-700); border-left: 2px solid var(--sand-500); }
-.result-head { display: flex; justify-content: space-between; margin-bottom: var(--s-2); }
-.result-name { font-size: 16px; font-weight: 500; }
-.result-conf { font-size: 12px; color: var(--sand-500); }
-.result-desc { font-size: 13px; color: var(--signal-dim); margin-bottom: var(--s-2); }
-.result-stats { display: flex; gap: var(--s-3); font-size: 11px; color: var(--signal-dim); }
+.page-container {
+  padding: 24px;
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  min-height: 100vh;
+}
+
+.page-head {
+  padding-bottom: 20px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #E8E2D9;
+}
+
+.page-title {
+  font-size: 28px;
+  font-weight: 500;
+  color: #5D4E37;
+  letter-spacing: 0.5px;
+}
+
+.page-meta {
+  font-size: 11px;
+  color: #8B7355;
+  margin-top: 6px;
+  letter-spacing: 2px;
+}
+
+.ai-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.result-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.result-card {
+  padding: 20px;
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+  border-radius: 12px;
+  border-left: 3px solid #C9A86C;
+  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.12);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.result-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(139, 115, 85, 0.18);
+}
+
+.result-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.result-name {
+  font-size: 16px;
+  font-weight: 600;
+  color: #5D4E37;
+}
+
+.result-conf {
+  font-size: 13px;
+  color: #C9A86C;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: rgba(201, 168, 108, 0.12);
+  border-radius: 20px;
+}
+
+.result-desc {
+  font-size: 13px;
+  color: #8B7355;
+  margin-bottom: 14px;
+  line-height: 1.6;
+}
+
+.result-stats {
+  display: flex;
+  gap: 16px;
+  font-size: 11px;
+  color: #8B7355;
+  flex-wrap: wrap;
+}
+
+.result-stats span {
+  padding: 4px 10px;
+  background: #FEFBF6;
+  border-radius: 6px;
+  border: 1px solid #E8E2D9;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead {
+  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
+}
+
+thead th {
+  padding: 14px 16px;
+  text-align: left;
+  color: #5D4E37;
+  font-weight: 600;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #E8E2D9;
+}
+
+tbody tr {
+  transition: background 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+tbody tr:hover {
+  background: rgba(201, 168, 108, 0.06);
+}
+
+tbody td {
+  padding: 14px 16px;
+  color: #5D4E37;
+  border-bottom: 1px solid #E8E2D9;
+}
+
+tbody .mono {
+  color: #8B7355;
+  font-size: 12px;
+}
+
+@media (max-width: 900px) {
+  .ai-row {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

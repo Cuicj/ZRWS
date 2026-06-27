@@ -174,26 +174,51 @@ const initCharts = () => {
     trendChart = echarts.init(trendChartRef.value);
     trendChart.setOption({
       backgroundColor: 'transparent',
-      grid: { top: 20, right: 20, bottom: 30, left: 50 },
-      tooltip: { trigger: 'axis' },
+      grid: { top: 30, right: 30, bottom: 40, left: 60 },
+      tooltip: { 
+        trigger: 'axis',
+        backgroundColor: 'rgba(255, 255, 255, 0.95)',
+        borderColor: '#E8E2D9',
+        borderWidth: 1,
+        textStyle: { color: '#5D4E37', fontSize: 12 },
+        borderRadius: 8
+      },
+      legend: {
+        data: ['完成任务', '新建任务'],
+        right: 10,
+        top: 0,
+        textStyle: { color: '#8B7355', fontSize: 12 }
+      },
       xAxis: {
         type: 'category',
         data: ['06-11', '06-12', '06-13', '06-14', '06-15', '06-16', '06-17'],
-        axisLine: { lineStyle: { color: '#3D4452' } },
-        axisLabel: { color: '#B8B6B0', fontFamily: 'JetBrains Mono', fontSize: 10 }
+        axisLine: { lineStyle: { color: '#E8E2D9' } },
+        axisTick: { show: false },
+        axisLabel: { color: '#8B7355', fontFamily: 'JetBrains Mono', fontSize: 11 }
       },
       yAxis: {
         type: 'value',
-        splitLine: { lineStyle: { color: '#1C222E' } },
+        splitLine: { lineStyle: { color: '#F0EBE3', type: 'dashed' } },
         axisLine: { show: false },
-        axisLabel: { color: '#B8B6B0', fontFamily: 'JetBrains Mono', fontSize: 10 }
+        axisTick: { show: false },
+        axisLabel: { color: '#8B7355', fontFamily: 'JetBrains Mono', fontSize: 11 }
       },
       series: [
         {
           name: '完成任务',
           type: 'bar',
           data: [18, 22, 15, 28, 24, 31, 36],
-          itemStyle: { color: '#C9A45C' },
+          itemStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: '#D4B87A' },
+                { offset: 1, color: '#C9A86C' }
+              ]
+            },
+            borderRadius: [6, 6, 0, 0]
+          },
           barWidth: '30%'
         },
         {
@@ -201,10 +226,28 @@ const initCharts = () => {
           type: 'line',
           data: [12, 15, 10, 20, 18, 24, 28],
           smooth: true,
-          lineStyle: { color: '#E8E6E1', width: 1.5 },
+          lineStyle: { 
+            color: '#7FB3D5', 
+            width: 2.5,
+            type: 'solid'
+          },
+          areaStyle: {
+            color: {
+              type: 'linear',
+              x: 0, y: 0, x2: 0, y2: 1,
+              colorStops: [
+                { offset: 0, color: 'rgba(127, 179, 213, 0.3)' },
+                { offset: 1, color: 'rgba(127, 179, 213, 0.02)' }
+              ]
+            }
+          },
           symbol: 'circle',
-          symbolSize: 6,
-          itemStyle: { color: '#E8E6E1' }
+          symbolSize: 8,
+          itemStyle: { 
+            color: '#fff', 
+            borderColor: '#7FB3D5', 
+            borderWidth: 2
+          }
         }
       ]
     });
