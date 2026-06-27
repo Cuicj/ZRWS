@@ -3,9 +3,11 @@ package com.zrws.approval.config;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.zrws.approval.domain.entity.SysMenu;
 import com.zrws.approval.mapper.SysMenuMapper;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.ApplicationArguments;
+import org.springframework.boot.ApplicationRunner;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
@@ -13,24 +15,26 @@ import java.util.List;
 
 /**
  * 菜单数据初始化
+ * 在 SchemaSync 之后执行（Order=2，SchemaSyncRunner Order=1）
  */
 @Slf4j
 @Component
-public class MenuDataInitializer {
+@Order(2)
+public class MenuDataInitializer implements ApplicationRunner {
 
     @Autowired
     private SysMenuMapper menuMapper;
 
-    @PostConstruct
-    public void init() {
+    @Override
+    public void run(ApplicationArguments args) {
         try {
             Long count = menuMapper.selectCount(new LambdaQueryWrapper<SysMenu>());
             if (count != null && count > 0) {
-                log.info("菜单数据已存在，跳过初始化");
+                log.info("[菜单] 菜单数据已存在（{}条），跳过初始化", count);
                 return;
             }
 
-            log.info("开始初始化菜单数据...");
+            log.info("[菜单] 开始初始化菜单数据...");
 
             List<SysMenu> menus = Arrays.asList(
                     createMenu(0L, "运行仪表盘", "dashboard", "◧", "总览", 1),
@@ -62,9 +66,9 @@ public class MenuDataInitializer {
                 menuMapper.insert(menu);
             }
 
-            log.info("菜单数据初始化完成，共 {} 条", menus.size());
+            log.info("[菜单] 菜单数据初始化完成，共 {} 条", menus.size());
         } catch (Exception e) {
-            log.warn("菜单数据初始化失败（可能表不存在）: {}", e.getMessage());
+            log.error("[菜单] 菜单数据初始化失败: {}", e.getMessage(), e);
         }
     }
 
