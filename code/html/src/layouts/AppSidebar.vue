@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { getMenuTree } from '@/api/menu';
 
@@ -147,6 +147,22 @@ const isActive = (path) => {
   return route.path === `/app/${path}`;
 };
 
+// 自动展开当前菜单所属的分组
+const expandCurrentGroup = () => {
+  const currentPath = route.path;
+  
+  for (const group of navGroups.value) {
+    for (const item of group.items) {
+      if (currentPath === `/app/${item.path}` || currentPath.startsWith(`/app/${item.path}/`)) {
+        if (!expandedGroups.value.includes(group.title)) {
+          expandedGroups.value = [group.title];
+        }
+        return;
+      }
+    }
+  }
+};
+
 const loadMenus = async () => {
   try {
     const res = await getMenuTree();
@@ -160,8 +176,14 @@ const loadMenus = async () => {
     navGroups.value = defaultMenus;
   } finally {
     loading.value = false;
+    expandCurrentGroup();
   }
 };
+
+// 监听路由变化，自动展开对应分组
+watch(() => route.path, () => {
+  expandCurrentGroup();
+}, { immediate: false });
 
 onMounted(() => {
   loadMenus();

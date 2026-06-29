@@ -906,23 +906,24 @@ onMounted(() => {
 
 <style scoped>
 .workflow-designer {
-  height: calc(100vh - 200px);
+  height: calc(100vh - 140px);
   display: flex;
   flex-direction: column;
 }
 
 .page-container {
-  padding: var(--s-5);
-  min-height: auto;
+  padding: var(--s-3) var(--s-5);
+  min-height: calc(100vh - 64px);
   background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
 }
 
 .page-head {
   display: flex;
   justify-content: space-between;
-  padding-bottom: var(--s-4);
-  margin-bottom: var(--s-4);
+  padding-bottom: var(--s-2);
+  margin-bottom: var(--s-2);
   border-bottom: 1px solid #E8E2D9;
+  flex-shrink: 0;
 }
 
 .page-title {

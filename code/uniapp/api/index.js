@@ -2,7 +2,10 @@
  * 智壤卫士 API 请求封装
  */
 
-const BASE_URL = 'https://api.zrws.example.com'
+// 开发环境使用本地后端，生产环境使用真实域名
+const BASE_URL = process.env.NODE_ENV === 'development' 
+  ? 'http://localhost:5571/approval' 
+  : 'https://www.zrws.cloud'
 const TIMEOUT = 15000
 
 // 获取 token
@@ -65,70 +68,78 @@ function request(options) {
 // ============ 登录认证 ============
 export const loginApi = {
   login: (username, password) => request({
-    url: '/api/auth/login',
+    url: '/api/v1/auth/login',
     method: 'POST',
     data: { username, password }
   }),
-  logout: () => request({ url: '/api/auth/logout', method: 'POST' }),
-  getUserInfo: () => request({ url: '/api/auth/userinfo' })
+  logout: () => request({ url: '/api/v1/auth/logout', method: 'POST' }),
+  getUserInfo: () => request({ url: '/api/v1/auth/userinfo' })
+}
+
+// ============ 菜单 ============
+export const menuApi = {
+  tree: () => request({ url: '/api/v1/menu/tree' })
 }
 
 // ============ 任务管理 ============
 export const missionApi = {
-  list: (params = {}) => request({ url: '/api/missions', data: params }),
-  detail: (id) => request({ url: '/api/missions/' + id }),
-  create: (data) => request({ url: '/api/missions', method: 'POST', data }),
-  update: (id, data) => request({ url: '/api/missions/' + id, method: 'PUT', data }),
-  delete: (id) => request({ url: '/api/missions/' + id, method: 'DELETE' })
+  list: (params = {}) => request({ url: '/api/v1/missions', data: params }),
+  detail: (id) => request({ url: '/api/v1/missions/' + id }),
+  create: (data) => request({ url: '/api/v1/missions', method: 'POST', data }),
+  update: (id, data) => request({ url: '/api/v1/missions/' + id, method: 'PUT', data }),
+  delete: (id) => request({ url: '/api/v1/missions/' + id, method: 'DELETE' })
 }
 
 // ============ 飞行控制 ============
 export const flightApi = {
-  getStatus: (droneId) => request({ url: '/api/flight/status/' + droneId }),
-  start: (missionId) => request({ url: '/api/flight/start', method: 'POST', data: { missionId } }),
-  pause: (missionId) => request({ url: '/api/flight/pause', method: 'POST', data: { missionId } }),
-  returnHome: (missionId) => request({ url: '/api/flight/return', method: 'POST', data: { missionId } }),
-  telemetry: (droneId) => request({ url: '/api/flight/telemetry/' + droneId })
+  list: (params = {}) => request({ url: '/api/v1/drone/list', data: params }),
+  getStatus: (droneId) => request({ url: '/api/v1/drone/' + droneId + '/status' }),
+  start: (missionId) => request({ url: '/api/v1/drone/mission/start', method: 'POST', data: { missionId } }),
+  pause: (missionId) => request({ url: '/api/v1/drone/mission/pause', method: 'POST', data: { missionId } }),
+  returnHome: (missionId) => request({ url: '/api/v1/drone/mission/return', method: 'POST', data: { missionId } }),
+  telemetry: (droneId) => request({ url: '/api/v1/drone/' + droneId + '/telemetry' })
 }
 
 // ============ GPS 航迹 ============
 export const gpsApi = {
-  realtime: () => request({ url: '/api/gps/realtime' }),
-  track: (missionId) => request({ url: '/api/gps/track/' + missionId }),
-  export: (missionId) => request({ url: '/api/gps/export/' + missionId })
+  realtime: () => request({ url: '/api/v1/gps/realtime' }),
+  track: (missionId) => request({ url: '/api/v1/gps/track/' + missionId }),
+  export: (missionId) => request({ url: '/api/v1/gps/export/' + missionId })
 }
 
 // ============ 土壤采样 ============
 export const soilApi = {
-  list: (params = {}) => request({ url: '/api/soil/samples', data: params }),
-  create: (data) => request({ url: '/api/soil/samples', method: 'POST', data }),
-  stats: () => request({ url: '/api/soil/stats' })
+  list: (params = {}) => request({ url: '/api/v1/soil/samples', data: params }),
+  create: (data) => request({ url: '/api/v1/soil/samples', method: 'POST', data }),
+  stats: () => request({ url: '/api/v1/soil/stats' })
 }
 
 // ============ 面积测量 ============
 export const areaApi = {
-  list: () => request({ url: '/api/area/records' }),
-  create: (data) => request({ url: '/api/area/records', method: 'POST', data }),
-  calc: (points) => request({ url: '/api/area/calc', method: 'POST', data: { points } })
+  list: () => request({ url: '/api/v1/area/records' }),
+  create: (data) => request({ url: '/api/v1/area/records', method: 'POST', data }),
+  calc: (points) => request({ url: '/api/v1/area/calc', method: 'POST', data: { points } })
 }
 
 // ============ 灾害评估 ============
 export const disasterApi = {
-  summary: () => request({ url: '/api/disaster/summary' }),
-  detail: (type) => request({ url: '/api/disaster/' + type })
+  list: (params = {}) => request({ url: '/api/v1/disaster/list', data: params }),
+  summary: () => request({ url: '/api/v1/disaster/summary' }),
+  detail: (type) => request({ url: '/api/v1/disaster/' + type })
 }
 
 // ============ 审批中心 ============
 export const approvalApi = {
-  pending: () => request({ url: '/api/approvals/pending' }),
-  done: () => request({ url: '/api/approvals/done' }),
+  list: (params = {}) => request({ url: '/api/v1/approval/list', data: params }),
+  pending: () => request({ url: '/api/v1/approval/pending' }),
+  done: () => request({ url: '/api/v1/approval/done' }),
   approve: (id, comment = '') => request({
-    url: '/api/approvals/' + id + '/approve',
+    url: '/api/v1/approval/' + id + '/approve',
     method: 'POST',
     data: { comment }
   }),
   reject: (id, reason) => request({
-    url: '/api/approvals/' + id + '/reject',
+    url: '/api/v1/approval/' + id + '/reject',
     method: 'POST',
     data: { reason }
   })
@@ -136,14 +147,23 @@ export const approvalApi = {
 
 // ============ 仪表盘 ============
 export const dashboardApi = {
-  stats: () => request({ url: '/api/dashboard/stats' }),
-  recent: () => request({ url: '/api/dashboard/recent' })
+  stats: () => request({ url: '/api/v1/dashboard/stats' }),
+  recent: () => request({ url: '/api/v1/dashboard/recent' })
+}
+
+// ============ 岩层分析 ============
+export const rockStratumApi = {
+  analyses: () => request({ url: '/api/v1/rock-stratum/analyses' }),
+  analysis: (id) => request({ url: '/api/v1/rock-stratum/analyses/' + id }),
+  samples: (analysisId) => request({ url: '/api/v1/rock-stratum/samples', data: { analysisId } }),
+  standards: (params = {}) => request({ url: '/api/v1/geo-standards', data: params })
 }
 
 export default {
   request,
   BASE_URL,
   ...loginApi,
+  ...menuApi,
   ...missionApi,
   ...flightApi,
   ...gpsApi,
@@ -151,5 +171,6 @@ export default {
   ...areaApi,
   ...disasterApi,
   ...approvalApi,
-  ...dashboardApi
+  ...dashboardApi,
+  ...rockStratumApi
 }
