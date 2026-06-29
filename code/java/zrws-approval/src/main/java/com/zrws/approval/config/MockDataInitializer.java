@@ -55,26 +55,51 @@ public class MockDataInitializer implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        try {
-            initFlightMissions();
-            initSoilSamples();
-            initGpsTrackPoints();
-            initLandPlots();
-            initSoilClassifications();
-            initRockStratumAnalyses();
-            initDisasterRisks();
-            initDevices();
-            initQualityChecks();
-            initAnnouncementCategories();
-            initAnnouncements();
-            initApprovalTasks();
-            initReportTemplates();
-            initExternalCompanies();
-            initApiKeys();
-            log.info("[Mock数据] Mock数据初始化完成");
-        } catch (Exception e) {
-            log.warn("[Mock数据] Mock数据初始化失败（可能表不存在）: {}", e.getMessage());
+        int success = 0;
+        int failed = 0;
+        String[][] tasks = {
+            {"飞行任务", "initFlightMissions"},
+            {"土壤采样", "initSoilSamples"},
+            {"GPS航迹点", "initGpsTrackPoints"},
+            {"地块", "initLandPlots"},
+            {"土质分类", "initSoilClassifications"},
+            {"外部公司", "initExternalCompanies"},
+            {"API密钥", "initApiKeys"},
+            {"灾害风险", "initDisasterRisks"},
+            {"设备", "initDevices"},
+            {"质量校验", "initQualityChecks"},
+            {"公告分类", "initAnnouncementCategories"},
+            {"公告", "initAnnouncements"},
+            {"审批任务", "initApprovalTasks"},
+            {"报表模板", "initReportTemplates"},
+            {"岩层结构分析", "initRockStratumAnalyses"}
+        };
+        for (String[] task : tasks) {
+            try {
+                switch (task[1]) {
+                    case "initFlightMissions": initFlightMissions(); break;
+                    case "initSoilSamples": initSoilSamples(); break;
+                    case "initGpsTrackPoints": initGpsTrackPoints(); break;
+                    case "initLandPlots": initLandPlots(); break;
+                    case "initSoilClassifications": initSoilClassifications(); break;
+                    case "initExternalCompanies": initExternalCompanies(); break;
+                    case "initApiKeys": initApiKeys(); break;
+                    case "initDisasterRisks": initDisasterRisks(); break;
+                    case "initDevices": initDevices(); break;
+                    case "initQualityChecks": initQualityChecks(); break;
+                    case "initAnnouncementCategories": initAnnouncementCategories(); break;
+                    case "initAnnouncements": initAnnouncements(); break;
+                    case "initApprovalTasks": initApprovalTasks(); break;
+                    case "initReportTemplates": initReportTemplates(); break;
+                    case "initRockStratumAnalyses": initRockStratumAnalyses(); break;
+                }
+                success++;
+            } catch (Exception e) {
+                failed++;
+                log.warn("[Mock数据] {}初始化失败: {}", task[0], e.getMessage());
+            }
         }
+        log.info("[Mock数据] Mock数据初始化完成，成功 {} 项，失败 {} 项", success, failed);
     }
 
     private void initFlightMissions() {
