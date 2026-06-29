@@ -24,9 +24,9 @@
 <style>
   /* 全局样式 - 每个页面通过 page-layout 组件包裹 */
   page {
-    background-color: #f0f2f5;
+    background-color: #FEFBF6;
     font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
     font-size: 28rpx;
-    color: #303133;
+    color: #5D4E37;
   }
 </style>

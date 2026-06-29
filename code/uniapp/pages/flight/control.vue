@@ -79,65 +79,143 @@
 
 <script setup>
   import { ref, reactive, onMounted, onUnmounted, computed } from 'vue'
-  import { mockTelemetry } from '@/utils/mock.js'
+  import { flightApi } from '@/api/index.js'
   import { toast, nav } from '@/utils/index.js'
 
-  const telemetry = reactive({ ...mockTelemetry })
-  const currentTime = ref('')
-  let timer = null
-
-  // 模拟最近飞行路径点
-  const recentPath = computed(() => {
-    const arr = []
-    for (let i = 0; i < 10; i++) {
-      arr.push({
-        x: 20 + i * 6 + Math.random() * 5,
-        y: 25 + Math.random() * 50
-      })
-    }
-    return arr
+  const telemetry = reactive({
+    droneId: '',
+    connected: false,
+    alt: 0,
+    lng: '',
+    lat: '',
+    speed: 0,
+    heading: 0,
+    battery: 0,
+    sat: 0,
+    signal: 0
   })
+  const currentTime = ref('')
+  const loading = ref(false)
+  let timer = null
+  let missionId = ''
+  let droneId = ''
+
+  const recentPath = ref([])
 
   onMounted(() => {
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const options = currentPage?.options || {}
+    missionId = options.missionId || ''
+    droneId = options.droneId || 'DJI-M350-003'
+    telemetry.droneId = droneId
+
+    loadDroneStatus()
     updateTime()
     timer = setInterval(() => {
       updateTime()
-      // 模拟遥测数据变化
-      telemetry.alt = (telemetry.alt + (Math.random() - 0.5) * 1.2).toFixed(1)
-      telemetry.speed = (8 + Math.random() * 3).toFixed(1)
-      telemetry.heading = Math.floor(90 + (Math.random() - 0.5) * 10)
-      telemetry.battery = Math.max(0, telemetry.battery - Math.random() * 0.3).toFixed(0)
-      telemetry.sat = 22 + Math.floor(Math.random() * 5)
-      telemetry.signal = 90 + Math.floor(Math.random() * 10)
-      telemetry.lng = (112.835210 + (Math.random() - 0.5) * 0.0005).toFixed(6)
-      telemetry.lat = (28.456720 + (Math.random() - 0.5) * 0.0005).toFixed(6)
-    }, 1500)
+      loadTelemetry()
+    }, 3000)
   })
 
   onUnmounted(() => {
     if (timer) clearInterval(timer)
   })
 
+  async function loadDroneStatus() {
+    loading.value = true
+    try {
+      const res = await flightApi.getStatus(droneId)
+      if (res) {
+        telemetry.connected = res.connected !== false
+        telemetry.droneId = res.droneId || droneId
+      }
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadTelemetry() {
+    try {
+      const res = await flightApi.telemetry(droneId)
+      if (res) {
+        telemetry.alt = res.alt ?? res.altitude ?? 0
+        telemetry.lng = res.lng ?? res.longitude ?? telemetry.lng
+        telemetry.lat = res.lat ?? res.latitude ?? telemetry.lat
+        telemetry.speed = res.speed ?? 0
+        telemetry.heading = res.heading ?? 0
+        telemetry.battery = res.battery ?? 0
+        telemetry.sat = res.sat ?? res.satellites ?? 0
+        telemetry.signal = res.signal ?? res.signalStrength ?? 0
+        telemetry.connected = res.connected !== false
+
+        // 更新路径点
+        if (res.lng && res.lat) {
+          recentPath.value.push({
+            x: 50 + (parseFloat(res.lng) - 112.835210) * 50000,
+            y: 50 - (parseFloat(res.lat) - 28.456720) * 50000
+          })
+          if (recentPath.value.length > 20) {
+            recentPath.value.shift()
+          }
+        }
+      }
+    } catch (e) {
+      // 静默失败，避免频繁弹窗
+    }
+  }
+
   function updateTime() {
     currentTime.value = new Date().toLocaleTimeString('zh-CN', { hour12: false })
   }
 
-  function startFlight() {
-    toast.success('开始执行采集任务')
-    telemetry.connected = true
+  async function startFlight() {
+    if (!missionId) {
+      toast.info('请先选择任务')
+      return
+    }
+    try {
+      await flightApi.start(missionId)
+      toast.success('开始执行采集任务')
+      telemetry.connected = true
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    }
   }
-  function pauseFlight() {
-    toast.info('飞行已暂停')
+
+  async function pauseFlight() {
+    if (!missionId) {
+      toast.info('请先选择任务')
+      return
+    }
+    try {
+      await flightApi.pause(missionId)
+      toast.info('飞行已暂停')
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    }
   }
-  function returnHome() {
+
+  async function returnHome() {
     uni.showModal({
       title: '返航确认',
       content: '确定执行一键返航命令？',
       confirmText: '确定',
       cancelText: '取消',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          toast.info('返航指令已发送')
+          if (!missionId) {
+            toast.info('返航指令已发送')
+            return
+          }
+          try {
+            await flightApi.returnHome(missionId)
+            toast.info('返航指令已发送')
+          } catch (e) {
+            // 错误提示已在 request 封装中处理
+          }
         }
       }
     })

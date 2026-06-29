@@ -76,6 +76,12 @@ const routes = [
         meta: { group: '处理', title: '数据导入', icon: '↧' }
       },
       {
+        path: 'data-export',
+        name: 'DataExport',
+        component: () => import('@/views/pages/DataExport.vue'),
+        meta: { group: '处理', title: '数据导出', icon: '↥' }
+      },
+      {
         path: 'quality-check',
         name: 'QualityCheck',
         component: () => import('@/views/pages/QualityCheck.vue'),
@@ -194,6 +200,22 @@ const routes = [
         name: 'Announcement',
         component: () => import('@/views/pages/Announcement.vue'),
         meta: { group: '系统', title: '公告管理', icon: '✉' }
+      },
+
+      // 报表中心
+      {
+        path: 'report-center',
+        name: 'ReportCenter',
+        component: () => import('@/views/pages/ReportCenter.vue'),
+        meta: { group: '系统', title: '报表中心', icon: '📊' }
+      },
+
+      // 对外接口管理
+      {
+        path: 'open-api',
+        name: 'OpenApiManage',
+        component: () => import('@/views/pages/OpenApiManage.vue'),
+        meta: { group: '系统', title: '对外接口', icon: '🔌' }
       }
     ]
   },

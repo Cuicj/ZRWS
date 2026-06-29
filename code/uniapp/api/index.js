@@ -18,7 +18,7 @@ function getToken() {
 }
 
 // 通用请求
-function request(options) {
+export function request(options) {
   return new Promise((resolve, reject) => {
     const { url, method = 'GET', data = {}, header = {} } = options
 
@@ -151,13 +151,23 @@ export const dashboardApi = {
   recent: () => request({ url: '/api/v1/dashboard/recent' })
 }
 
+// ============ 土质分类 ============
+export { soilClassifyApi } from './soilClassify.js'
+
 // ============ 岩层分析 ============
-export const rockStratumApi = {
-  analyses: () => request({ url: '/api/v1/rock-stratum/analyses' }),
-  analysis: (id) => request({ url: '/api/v1/rock-stratum/analyses/' + id }),
-  samples: (analysisId) => request({ url: '/api/v1/rock-stratum/samples', data: { analysisId } }),
-  standards: (params = {}) => request({ url: '/api/v1/geo-standards', data: params })
-}
+export { rockStratumApi } from './rockStratum.js'
+
+// ============ 设备管理 ============
+export { deviceApi } from './device.js'
+
+// ============ 质量校验 ============
+export { qualityCheckApi } from './qualityCheck.js'
+
+// ============ 地质标准 ============
+export { geoStandardApi } from './geoStandard.js'
+
+// ============ 报表中心 ============
+export { reportApi } from './report.js'
 
 export default {
   request,
@@ -171,6 +181,5 @@ export default {
   ...areaApi,
   ...disasterApi,
   ...approvalApi,
-  ...dashboardApi,
-  ...rockStratumApi
+  ...dashboardApi
 }

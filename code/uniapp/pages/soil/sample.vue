@@ -116,11 +116,12 @@
 
 <script setup>
   import { ref, reactive, onMounted, computed } from 'vue'
-  import { mockSoilSamples } from '@/utils/mock.js'
+  import { soilApi } from '@/api/index.js'
   import { toast } from '@/utils/index.js'
 
   const soilTypes = ['壤土', '黏土', '砂土', '粉砂土', '泥炭土', '盐碱土']
   const samples = ref([])
+  const loading = ref(false)
   const stats = reactive({ total: 0, today: 0 })
 
   const form = reactive({
@@ -142,29 +143,54 @@
 
   onMounted(() => loadData())
 
-  function loadData() {
-    // 加载 mock 数据
-    setTimeout(() => {
-      samples.value = [...mockSoilSamples]
-      stats.total = samples.value.length
-      stats.today = Math.min(5 + Math.floor(Math.random() * 10), samples.value.length)
+  async function loadData() {
+    loading.value = true
+    try {
+      const [listRes, statsRes] = await Promise.all([
+        soilApi.list({ pageSize: 50 }).catch(() => null),
+        soilApi.stats().catch(() => null)
+      ])
+
+      if (listRes) {
+        samples.value = listRes.list || listRes.records || listRes || []
+      }
+
+      if (statsRes) {
+        stats.total = statsRes.total || statsRes.totalSamples || samples.value.length
+        stats.today = statsRes.today || statsRes.todaySamples || 0
+      } else {
+        stats.total = samples.value.length
+      }
+
       // 预填编号
-      form.id = 'SP-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(samples.value.length + 1).padStart(3, '0')
-    }, 200)
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+      form.id = 'SP-' + dateStr + '-' + String(samples.value.length + 1).padStart(3, '0')
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
   }
 
   function getLocation() {
-    // 模拟定位
     uni.showLoading({ title: '定位中...' })
-    setTimeout(() => {
-      uni.hideLoading()
-      form.lng = (112.835 + (Math.random() - 0.5) * 0.01).toFixed(6)
-      form.lat = (28.456 + (Math.random() - 0.5) * 0.01).toFixed(6)
-      toast.success('定位成功')
-    }, 800)
+    uni.getLocation({
+      type: 'gcj02',
+      success: (res) => {
+        uni.hideLoading()
+        form.lng = res.longitude.toFixed(6)
+        form.lat = res.latitude.toFixed(6)
+        toast.success('定位成功')
+      },
+      fail: () => {
+        uni.hideLoading()
+        // 定位失败时使用默认值
+        toast.info('定位失败，使用默认位置')
+      }
+    })
   }
 
-  function saveSample() {
+  async function saveSample() {
     if (!form.id) {
       toast.info('请填写采样点编号')
       return
@@ -173,27 +199,37 @@
       toast.info('请填写pH值')
       return
     }
-    samples.value.unshift({
-      id: form.id,
-      lng: form.lng,
-      lat: form.lat,
-      ph: form.ph,
-      moisture: form.moisture || 0,
-      ec: form.ec || 0,
-      type: form.type,
-      note: form.note
-    })
-    stats.total = samples.value.length
-    stats.today++
-    toast.success('保存成功')
 
-    // 清空部分字段，便于继续采样
-    const nextSeq = parseInt(form.id.split('-').pop()) + 1
-    form.id = 'SP-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' + String(nextSeq).padStart(3, '0')
-    form.ph = ''
-    form.moisture = ''
-    form.ec = ''
-    form.note = ''
+    loading.value = true
+    try {
+      const sampleData = {
+        sampleId: form.id,
+        lng: form.lng,
+        lat: form.lat,
+        ph: parseFloat(form.ph),
+        moisture: parseFloat(form.moisture) || 0,
+        ec: parseFloat(form.ec) || 0,
+        soilType: form.type,
+        remark: form.note
+      }
+      await soilApi.create(sampleData)
+
+      toast.success('保存成功')
+      loadData()
+
+      // 清空部分字段，便于继续采样
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '')
+      const nextSeq = samples.value.length + 2
+      form.id = 'SP-' + dateStr + '-' + String(nextSeq).padStart(3, '0')
+      form.ph = ''
+      form.moisture = ''
+      form.ec = ''
+      form.note = ''
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
   }
 </script>
 

@@ -21,10 +21,10 @@
 
 <style lang="scss" scoped>
   .section-card {
-    background: #fff;
-    border-radius: 16rpx;
+    background: $zrws-bg-secondary;
+    border-radius: $zrws-radius-md;
     margin-bottom: 24rpx;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.04);
+    box-shadow: $zrws-shadow-sm;
     overflow: hidden;
   }
   .sc-head {
@@ -32,16 +32,16 @@
     justify-content: space-between;
     align-items: center;
     padding: 28rpx 28rpx 20rpx;
-    border-bottom: 1rpx solid #f0f0f0;
+    border-bottom: 1rpx solid $zrws-border-medium;
   }
   .sc-title {
     font-size: 30rpx;
     font-weight: 600;
-    color: #303133;
+    color: $zrws-text-primary;
   }
   .sc-action {
     font-size: 24rpx;
-    color: #2b6cb0;
+    color: $zrws-text-secondary;
   }
   .sc-body {
     padding: 24rpx 28rpx;

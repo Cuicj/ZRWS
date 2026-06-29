@@ -40,14 +40,19 @@
 
 <style lang="scss" scoped>
   .stat-card {
-    background: #fff;
-    border-radius: 16rpx;
+    background: linear-gradient(135deg, $zrws-bg-secondary 0%, $zrws-bg-tertiary 100%);
+    border-radius: $zrws-radius-lg;
     padding: 28rpx 24rpx;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.04);
+    box-shadow: $zrws-shadow-sm;
     margin-bottom: 20rpx;
+    transition: all .3s ease;
+  }
+  .stat-card:active {
+    transform: translateY(-4rpx);
+    box-shadow: $zrws-shadow-md;
   }
   .stat-info {
     flex: 1;
@@ -55,20 +60,20 @@
   .stat-value {
     font-size: 56rpx;
     font-weight: 700;
-    color: #303133;
+    color: $zrws-primary;
     display: block;
     line-height: 1.2;
     font-family: 'DIN', monospace;
   }
   .stat-label {
     font-size: 26rpx;
-    color: #909399;
+    color: $zrws-text-secondary;
     margin-top: 4rpx;
     display: block;
   }
   .stat-trend {
     font-size: 22rpx;
-    color: #67c23a;
+    color: $zrws-success;
     margin-top: 6rpx;
     display: block;
   }
@@ -76,20 +81,20 @@
     width: 80rpx;
     height: 80rpx;
     border-radius: 20rpx;
-    background: linear-gradient(135deg, #4299e1, #2b6cb0);
+    background: $zrws-primary-bg;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 42rpx;
   }
-  .color-blue   .stat-icon-box { background: linear-gradient(135deg, #4299e1, #2b6cb0); }
-  .color-green  .stat-icon-box { background: linear-gradient(135deg, #68d391, #67c23a); }
-  .color-orange .stat-icon-box { background: linear-gradient(135deg, #f6ad55, #e6a23c); }
-  .color-red    .stat-icon-box { background: linear-gradient(135deg, #fc8181, #f56c6c); }
-  .color-purple .stat-icon-box { background: linear-gradient(135deg, #b794f4, #9f7aea); }
-  .color-blue   .stat-value { color: #2b6cb0; }
-  .color-green  .stat-value { color: #67c23a; }
-  .color-orange .stat-value { color: #e6a23c; }
-  .color-red    .stat-value { color: #f56c6c; }
-  .color-purple .stat-value { color: #9f7aea; }
+  .color-blue   .stat-icon-box { background: rgba(201, 169, 110, 0.15); }
+  .color-green  .stat-icon-box { background: rgba(124, 179, 66, 0.15); }
+  .color-orange .stat-icon-box { background: rgba(245, 124, 0, 0.15); }
+  .color-red    .stat-icon-box { background: rgba(229, 57, 53, 0.15); }
+  .color-purple .stat-icon-box { background: rgba(201, 169, 110, 0.2); }
+  .color-blue   .stat-value { color: $zrws-primary; }
+  .color-green  .stat-value { color: $zrws-success; }
+  .color-orange .stat-value { color: $zrws-warning; }
+  .color-red    .stat-value { color: $zrws-error; }
+  .color-purple .stat-value { color: $zrws-primary-dark; }
 </style>

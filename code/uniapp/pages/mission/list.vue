@@ -89,7 +89,7 @@
 
 <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
-  import { mockMissions } from '@/utils/mock.js'
+  import { missionApi } from '@/api/index.js'
   import { toast, nav } from '@/utils/index.js'
 
   const statusTags = [
@@ -101,57 +101,88 @@
   ]
 
   const filter = reactive({ keyword: '', status: '' })
-  const allList = ref([])
+  const list = ref([])
+  const loading = ref(false)
   const showCreateDialog = ref(false)
   const newMission = reactive({
     name: '', area: '', altitude: 120, gpsMode: 'RTK'
   })
 
-  const list = computed(() => {
-    return allList.value.filter(m => {
-      const matchKw = !filter.keyword ||
-        m.id.includes(filter.keyword) ||
-        m.area.includes(filter.keyword)
-      const matchStatus = !filter.status || m.status === filter.status
-      return matchKw && matchStatus
-    })
+  const pagination = reactive({
+    page: 1,
+    pageSize: 20,
+    total: 0,
+    hasMore: true
   })
 
   onMounted(() => { loadData() })
 
-  function loadData() {
-    setTimeout(() => {
-      allList.value = [...mockMissions]
-    }, 300)
+  async function loadData(isRefresh = true) {
+    if (loading.value) return
+    loading.value = true
+
+    if (isRefresh) {
+      pagination.page = 1
+      pagination.hasMore = true
+    }
+
+    try {
+      const params = {
+        page: pagination.page,
+        pageSize: pagination.pageSize,
+        keyword: filter.keyword || undefined,
+        status: filter.status || undefined
+      }
+      const res = await missionApi.list(params)
+      const data = res?.list || res?.records || res || []
+      const total = res?.total || res?.count || data.length
+
+      if (isRefresh) {
+        list.value = data
+      } else {
+        list.value = [...list.value, ...data]
+      }
+      pagination.total = total
+      pagination.hasMore = list.value.length < total
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
+  }
+
+  function loadMore() {
+    if (!pagination.hasMore || loading.value) return
+    pagination.page++
+    loadData(false)
   }
 
   function openDetail(m) {
-    uni.setStorageSync('currentMission', m)
     nav.to('/pages/mission/detail?id=' + m.id)
   }
 
-  function createMission() {
+  async function createMission() {
     if (!newMission.name) {
       toast.info('请填写任务名称')
       return
     }
-    const m = {
-      id: 'ZRS-' + new Date().toISOString().slice(0,10).replace(/-/g,'') + '-' +
-        String(allList.value.length + 1).padStart(3, '0'),
-      area: newMission.area || newMission.name,
-      operator: '我',
-      coverage: 0,
-      photos: 0,
-      altitude: newMission.altitude || 120,
-      status: 'pending',
-      progress: 0,
-      date: new Date().toISOString().slice(0,10)
+
+    try {
+      const missionData = {
+        name: newMission.name,
+        area: newMission.area || newMission.name,
+        altitude: newMission.altitude || 120,
+        gpsMode: newMission.gpsMode || 'RTK'
+      }
+      await missionApi.create(missionData)
+      showCreateDialog.value = false
+      toast.success('任务创建成功')
+      newMission.name = ''
+      newMission.area = ''
+      loadData()
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
     }
-    allList.value.unshift(m)
-    showCreateDialog.value = false
-    toast.success('任务创建成功')
-    newMission.name = ''
-    newMission.area = ''
   }
 </script>
 

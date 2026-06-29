@@ -95,74 +95,137 @@
 
 <script setup>
   import { ref, reactive, onMounted, onUnmounted } from 'vue'
-  import { mockGpsPoints } from '@/utils/mock.js'
+  import { gpsApi } from '@/api/index.js'
   import { toast } from '@/utils/index.js'
 
   const gps = reactive({
-    lng: '112.835210',
-    lat: '28.456720',
-    alt: '118.4',
-    sat: 24,
+    lng: '',
+    lat: '',
+    alt: '',
+    sat: 0,
     time: new Date().toLocaleTimeString('zh-CN', { hour12: false })
   })
 
-  const trackPoints = ref([...mockGpsPoints])
+  const trackPoints = ref([])
+  const loading = ref(false)
   let timer = null
-  let seqCounter = trackPoints.value.length
+  let missionId = ''
 
   onMounted(() => {
-    timer = setInterval(() => {
-      // 更新当前GPS
-      gps.lng = (112.835210 + (Math.random() - 0.5) * 0.0005).toFixed(6)
-      gps.lat = (28.456720 + (Math.random() - 0.5) * 0.0005).toFixed(6)
-      gps.alt = (115 + Math.random() * 8).toFixed(1)
-      gps.sat = 22 + Math.floor(Math.random() * 5)
-      gps.time = new Date().toLocaleTimeString('zh-CN', { hour12: false })
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const options = currentPage?.options || {}
+    missionId = options.missionId || ''
 
-      // 每2秒新增一个航点
-      if (Math.random() > 0.3) {
-        seqCounter++
-        trackPoints.value.push({
-          seq: seqCounter,
-          time: gps.time,
-          lng: gps.lng,
-          lat: gps.lat,
-          alt: gps.alt
-        })
-        if (trackPoints.value.length > 30) {
-          trackPoints.value.shift()
-        }
-      }
-    }, 1500)
+    loadTrackData()
+    loadRealtimeGps()
+
+    timer = setInterval(() => {
+      loadRealtimeGps()
+    }, 3000)
   })
 
   onUnmounted(() => {
     if (timer) clearInterval(timer)
   })
 
-  // 简单归一化坐标到 10-90 百分比
-  function getX(p) {
-    const base = 112.835210
-    const offset = parseFloat(p.lng) - base
-    return 50 + offset * 50000
-  }
-  function getY(p) {
-    const base = 28.456720
-    const offset = parseFloat(p.lat) - base
-    return 50 - offset * 50000
+  async function loadTrackData() {
+    if (!missionId) return
+    loading.value = true
+    try {
+      const res = await gpsApi.track(missionId)
+      const data = res?.list || res?.points || res || []
+      trackPoints.value = data.map((p, i) => ({
+        seq: i + 1,
+        time: p.time || p.timestamp || '',
+        lng: p.lng || p.longitude || '',
+        lat: p.lat || p.latitude || '',
+        alt: p.alt || p.altitude || '',
+        fix: p.fix || p.fixType || 'FIXED'
+      }))
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
   }
 
-  function exportCSV() {
-    let csv = '序号,时间,经度,纬度,海拔(m)\n'
-    trackPoints.value.forEach(p => {
-      csv += p.seq + ',' + p.time + ',' + p.lng + ',' + p.lat + ',' + p.alt + '\n'
-    })
-    uni.setClipboardData({
-      data: csv,
-      success: () => {
-        toast.success('航迹数据已复制到剪贴板')
+  async function loadRealtimeGps() {
+    try {
+      const res = await gpsApi.realtime()
+      if (res) {
+        gps.lng = res.lng || res.longitude || gps.lng
+        gps.lat = res.lat || res.latitude || gps.lat
+        gps.alt = res.alt || res.altitude || gps.alt
+        gps.sat = res.sat || res.satellites || 0
+        gps.time = new Date().toLocaleTimeString('zh-CN', { hour12: false })
+
+        // 实时新增航点
+        if (gps.lng && gps.lat) {
+          const newPoint = {
+            seq: trackPoints.value.length + 1,
+            time: gps.time,
+            lng: gps.lng,
+            lat: gps.lat,
+            alt: gps.alt,
+            fix: res.fix || res.fixType || 'FIXED'
+          }
+          trackPoints.value.push(newPoint)
+          if (trackPoints.value.length > 100) {
+            trackPoints.value.shift()
+          }
+        }
       }
-    })
+    } catch (e) {
+      // 静默失败，避免频繁弹窗
+    }
+  }
+
+  function getX(p) {
+    const lngs = trackPoints.value.map(t => parseFloat(t.lng)).filter(v => !isNaN(v))
+    if (lngs.length === 0) return 50
+    const minLng = Math.min(...lngs)
+    const maxLng = Math.max(...lngs)
+    const range = maxLng - minLng || 0.001
+    return 10 + ((parseFloat(p.lng) - minLng) / range) * 80
+  }
+
+  function getY(p) {
+    const lats = trackPoints.value.map(t => parseFloat(t.lat)).filter(v => !isNaN(v))
+    if (lats.length === 0) return 50
+    const minLat = Math.min(...lats)
+    const maxLat = Math.max(...lats)
+    const range = maxLat - minLat || 0.001
+    return 90 - ((parseFloat(p.lat) - minLat) / range) * 80
+  }
+
+  async function exportCSV() {
+    try {
+      if (missionId) {
+        await gpsApi.export(missionId)
+      }
+      let csv = '序号,时间,经度,纬度,海拔(m)\n'
+      trackPoints.value.forEach(p => {
+        csv += p.seq + ',' + p.time + ',' + p.lng + ',' + p.lat + ',' + p.alt + '\n'
+      })
+      uni.setClipboardData({
+        data: csv,
+        success: () => {
+          toast.success('航迹数据已复制到剪贴板')
+        }
+      })
+    } catch (e) {
+      let csv = '序号,时间,经度,纬度,海拔(m)\n'
+      trackPoints.value.forEach(p => {
+        csv += p.seq + ',' + p.time + ',' + p.lng + ',' + p.lat + ',' + p.alt + '\n'
+      })
+      uni.setClipboardData({
+        data: csv,
+        success: () => {
+          toast.success('航迹数据已复制到剪贴板')
+        }
+      })
+    }
   }
 </script>
 

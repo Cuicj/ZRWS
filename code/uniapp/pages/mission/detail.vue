@@ -90,24 +90,35 @@
 
 <script setup>
   import { ref, onMounted } from 'vue'
+  import { missionApi } from '@/api/index.js'
   import { toast, nav } from '@/utils/index.js'
 
   const mission = ref(null)
+  const loading = ref(false)
+  let missionId = ''
 
   onMounted(() => {
+    const pages = getCurrentPages()
+    const currentPage = pages[pages.length - 1]
+    const options = currentPage?.options || {}
+    missionId = options.id || ''
     loadData()
   })
 
-  function loadData() {
+  async function loadData() {
+    if (!missionId) {
+      toast.info('任务ID不存在')
+      return
+    }
+
+    loading.value = true
     try {
-      const m = uni.getStorageSync('currentMission')
-      if (m && m.id) {
-        mission.value = m
-      } else {
-        toast.info('任务信息加载失败')
-      }
+      const res = await missionApi.detail(missionId)
+      mission.value = res
     } catch (e) {
-      toast.info('任务信息加载失败')
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
     }
   }
 
@@ -119,10 +130,10 @@
   }
 
   function goFlight() {
-    nav.to('/pages/flight/control')
+    nav.to('/pages/flight/control?missionId=' + missionId)
   }
   function goGps() {
-    nav.to('/pages/gps/track')
+    nav.to('/pages/gps/track?missionId=' + missionId)
   }
 </script>
 

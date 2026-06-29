@@ -51,7 +51,7 @@
 <script setup>
   import { reactive, ref, onMounted } from 'vue'
   import { store, login as storeLogin, checkLogin } from '@/store/user.js'
-  import { mockMissions } from '@/utils/mock.js'
+  import { loginApi } from '@/api/index.js'
   import { toast, nav } from '@/utils/index.js'
 
   const loading = ref(false)
@@ -78,7 +78,7 @@
     }
   })
 
-  function doLogin() {
+  async function doLogin() {
     if (!form.username || !form.password) {
       toast.info('请输入账号密码')
       return
@@ -90,14 +90,14 @@
 
     loading.value = true
 
-    // 模拟登录请求（后端对接后替换为 API 调用）
-    setTimeout(() => {
+    try {
+      const res = await loginApi.login(form.username, form.password)
       const userData = {
-        name: form.username === 'zrws' ? '张工程师' : form.username,
-        role: '外业操作员',
-        department: '测绘事业部',
-        phone: '138****8888',
-        token: 'mock-token-' + Date.now()
+        name: res?.name || res?.username || form.username,
+        role: res?.role || '外业操作员',
+        department: res?.department || '测绘事业部',
+        phone: res?.phone || '',
+        token: res?.token || res?.accessToken || ''
       }
       storeLogin(userData)
 
@@ -108,13 +108,16 @@
         uni.removeStorageSync('loginForm')
       }
 
-      loading.value = false
       toast.success('登录成功')
 
       setTimeout(() => {
         nav.replace('/pages/dashboard/dashboard')
       }, 600)
-    }, 800)
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
   }
 
   function onForget() {

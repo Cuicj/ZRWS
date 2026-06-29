@@ -81,17 +81,30 @@
 
 <script setup>
   import { ref, reactive, onMounted } from 'vue'
-  import { mockPlotAreas } from '@/utils/mock.js'
+  import { areaApi } from '@/api/index.js'
   import { toast } from '@/utils/index.js'
 
   const boundaryPoints = ref([])
   const plotAreas = ref([])
+  const loading = ref(false)
   const areaResult = reactive({ mu: 0, sqm: 0, km: 0, points: 0 })
 
   onMounted(() => {
-    plotAreas.value = [...mockPlotAreas]
+    loadAreaRecords()
     presetDemo()
   })
+
+  async function loadAreaRecords() {
+    loading.value = true
+    try {
+      const res = await areaApi.list()
+      plotAreas.value = res?.list || res?.records || res || []
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
+  }
 
   function presetDemo() {
     boundaryPoints.value = [
@@ -122,6 +135,25 @@
     areaResult.sqm = Math.round(sqm)
     areaResult.mu = (sqm / 666.6667).toFixed(2)
     areaResult.km = (sqm / 1000000).toFixed(4)
+  }
+
+  async function saveAreaRecord() {
+    if (boundaryPoints.value.length < 3) {
+      toast.info('至少需要3个边界点')
+      return
+    }
+    try {
+      const points = boundaryPoints.value.map(p => ({ lng: p.lng, lat: p.lat }))
+      await areaApi.create({
+        points,
+        area: areaResult.sqm,
+        areaMu: areaResult.mu
+      })
+      toast.success('测量记录已保存')
+      loadAreaRecords()
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    }
   }
 
   function addPoint() {

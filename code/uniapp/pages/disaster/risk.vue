@@ -83,10 +83,11 @@
 
 <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
-  import { mockDisasterSummary } from '@/utils/mock.js'
+  import { disasterApi } from '@/api/index.js'
   import { toast } from '@/utils/index.js'
 
   const disasters = ref([])
+  const loading = ref(false)
 
   const now = computed(() => {
     return new Date().toLocaleString('zh-CN', { hour12: false })
@@ -114,9 +115,56 @@
   ])
 
   onMounted(() => {
-    const seedList = [1, 2, 3, 4, 5]
-    disasters.value = mockDisasterSummary.map((d, i) => ({ ...d, seed: seedList[i] }))
+    loadData()
   })
+
+  async function loadData() {
+    loading.value = true
+    try {
+      const [summaryRes, listRes] = await Promise.all([
+        disasterApi.summary().catch(() => null),
+        disasterApi.list().catch(() => null)
+      ])
+
+      let listData = []
+      if (listRes) {
+        listData = listRes.list || listRes.records || listRes || []
+      } else if (summaryRes) {
+        listData = summaryRes.list || summaryRes.items || summaryRes || []
+      }
+
+      disasters.value = listData.map((d, i) => ({
+        ...d,
+        type: d.type || d.disasterType || d.name || '',
+        level: d.level || d.riskLevel || '低风险',
+        area: d.area || d.affectedArea || 0,
+        desc: d.desc || d.description || d.remark || '',
+        action: d.action || d.suggestion || d.measure || '',
+        seed: i + 1
+      }))
+
+      // 根据数据更新总体风险等级
+      if (summaryRes?.overallLevel || summaryRes?.level) {
+        const level = summaryRes.overallLevel || summaryRes.level
+        if (level.indexOf('高') >= 0) {
+          overallLevel.value = 'high'
+        } else if (level.indexOf('中') >= 0) {
+          overallLevel.value = 'warning'
+        } else {
+          overallLevel.value = 'low'
+        }
+      }
+
+      // 更新标签
+      if (summaryRes?.tags) {
+        tagList.value = summaryRes.tags
+      }
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
+  }
 
   function levelClass(level) {
     if (level.indexOf('低') >= 0) return 'low'
@@ -126,7 +174,6 @@
     return 'info'
   }
 
-  // 简单热力图颜色生成（基于伪随机）
   function getHeatColor(seed, r, c) {
     const v = ((seed * 17 + r * 13 + c * 7 + r * c * 3) % 100) / 100
     if (v < 0.35) return 'rgba(103,194,58,0.4)'

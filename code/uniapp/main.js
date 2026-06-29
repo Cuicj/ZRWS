@@ -1,16 +1,18 @@
 import {
   createSSRApp
 } from 'vue'
+import { createPinia } from 'pinia'
 import App from './App.vue'
 
 export function createApp() {
   const app = createSSRApp(App)
 
-  // 全局配置
+  const pinia = createPinia()
+  app.use(pinia)
+
   app.config.globalProperties.$baseUrl = 'https://api.zrws.example.com'
   app.config.globalProperties.$token = ''
 
-  // 全局方法
   app.config.globalProperties.$showToast = (title, icon = 'none') => {
     uni.showToast({ title, icon, duration: 2000 })
   }
@@ -25,6 +27,7 @@ export function createApp() {
   }
 
   return {
-    app
+    app,
+    pinia
   }
 }

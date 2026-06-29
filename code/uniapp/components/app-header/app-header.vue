@@ -64,12 +64,12 @@
 
 <style lang="scss" scoped>
   .app-header {
-    background: linear-gradient(135deg, #1e3a5f 0%, #2b6cb0 100%);
-    color: #fff;
+    background: linear-gradient(135deg, $zrws-bg-secondary 0%, $zrws-bg-primary 100%);
+    color: $zrws-text-primary;
     position: sticky;
     top: 0;
     z-index: 999;
-    box-shadow: 0 4rpx 12rpx rgba(30, 58, 95, 0.15);
+    box-shadow: $zrws-shadow-sm;
   }
   .header-inner {
     display: flex;
@@ -91,11 +91,11 @@
     font-size: 56rpx;
     font-weight: 300;
     line-height: 1;
-    color: #fff;
+    color: $zrws-text-secondary;
   }
   .right-text {
     font-size: 28rpx;
-    color: #fff;
+    color: $zrws-text-secondary;
   }
   .header-title {
     flex: 1;
@@ -107,6 +107,6 @@
     white-space: nowrap;
   }
   .title-text {
-    color: #fff;
+    color: $zrws-text-primary;
   }
 </style>

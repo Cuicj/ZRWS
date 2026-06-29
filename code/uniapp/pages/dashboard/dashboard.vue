@@ -68,20 +68,21 @@
 <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
   import { store, checkLogin } from '@/store/user.js'
-  import { mockMissions } from '@/utils/mock.js'
+  import { dashboardApi, missionApi, loginApi } from '@/api/index.js'
   import { toast, nav } from '@/utils/index.js'
 
   const user = computed(() => store.user)
   const stats = reactive({
-    missionTotal: 128,
-    missionToday: 3,
-    pendingApproval: 5,
-    soilSamples: 86,
-    soilToday: 12,
-    droneOnline: 2
+    missionTotal: 0,
+    missionToday: 0,
+    pendingApproval: 0,
+    soilSamples: 0,
+    soilToday: 0,
+    droneOnline: 0
   })
 
   const missions = ref([])
+  const loading = ref(false)
   const todayText = computed(() => {
     const d = new Date()
     const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六']
@@ -102,19 +103,45 @@
   onMounted(() => {
     // 未登录则跳转到登录
     if (!checkLogin() && !store.user.isLogin) {
-      store.user.name = '张工程师'
-      store.user.role = '外业操作员'
-      store.user.department = '测绘事业部'
-      store.user.isLogin = true
+      nav.replace('/pages/login/login')
+      return
     }
     loadData()
   })
 
-  function loadData() {
-    // 加载 mock 数据（后端对接后替换为 API 调用）
-    setTimeout(() => {
-      missions.value = [...mockMissions]
-    }, 300)
+  async function loadData() {
+    loading.value = true
+    try {
+      const [statsRes, missionsRes, userRes] = await Promise.all([
+        dashboardApi.stats().catch(() => null),
+        missionApi.list({ pageSize: 5 }).catch(() => null),
+        loginApi.getUserInfo().catch(() => null)
+      ])
+
+      if (statsRes) {
+        stats.missionTotal = statsRes.missionTotal || statsRes.totalMissions || 0
+        stats.missionToday = statsRes.missionToday || statsRes.todayMissions || 0
+        stats.pendingApproval = statsRes.pendingApproval || statsRes.pendingCount || 0
+        stats.soilSamples = statsRes.soilSamples || statsRes.totalSamples || 0
+        stats.soilToday = statsRes.soilToday || statsRes.todaySamples || 0
+        stats.droneOnline = statsRes.droneOnline || statsRes.onlineDrones || 0
+      }
+
+      if (missionsRes) {
+        missions.value = missionsRes.list || missionsRes.records || missionsRes || []
+      }
+
+      if (userRes) {
+        store.user.name = userRes.name || userRes.username || store.user.name
+        store.user.role = userRes.role || store.user.role
+        store.user.department = userRes.department || store.user.department
+        store.user.phone = userRes.phone || store.user.phone
+      }
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    } finally {
+      loading.value = false
+    }
   }
 
   function onQuickTap(item) {

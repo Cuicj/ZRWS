@@ -46,6 +46,19 @@
       </view>
     </view>
 
+    <!-- 移动端工具 -->
+    <view class="menu-section">
+      <text class="menu-title">📱 移动端工具</text>
+      <view class="menu-list">
+        <view v-for="(m, i) in mobileMenus" :key="i" class="menu-item" @tap="goTo(m.url)">
+          <text class="mi-icon">{{ m.icon }}</text>
+          <text class="mi-name">{{ m.name }}</text>
+          <view v-if="m.badge" class="mi-badge">{{ m.badge }}</view>
+          <text class="mi-arrow">›</text>
+        </view>
+      </view>
+    </view>
+
     <!-- 设置菜单 -->
     <view class="menu-section">
       <text class="menu-title">⚙️ 设置与工具</text>
@@ -61,7 +74,7 @@
     <!-- 关于 -->
     <view class="about-card">
       <text class="about-title">智壤卫士</text>
-      <text class="about-version">Version 1.0.0 (Build 20260618)</text>
+      <text class="about-version">Version {{ appVersion }}</text>
       <text class="about-desc">无人机地形数据采集与土质分析平台 · 为农业、水利、灾害监测提供精准测绘解决方案</text>
     </view>
 
@@ -74,21 +87,25 @@
 
 <script setup>
   import { ref, reactive, computed, onMounted } from 'vue'
+  import { store, logout as storeLogout } from '@/store/user.js'
+  import { loginApi, dashboardApi } from '@/api/index.js'
   import { toast, nav, confirm } from '@/utils/index.js'
 
   const user = reactive({
-    name: '张工程师',
-    role: '外业操作员',
-    department: '测绘事业部',
-    phone: '138****8888'
+    name: '',
+    role: '',
+    department: '',
+    phone: ''
   })
 
   const stats = reactive({
-    missions: 128,
-    flightHours: 425.5,
-    samples: 864,
-    area: '86.4亩'
+    missions: 0,
+    flightHours: 0,
+    samples: 0,
+    area: '0亩'
   })
+
+  const loading = ref(false)
 
   const taskMenus = [
     { icon: '📝', name: '我的任务', url: '/pages/mission/list', badge: '' },
@@ -96,7 +113,14 @@
     { icon: '📍', name: 'GPS轨迹库', url: '/pages/gps/track', badge: '' },
     { icon: '🌱', name: '土壤采样库', url: '/pages/soil/sample', badge: '' },
     { icon: '📐', name: '地块面积测量', url: '/pages/area/calc', badge: '' },
-    { icon: '✅', name: '审批记录', url: '/pages/approval/list', badge: '5' }
+    { icon: '✅', name: '审批记录', url: '/pages/approval/list', badge: '' }
+  ]
+
+  const mobileMenus = [
+    { icon: '🗺️', name: '野外采集', url: '/pages/collection/field', badge: '' },
+    { icon: '📡', name: '离线同步', url: '/pages/offline/sync', badge: '' },
+    { icon: '📥', name: '数据导入', url: '/pages/data/import', badge: '' },
+    { icon: '📤', name: '数据导出', url: '/pages/data/export', badge: '' }
   ]
 
   const settingMenus = [
@@ -110,17 +134,57 @@
     { icon: 'ℹ️', name: '关于智壤卫士', url: 'about' }
   ]
 
+  const appVersion = typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : '1.0.0'
+
   onMounted(() => {
-    // 同步登录用户信息
-    try {
-      const saved = uni.getStorageSync('userInfo')
-      if (saved && saved.name) {
-        user.name = saved.name || user.name
-        user.role = saved.role || user.role
-        user.department = saved.department || user.department
-      }
-    } catch (e) {}
+    loadUserInfo()
+    loadStats()
   })
+
+  async function loadUserInfo() {
+    loading.value = true
+    try {
+      const res = await loginApi.getUserInfo()
+      if (res) {
+        user.name = res.name || res.username || store.user.name
+        user.role = res.role || store.user.role
+        user.department = res.department || store.user.department
+        user.phone = res.phone || store.user.phone
+      }
+    } catch (e) {
+      // 从本地存储读取
+      try {
+        const saved = uni.getStorageSync('userInfo')
+        if (saved && saved.name) {
+          user.name = saved.name || user.name
+          user.role = saved.role || user.role
+          user.department = saved.department || user.department
+          user.phone = saved.phone || user.phone
+        }
+      } catch (e2) {}
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function loadStats() {
+    try {
+      const res = await dashboardApi.stats()
+      if (res) {
+        stats.missions = res.missionTotal || res.totalMissions || 0
+        stats.flightHours = res.flightHours || 0
+        stats.samples = res.soilSamples || res.totalSamples || 0
+        stats.area = (res.totalArea || res.area || 0) + '亩'
+      }
+      // 更新审批badge
+      const pendingApproval = stats.pendingApproval || 0
+      if (pendingApproval > 0) {
+        taskMenus[5].badge = String(pendingApproval)
+      }
+    } catch (e) {
+      // 错误提示已在 request 封装中处理
+    }
+  }
 
   function goTo(url) {
     if (!url) return
@@ -141,7 +205,7 @@
       password: '修改密码',
       privacy: '用户协议与隐私政策',
       help: '联系客服: 400-xxx-xxxx',
-      about: '智壤卫士 v1.0.0'
+      about: '智壤卫士 v' + appVersion
     }
     uni.showModal({
       title: m.name,
@@ -150,18 +214,20 @@
     })
   }
 
-  function doLogout() {
+  async function doLogout() {
     uni.showModal({
       title: '退出登录',
       content: '确定退出当前账号？',
       confirmText: '退出',
       confirmColor: '#f56c6c',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
           try {
-            uni.removeStorageSync('userInfo')
-            uni.removeStorageSync('token')
-          } catch (e) {}
+            await loginApi.logout()
+          } catch (e) {
+            // 忽略登出API错误，继续本地登出
+          }
+          storeLogout()
           toast.success('已退出登录')
           setTimeout(() => {
             uni.reLaunch({ url: '/pages/login/login' })

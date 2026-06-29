@@ -76,6 +76,76 @@
         "navigationBarTitleText": "我的",
         "navigationStyle": "custom"
       }
+    },
+    {
+      "path": "pages/soil/classify",
+      "style": {
+        "navigationBarTitleText": "土质分类",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/rock/stratum",
+      "style": {
+        "navigationBarTitleText": "岩层分析",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/device/list",
+      "style": {
+        "navigationBarTitleText": "设备管理",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/quality/check",
+      "style": {
+        "navigationBarTitleText": "质量校验",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/standard/list",
+      "style": {
+        "navigationBarTitleText": "地质标准",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/report/list",
+      "style": {
+        "navigationBarTitleText": "报表中心",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/collection/field",
+      "style": {
+        "navigationBarTitleText": "野外采集",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/offline/sync",
+      "style": {
+        "navigationBarTitleText": "离线同步",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/data/import",
+      "style": {
+        "navigationBarTitleText": "数据导入",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/data/export",
+      "style": {
+        "navigationBarTitleText": "数据导出",
+        "navigationStyle": "custom"
+      }
     }
   ],
   "globalStyle": {

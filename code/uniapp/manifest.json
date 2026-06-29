@@ -2,8 +2,8 @@
   "name": "智壤卫士",
   "appid": "__UNI__ZRWS01",
   "description": "无人机地形数据采集与土质分析平台 - 移动端",
-  "versionName": "1.0.0",
-  "versionCode": "100",
+  "versionName": "3.4.0",
+  "versionCode": "340",
   "transformPx": false,
   "app-plus": {
     "usingComponents": true,

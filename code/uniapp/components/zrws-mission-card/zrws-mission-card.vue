@@ -51,11 +51,17 @@
 
 <style lang="scss" scoped>
   .mission-card {
-    background: #fff;
-    border-radius: 16rpx;
+    background: linear-gradient(135deg, $zrws-bg-secondary 0%, $zrws-bg-tertiary 100%);
+    border-radius: $zrws-radius-md;
     padding: 28rpx;
     margin-bottom: 20rpx;
-    box-shadow: 0 2rpx 10rpx rgba(0,0,0,0.04);
+    box-shadow: $zrws-shadow-sm;
+    border: 1rpx solid $zrws-border-light;
+    transition: all .3s ease;
+  }
+  .mission-card:active {
+    transform: translateY(-4rpx);
+    box-shadow: $zrws-shadow-md;
   }
   .mc-head {
     display: flex;
@@ -66,21 +72,21 @@
   .mc-id {
     font-size: 30rpx;
     font-weight: 600;
-    color: #303133;
+    color: $zrws-text-primary;
   }
   .mc-tag {
     padding: 6rpx 18rpx;
     border-radius: 20rpx;
     font-size: 22rpx;
   }
-  .tag-primary { background: #ecf5ff; color: #2b6cb0; }
-  .tag-success { background: #f0f9eb; color: #67c23a; }
-  .tag-warning { background: #fdf6ec; color: #e6a23c; }
-  .tag-danger  { background: #fef0f0; color: #f56c6c; }
-  .tag-info    { background: #f4f4f5; color: #909399; }
+  .tag-primary { background: $zrws-primary; color: #fff; }
+  .tag-success { background: rgba(124, 179, 66, 0.15); color: $zrws-success; }
+  .tag-warning { background: rgba(245, 124, 0, 0.15); color: $zrws-warning; }
+  .tag-danger  { background: rgba(229, 57, 53, 0.15); color: $zrws-error; }
+  .tag-info    { background: $zrws-bg-tertiary; color: $zrws-text-secondary; }
   .mc-desc {
     font-size: 26rpx;
-    color: #606266;
+    color: $zrws-text-secondary;
     margin-bottom: 16rpx;
     line-height: 1.5;
   }
@@ -89,32 +95,32 @@
     flex-wrap: wrap;
     gap: 24rpx;
     font-size: 22rpx;
-    color: #909399;
+    color: $zrws-text-tertiary;
   }
   .mc-progress {
     display: flex;
     align-items: center;
     margin-top: 20rpx;
     padding-top: 20rpx;
-    border-top: 1rpx dashed #f0f0f0;
+    border-top: 1rpx dashed $zrws-border-medium;
   }
   .mc-progress-bar {
     flex: 1;
     height: 12rpx;
-    background: #f0f2f5;
+    background: $zrws-bg-tertiary;
     border-radius: 6rpx;
     overflow: hidden;
     margin-right: 16rpx;
   }
   .mc-progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #4299e1, #67c23a);
+    background: linear-gradient(90deg, $zrws-primary-light, $zrws-primary);
     border-radius: 6rpx;
     transition: width .3s;
   }
   .mc-progress-text {
     font-size: 22rpx;
-    color: #2b6cb0;
+    color: $zrws-primary;
     font-weight: 600;
   }
 </style>

@@ -46,6 +46,8 @@ public class MockDataInitializer implements ApplicationRunner {
     private AnnouncementCategoryMapper announcementCategoryMapper;
     @Autowired
     private ApprovalTaskMapper approvalTaskMapper;
+    @Autowired
+    private ReportTemplateMapper reportTemplateMapper;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -62,6 +64,7 @@ public class MockDataInitializer implements ApplicationRunner {
             initAnnouncementCategories();
             initAnnouncements();
             initApprovalTasks();
+            initReportTemplates();
             log.info("[Mock数据] Mock数据初始化完成");
         } catch (Exception e) {
             log.warn("[Mock数据] Mock数据初始化失败（可能表不存在）: {}", e.getMessage());
@@ -964,6 +967,74 @@ public class MockDataInitializer implements ApplicationRunner {
         t.setSlaDeadline(slaDeadline);
         t.setCreatedTime(createdTime);
         t.setUpdatedTime(createdTime);
+        t.setIsDeleted(0);
+        return t;
+    }
+
+    private void initReportTemplates() {
+        Long count = reportTemplateMapper.selectCount(new LambdaQueryWrapper<ReportTemplate>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 报表模板数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化报表模板Mock数据...");
+        ReportTemplate[] templates = {
+            createReportTemplate("DASHBOARD_OVERVIEW", "仪表盘总览",
+                ReportTemplate.TemplateType.STANDARD.name(),
+                ReportTemplate.Category.DASHBOARD.name(),
+                "系统整体数据概览仪表盘，包含数据总览、趋势分析、分类占比等",
+                "PDF",
+                "[{\"name\":\"数据总览\",\"type\":\"stats\"},{\"name\":\"近期趋势\",\"type\":\"chart\"},{\"name\":\"分类占比\",\"type\":\"chart\"}]",
+                "[{\"key\":\"timeRange\",\"label\":\"时间范围\",\"type\":\"select\",\"options\":[\"今日\",\"本周\",\"本月\"]}]"),
+            createReportTemplate("SOIL_ANALYSIS", "土质分析报表",
+                ReportTemplate.TemplateType.STANDARD.name(),
+                ReportTemplate.Category.SOIL.name(),
+                "土壤采样数据分析报表，包含样品统计、成分分析、分类结果、标准对比",
+                "PDF",
+                "[{\"name\":\"样品统计\",\"type\":\"stats\"},{\"name\":\"成分分析\",\"type\":\"chart\"},{\"name\":\"分类结果\",\"type\":\"table\"},{\"name\":\"标准对比\",\"type\":\"chart\"}]",
+                "[{\"key\":\"missionCode\",\"label\":\"任务编码\",\"type\":\"input\"},{\"key\":\"soilType\",\"label\":\"土壤类型\",\"type\":\"select\",\"options\":[\"壤土\",\"黏土\",\"砂土\"]}]"),
+            createReportTemplate("DISASTER_RISK", "灾害风险报表",
+                ReportTemplate.TemplateType.STANDARD.name(),
+                ReportTemplate.Category.DISASTER.name(),
+                "地质灾害风险分析报表，包含风险分布、灾害类型统计、趋势分析",
+                "PDF",
+                "[{\"name\":\"风险分布\",\"type\":\"stats\"},{\"name\":\"灾害类型统计\",\"type\":\"chart\"},{\"name\":\"趋势分析\",\"type\":\"chart\"},{\"name\":\"灾害风险详情\",\"type\":\"table\"}]",
+                "[{\"key\":\"region\",\"label\":\"区域\",\"type\":\"input\"},{\"key\":\"riskLevel\",\"label\":\"风险等级\",\"type\":\"select\",\"options\":[\"高\",\"中\",\"低\"]}]"),
+            createReportTemplate("ROCK_STRATUM", "岩层分析报表",
+                ReportTemplate.TemplateType.STANDARD.name(),
+                ReportTemplate.Category.ROCK.name(),
+                "岩层结构分析报表，包含钻孔数据、岩层分布、成分分析",
+                "EXCEL",
+                "[{\"name\":\"钻孔数据\",\"type\":\"stats\"},{\"name\":\"岩层分布\",\"type\":\"chart\"},{\"name\":\"成分分析\",\"type\":\"table\"}]",
+                "[{\"key\":\"projectName\",\"label\":\"项目名称\",\"type\":\"input\"},{\"key\":\"analysisType\",\"label\":\"分析类型\",\"type\":\"select\",\"options\":[\"综合勘察\",\"地质雷达\"]}]"),
+            createReportTemplate("DEVICE_STATS", "设备统计报表",
+                ReportTemplate.TemplateType.STANDARD.name(),
+                ReportTemplate.Category.DEVICE.name(),
+                "设备管理统计报表，包含设备总览、设备详情列表",
+                "EXCEL",
+                "[{\"name\":\"设备总览\",\"type\":\"stats\"},{\"name\":\"设备详情列表\",\"type\":\"table\"}]",
+                "[{\"key\":\"deviceType\",\"label\":\"设备类型\",\"type\":\"select\",\"options\":[\"无人机\",\"激光雷达\",\"地质雷达\"]},{\"key\":\"status\",\"label\":\"设备状态\",\"type\":\"select\",\"options\":[\"在线\",\"离线\",\"工作中\"]}]")
+        };
+        for (ReportTemplate template : templates) {
+            reportTemplateMapper.insert(template);
+        }
+        log.info("[Mock数据] 报表模板Mock数据初始化完成，共 {} 条", templates.length);
+    }
+
+    private ReportTemplate createReportTemplate(String code, String name, String type, String category,
+                                                String description, String outputFormat,
+                                                String templateContent, String parameters) {
+        ReportTemplate t = new ReportTemplate();
+        t.setTemplateCode(code);
+        t.setTemplateName(name);
+        t.setTemplateType(type);
+        t.setCategory(category);
+        t.setDescription(description);
+        t.setTemplateContent(templateContent);
+        t.setDataSource("{}");
+        t.setParameters(parameters);
+        t.setOutputFormat(outputFormat);
+        t.setStatus(ReportTemplate.Status.ACTIVE.name());
         t.setIsDeleted(0);
         return t;
     }

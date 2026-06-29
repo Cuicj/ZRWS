@@ -136,7 +136,7 @@
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-    background: #f0f2f5;
+    background: $zrws-bg-primary;
   }
   .page-scroll {
     flex: 1;
@@ -162,12 +162,12 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: #fff;
+    background: $zrws-bg-secondary;
     height: 110rpx;
     display: flex;
-    border-top: 1rpx solid #ebeef5;
+    border-top: 1rpx solid $zrws-border-light;
     z-index: 99;
-    box-shadow: 0 -4rpx 12rpx rgba(0,0,0,0.04);
+    box-shadow: 0 -4rpx 12rpx rgba(93, 78, 55, 0.04);
   }
   .tab-item {
     flex: 1;
@@ -176,11 +176,11 @@
     align-items: center;
     justify-content: center;
     padding-top: 10rpx;
-    color: #909399;
-    transition: all .2s;
+    color: $zrws-text-tertiary;
+    transition: all .3s ease;
   }
   .tab-item.active {
-    color: #1e3a5f;
+    color: $zrws-primary;
   }
   .tab-icon {
     font-size: 40rpx;

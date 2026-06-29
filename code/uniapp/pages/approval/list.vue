@@ -74,8 +74,8 @@
 </template>
 
 <script setup>
-  import { ref, reactive, computed, onMounted } from 'vue'
-  import { mockApprovals } from '@/utils/mock.js'
+  import { ref, reactive, computed, onMounted, watch } from 'vue'
+  import { approvalApi } from '@/api/index.js'
   import { toast, prompt } from '@/utils/index.js'
 
   const tabs = [
@@ -86,6 +86,7 @@
   ]
 
   const currentTab = ref('pending')
+  const loading = ref(false)
 
   const stats = reactive({
     pending: 0,
@@ -94,7 +95,6 @@
     rejected: 0
   })
 
-  // 模拟数据：将同一个列表映射成不同状态
   const allData = ref([])
 
   const filteredList = computed(() => {
@@ -105,45 +105,80 @@
     loadData()
   })
 
-  function loadData() {
-    // 从mock数据生成不同状态列表
-    allData.value = [
-      ...mockApprovals.slice(0, 2).map(a => ({ ...a, status: 'pending' })),
-      ...mockApprovals.slice(0, 1).map(a => ({ ...a, status: 'underway',
-        title: '无人机 M350-002 飞行报备',
-        currentNode: '部门领导审核' })),
-      ...mockApprovals.slice(1, 2).map(a => ({ ...a, status: 'approved',
-        title: '测绘物资申领 - GPS RTK基站',
-        currentNode: '已通过' })),
-      ...mockApprovals.slice(0, 1).map(a => ({ ...a, status: 'rejected',
-        title: '野外作业设备采购申请',
-        currentNode: '已驳回' }))
-    ]
+  watch(currentTab, () => {
+    loadData()
+  })
+
+  async function loadData() {
+    loading.value = true
+    try {
+      const [pendingRes, doneRes] = await Promise.all([
+      approvalApi.pending().catch(() => []),
+      approvalApi.done().catch(() => [])
+    ])
+
+    const pendingList = Array.isArray(pendingRes) ? pendingRes : (pendingRes?.list || pendingRes?.records || [])
+    const doneList = Array.isArray(doneRes) ? doneRes : (doneRes?.list || doneRes?.records || [])
+
+    const mappedPending = pendingList.map(a => ({
+      ...a,
+      id: a.id || a.approvalId || '',
+      title: a.title || a.name || a.subject || '',
+      type: a.type || a.approvalType || '',
+      initiator: a.initiator || a.applicant || a.createBy || '',
+      currentNode: a.currentNode || a.statusText || a.step || '',
+      createdAt: a.createdAt || a.createTime || a.submitTime || '',
+      status: 'pending'
+    }))
+
+    const mappedDone = doneList.map(a => ({
+      ...a,
+      id: a.id || a.approvalId || '',
+      title: a.title || a.name || a.subject || '',
+      type: a.type || a.approvalType || '',
+      initiator: a.initiator || a.applicant || a.createBy || '',
+      currentNode: a.status === 'approved' ? '已通过' : (a.status === 'rejected' ? '已驳回' : (a.currentNode || a.statusText || '')),
+      createdAt: a.createdAt || a.createTime || a.approvalTime || '',
+      status: a.status || (a.result === 'approved' ? 'approved' : (a.result === 'rejected' ? 'rejected' : 'underway'))
+    }))
+
+    allData.value = [...mappedPending, ...mappedDone]
+
     stats.pending = allData.value.filter(a => a.status === 'pending').length
     stats.underway = allData.value.filter(a => a.status === 'underway').length
     stats.approved = allData.value.filter(a => a.status === 'approved').length
     stats.rejected = allData.value.filter(a => a.status === 'rejected').length
+  } catch (e) {
+    // 错误提示已在 request 封装中处理
+  } finally {
+    loading.value = false
   }
+}
 
-  function onApprove(a) {
+  async function onApprove(a) {
     uni.showModal({
       title: '确认通过',
       content: '确定通过「' + a.title + '」审批？',
       confirmText: '通过',
       confirmColor: '#67c23a',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          a.status = 'approved'
-          a.currentNode = '已通过'
-          stats.pending--
-          stats.approved++
-          toast.success('审批通过')
+          try {
+            await approvalApi.approve(a.id)
+            a.status = 'approved'
+            a.currentNode = '已通过'
+            stats.pending--
+            stats.approved++
+            toast.success('审批通过')
+          } catch (e) {
+            // 错误提示已在 request 封装中处理
+          }
         }
       }
     })
   }
 
-  function onReject(a) {
+  async function onReject(a) {
     uni.showModal({
       title: '驳回审批',
       content: '请填写驳回原因',
@@ -151,13 +186,19 @@
       placeholderText: '请输入驳回原因...',
       confirmText: '驳回',
       confirmColor: '#f56c6c',
-      success: (res) => {
+      success: async (res) => {
         if (res.confirm) {
-          a.status = 'rejected'
-          a.currentNode = '已驳回'
-          stats.pending--
-          stats.rejected++
-          toast.success('已驳回')
+          try {
+            const reason = res.content || '不同意'
+            await approvalApi.reject(a.id, reason)
+            a.status = 'rejected'
+            a.currentNode = '已驳回'
+            stats.pending--
+            stats.rejected++
+            toast.success('已驳回')
+          } catch (e) {
+            // 错误提示已在 request 封装中处理
+          }
         }
       }
     })
