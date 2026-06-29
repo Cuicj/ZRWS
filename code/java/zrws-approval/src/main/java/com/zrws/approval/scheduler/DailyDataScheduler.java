@@ -64,7 +64,7 @@ public class DailyDataScheduler {
             mission.setOperator(pilots[random.nextInt(pilots.length)]);
             mission.setDuration(30 + random.nextInt(60));
             mission.setCoverage(5.0 + random.nextDouble() * 15.0);
-            mission.setAltitude(100 + random.nextInt(100));
+            mission.setAltitude(100.0 + random.nextInt(100));
             mission.setForwardOverlap(70 + random.nextDouble() * 10);
             mission.setSideOverlap(60 + random.nextDouble() * 10);
             mission.setPhotoCount(100 + random.nextInt(400));
