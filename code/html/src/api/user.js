@@ -21,3 +21,21 @@ export function getUserInfo() {
     method: 'get'
   });
 }
+
+export const loginApi = {
+  login: (username, password) => request({
+    url: '/auth/login',
+    method: 'post',
+    data: { username, password }
+  }),
+  logout: () => request({
+    url: '/auth/logout',
+    method: 'post'
+  }),
+  getUserInfo: () => request({
+    url: '/auth/userinfo',
+    method: 'get'
+  })
+};
+
+export default loginApi;
