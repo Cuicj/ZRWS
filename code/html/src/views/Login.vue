@@ -47,12 +47,15 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import { loginApi } from '@/api/user';
+import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const appVersion = __APP_VERSION__;
 const username = ref('admin');
 const password = ref('admin');
 const role = ref('admin');
+const loading = ref(false);
 
 const getParticleStyle = (n) => {
   const left = Math.random() * 100;
@@ -70,65 +73,47 @@ const getParticleStyle = (n) => {
   };
 };
 
-const initDefaultData = () => {
-  const mockUsers = [
-    { id: 'U001', username: 'admin', password: 'admin', name: '技术管理员', role: 'admin', dept: '技术部' },
-    { id: 'U002', username: 'user', password: 'user', name: '普通用户', role: 'user', dept: '业务部' },
-    { id: 'U003', username: 'approver', password: 'approver', name: '审批员', role: 'approver', dept: '审批部' }
-  ];
-
-  const mockMissions = [
-    { id: 'ZRS-2026-0617-001', area: '望城区乔口镇', status: 'completed', date: '2026-06-17', operator: '王工', coverage: 860 },
-    { id: 'ZRS-2026-0616-003', area: '岳麓区莲花镇', status: 'completed', date: '2026-06-16', operator: '李工', coverage: 1250 },
-    { id: 'ZRS-2026-0616-002', area: '雨花区跳马镇', status: 'processing', date: '2026-06-16', operator: '王工', coverage: 680 },
-    { id: 'ZRS-2026-0615-001', area: '开福区青竹湖', status: 'completed', date: '2026-06-15', operator: '张工', coverage: 520 },
-    { id: 'ZRS-2026-0614-002', area: '天心区暮云镇', status: 'abnormal', date: '2026-06-14', operator: '李工', coverage: 320 }
-  ];
-
-  const mockApprovals = [
-    { id: 'APR-001', title: '2026年度测绘项目审批', status: 'pending', applicant: '王工', createTime: '2026-06-17' },
-    { id: 'APR-002', title: '无人机设备采购审批', status: 'approved', applicant: '李工', createTime: '2026-06-16' },
-    { id: 'APR-003', title: '数据处理服务合同审批', status: 'rejected', applicant: '张工', createTime: '2026-06-15' }
-  ];
-
-  const mockSoilSamples = [
-    { id: 'SP-001', lat: 28.45672, lng: 112.83521, pH: 6.8, moisture: 0.32, ec: 245, type: '壤土', date: '2026-06-17' },
-    { id: 'SP-002', lat: 28.45718, lng: 112.83605, pH: 7.2, moisture: 0.45, ec: 312, type: '黏土', date: '2026-06-17' },
-    { id: 'SP-003', lat: 28.45801, lng: 112.83489, pH: 5.9, moisture: 0.18, ec: 178, type: '砂土', date: '2026-06-17' }
-  ];
-
-  if (!localStorage.getItem('zrws_users')) {
-    localStorage.setItem('zrws_users', JSON.stringify(mockUsers));
+const handleLogin = async () => {
+  if (!username.value || !password.value) {
+    ElMessage.warning('请输入用户名和密码');
+    return;
   }
-  if (!localStorage.getItem('zrws_missions')) {
-    localStorage.setItem('zrws_missions', JSON.stringify(mockMissions));
-  }
-  if (!localStorage.getItem('zrws_approvals')) {
-    localStorage.setItem('zrws_approvals', JSON.stringify(mockApprovals));
-  }
-  if (!localStorage.getItem('zrws_soil_samples')) {
-    localStorage.setItem('zrws_soil_samples', JSON.stringify(mockSoilSamples));
-  }
-};
-
-const handleLogin = () => {
-  if (username.value && password.value) {
-    const users = JSON.parse(localStorage.getItem('zrws_users') || '[]');
-    const user = users.find(u => u.username === username.value && u.password === password.value);
+  
+  try {
+    loading.value = true;
+    const res = await loginApi.login(username.value, password.value);
     
-    if (user) {
-      localStorage.setItem('token', 'mock-token-' + Date.now());
+    if (res && res.data) {
+      const { token, user } = res.data;
+      localStorage.setItem('token', token);
       localStorage.setItem('currentUser', JSON.stringify(user));
+      ElMessage.success('登录成功');
+      router.push('/app/dashboard');
+    }
+  } catch (e) {
+    console.warn('登录失败，使用本地模式:', e.message);
+    // 降级到本地登录（演示模式）
+    if (username.value === 'admin' && password.value === 'admin') {
+      const mockUser = {
+        id: 'U001',
+        username: 'admin',
+        name: '技术管理员',
+        role: 'admin',
+        dept: '技术部'
+      };
+      localStorage.setItem('token', 'mock-token-' + Date.now());
+      localStorage.setItem('currentUser', JSON.stringify(mockUser));
+      ElMessage.success('演示模式登录成功');
       router.push('/app/dashboard');
     } else {
-      alert('用户名或密码错误');
+      ElMessage.error('用户名或密码错误');
     }
+  } finally {
+    loading.value = false;
   }
 };
 
 onMounted(() => {
-  initDefaultData();
-  
   if (localStorage.getItem('token')) {
     router.push('/app/dashboard');
   }

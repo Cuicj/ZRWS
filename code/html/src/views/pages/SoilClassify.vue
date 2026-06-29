@@ -43,17 +43,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
+import { getClassifyAnalysis, getSoilClassifyList } from '@/api/soilClassify';
 
-const results = ref([
-  { name: '水稻土', confidence: 96.5, description: '土质疏松，富含有机质，适合水稻种植', ph: '6.5', organic: '3.2', moisture: '34.5' },
-  { name: '菜园土', confidence: 93.2, description: '经过长期耕作改良，肥力较高', ph: '6.8', organic: '2.8', moisture: '31.2' },
-  { name: '黄棕壤', confidence: 91.8, description: '中等肥力，适合旱作和果树种植', ph: '6.4', organic: '2.5', moisture: '28.9' }
-]);
-const analysis = ref([
-  { id: 'AI-001', taskId: 'ZRS-2026-0617-001', sampleCount: 36, result: '水稻土', confidence: 94.3, analysisTime: '2026-06-17 12:00' }
-]);
+const results = ref([]);
+const analysis = ref([]);
+const loading = ref(true);
+
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const [classifyRes, analysisRes] = await Promise.all([
+      getSoilClassifyList().catch(() => ({ data: [] })),
+      getClassifyAnalysis().catch(() => ({ data: [] }))
+    ]);
+    
+    if (classifyRes.data) {
+      results.value = classifyRes.data.map(c => ({
+        name: c.classificationResult || c.soilName || '-',
+        confidence: c.confidence || c.aiConfidence || 0,
+        description: c.description || c.aiSummary || '-',
+        ph: c.phValue || '-',
+        organic: c.organicMatter || '-',
+        moisture: c.moistureContent || '-'
+      }));
+    }
+    
+    if (analysisRes.data) {
+      analysis.value = analysisRes.data.map(a => ({
+        id: a.id || a.analysisCode || '-',
+        taskId: a.missionCode || a.taskId || '-',
+        sampleCount: a.sampleCount || 0,
+        result: a.result || a.classificationResult || '-',
+        confidence: a.confidence || a.aiConfidence || 0,
+        analysisTime: a.analysisTime || a.createTime || '-'
+      }));
+    }
+  } catch (e) {
+    console.warn('土质分类数据加载失败:', e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>

@@ -32,16 +32,53 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getQualityCheckList, getQualityCheckStats } from '@/api/qualityCheck';
 
-const stats = ref({ passCount: 48, failCount: 3, passRate: 94.1, pendingCount: 5 });
-const records = ref([
-  { id: 'QC-001', taskId: 'ZRS-2026-0617-001', checkType: '影像质量', result: 'pass', score: 95, issues: '无', checkTime: '2026-06-17 11:00' },
-  { id: 'QC-002', taskId: 'ZRS-2026-0616-003', checkType: '点云精度', result: 'pass', score: 92, issues: '边缘精度略低', checkTime: '2026-06-16 18:30' },
-  { id: 'QC-003', taskId: 'ZRS-2026-0615-001', checkType: 'GPS精度', result: 'fail', score: 68, issues: 'RTK信号中断', checkTime: '2026-06-15 17:00' }
-]);
+const stats = ref({ passCount: 0, failCount: 0, passRate: 0, pendingCount: 0 });
+const records = ref([]);
+const loading = ref(true);
+
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const [listRes, statsRes] = await Promise.all([
+      getQualityCheckList().catch(() => ({ data: [] })),
+      getQualityCheckStats().catch(() => ({ data: {} }))
+    ]);
+    
+    if (listRes.data) {
+      records.value = listRes.data.map(r => ({
+        id: r.checkCode || r.id || '-',
+        taskId: r.missionCode || r.taskId || '-',
+        checkType: r.checkType || '-',
+        result: r.checkResult === 'PASS' ? 'pass' : 'fail',
+        score: r.actualValue || r.score || 0,
+        issues: r.remark || '无',
+        checkTime: r.checkTime || r.createTime || '-'
+      }));
+    }
+    
+    if (statsRes.data) {
+      stats.value = {
+        passCount: statsRes.data.passCount || 0,
+        failCount: statsRes.data.failCount || 0,
+        passRate: statsRes.data.passRate || 0,
+        pendingCount: statsRes.data.pendingCount || 0
+      };
+    }
+  } catch (e) {
+    console.warn('质量校验数据加载失败:', e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>

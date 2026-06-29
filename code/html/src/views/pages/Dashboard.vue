@@ -119,50 +119,96 @@ import { ref, onMounted, nextTick, onUnmounted } from 'vue';
 import * as echarts from 'echarts';
 import StatCard from '@/components/common/StatCard.vue';
 import Panel from '@/components/common/Panel.vue';
+import { getDashboardStats, getRecentTasks, getDeviceList } from '@/api/dashboard';
 
-// 当前日期
 const currentDate = ref(new Date().toLocaleDateString('zh-CN'));
 
-// 用户信息
 const currentUser = ref({ name: '王工' });
 
-// 统计数据
 const stats = ref({
-  taskCount: 156,
-  taskTrend: 8.2,
-  completedCount: 152,
-  completedTrend: 11.5,
-  processingCount: 3,
-  processingTrend: 2.1,
-  abnormalCount: 1,
-  abnormalTrend: -3.1
+  taskCount: 0,
+  taskTrend: 0,
+  completedCount: 0,
+  completedTrend: 0,
+  processingCount: 0,
+  processingTrend: 0,
+  abnormalCount: 0,
+  abnormalTrend: 0
 });
 
-// 设备列表
-const deviceList = ref([
-  { id: 1, name: '无人机 M350-003', statusText: 'ONLINE', statusClass: 'status-ok' },
-  { id: 2, name: 'RTK 基准站', statusText: 'ONLINE', statusClass: 'status-ok' },
-  { id: 3, name: '处理节点-01', statusText: 'BUSY', statusClass: 'status-proc' },
-  { id: 4, name: '处理节点-02', statusText: 'IDLE', statusClass: 'status-ok' },
-  { id: 5, name: '多光谱相机', statusText: '待校准', statusClass: 'status-warn' }
-]);
+const deviceList = ref([]);
 
-// 最近任务
-const recentTasks = ref([
-  { id: 'ZRS-2026-0617-001', area: '望城区乔口镇', operator: '王工', coverage: 860, date: '2026-06-17', statusText: '完成', statusClass: 'status-ok' },
-  { id: 'ZRS-2026-0616-003', area: '岳麓区莲花镇', operator: '李工', coverage: 1250, date: '2026-06-16', statusText: '完成', statusClass: 'status-ok' },
-  { id: 'ZRS-2026-0616-002', area: '雨花区跳马镇', operator: '王工', coverage: 680, date: '2026-06-16', statusText: '进行中', statusClass: 'status-proc' },
-  { id: 'ZRS-2026-0615-001', area: '开福区青竹湖', operator: '张工', coverage: 520, date: '2026-06-15', statusText: '完成', statusClass: 'status-ok' }
-]);
+const recentTasks = ref([]);
 
-// 系统日志
 const systemLogs = ref([
-  { time: '10:32', color: '#6B8E5A', msg: '任务 ZRS-2026-0617-001 已完成数据回传' },
-  { time: '10:15', color: '#4A7C9E', msg: 'RTK 基准站定位成功，精度 ±1.2cm' },
-  { time: '09:48', color: '#B8860B', msg: '多光谱相机校准提醒：请在下次任务前校准' },
-  { time: '09:30', color: '#6B8E5A', msg: '无人机 M350-003 进入待机状态' },
-  { time: '09:00', color: '#4A7C9E', msg: '新任务 ZRS-2026-0617-002 已创建' }
+  { time: '10:32', color: '#6B8E5A', msg: '系统运行正常' }
 ]);
+
+const loading = ref(true);
+
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const [statsRes, tasksRes, devicesRes] = await Promise.all([
+      getDashboardStats().catch(() => ({ data: {} })),
+      getRecentTasks({ limit: 5 }).catch(() => ({ data: [] })),
+      getDeviceList().catch(() => ({ data: [] }))
+    ]);
+    
+    if (statsRes.data) {
+      stats.value = {
+        taskCount: statsRes.data.taskCount || 0,
+        taskTrend: statsRes.data.taskTrend || 0,
+        completedCount: statsRes.data.completedCount || 0,
+        completedTrend: statsRes.data.completedTrend || 0,
+        processingCount: statsRes.data.processingCount || 0,
+        processingTrend: statsRes.data.processingTrend || 0,
+        abnormalCount: statsRes.data.abnormalCount || 0,
+        abnormalTrend: statsRes.data.abnormalTrend || 0
+      };
+    }
+    
+    if (tasksRes.data && Array.isArray(tasksRes.data)) {
+      recentTasks.value = tasksRes.data.slice(0, 5).map(t => ({
+        id: t.missionCode || t.id,
+        area: t.location || t.area || '-',
+        operator: t.operator || '-',
+        coverage: t.coverageArea || t.coverage || 0,
+        date: t.flightTime || t.createTime || '-',
+        statusText: getStatusText(t.status),
+        statusClass: getStatusClass(t.status)
+      }));
+    }
+    
+    if (devicesRes.data && Array.isArray(devicesRes.data)) {
+      deviceList.value = devicesRes.data.slice(0, 5).map(d => ({
+        id: d.deviceId || d.id,
+        name: d.deviceName || d.name,
+        statusText: d.status || 'UNKNOWN',
+        statusClass: getDeviceStatusClass(d.status)
+      }));
+    }
+  } catch (e) {
+    console.warn('Dashboard API加载失败，使用默认数据:', e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+const getStatusText = (status) => {
+  const map = { 'COMPLETED': '完成', 'PROCESSING': '进行中', 'ABNORMAL': '异常', 'PENDING': '待执行' };
+  return map[status] || status || '-';
+};
+
+const getStatusClass = (status) => {
+  const map = { 'COMPLETED': 'status-ok', 'PROCESSING': 'status-proc', 'ABNORMAL': 'status-danger', 'PENDING': 'status-warn' };
+  return map[status] || 'status-warn';
+};
+
+const getDeviceStatusClass = (status) => {
+  const map = { 'ONLINE': 'status-ok', 'OFFLINE': 'status-danger', 'MAINTENANCE': 'status-warn', 'BUSY': 'status-proc' };
+  return map[status] || 'status-warn';
+};
 
 // 图表引用
 const trendChartRef = ref(null);
@@ -256,8 +302,7 @@ const initCharts = () => {
 
 // 刷新数据
 const refreshData = () => {
-  // 模拟刷新
-  stats.value.taskCount += Math.floor(Math.random() * 5);
+  loadData();
   initCharts();
 };
 
@@ -267,6 +312,7 @@ const handleResize = () => {
 };
 
 onMounted(() => {
+  loadData();
   nextTick(() => initCharts());
   window.addEventListener('resize', handleResize);
 });

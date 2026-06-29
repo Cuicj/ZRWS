@@ -78,35 +78,87 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getDeviceList } from '@/api/device';
 
-const overview = ref({ online: 5, offline: 1, total: 6, alarm: 1 });
-const nodeStats = ref({ cpu: 62, memory: '8.2/16G' });
+const overview = ref({ online: 0, offline: 0, total: 0, alarm: 0 });
+const nodeStats = ref({ cpu: 0, memory: '0/0G' });
 
-const drones = ref([
-  { id: 'UAV-M350-003', model: 'DJI M350 RTK', statusText: '在线', statusClass: 'status-ok', battery: 78 },
-  { id: 'UAV-M300-001', model: 'DJI M300 RTK', statusText: '离线', statusClass: 'status-dim', battery: 0 },
-  { id: 'UAV-P4-002', model: 'DJI P4 RTK', statusText: '在线', statusClass: 'status-ok', battery: 92 }
-]);
+const drones = ref([]);
+const rtkStations = ref([]);
+const computeNodes = ref([]);
+const sensors = ref([]);
+const loading = ref(true);
 
-const rtkStations = ref([
-  { id: 'RTK-BS-001', model: '华测 i93', statusText: '连接', statusClass: 'status-ok', satellites: 18 },
-  { id: 'RTK-BS-002', model: '南方 S86', statusText: '连接', statusClass: 'status-ok', satellites: 16 }
-]);
+const getStatusClass = (status) => ({
+  ONLINE: 'status-ok',
+  OFFLINE: 'status-dim',
+  MAINTENANCE: 'status-warn',
+  BUSY: 'status-warn'
+}[status] || 'status-dim');
 
-const computeNodes = ref([
-  { id: 'NODE-01', statusText: '繁忙', statusClass: 'status-warn' },
-  { id: 'NODE-02', statusText: '空闲', statusClass: 'status-ok' },
-  { id: 'NODE-03', statusText: '空闲', statusClass: 'status-ok' }
-]);
+const getStatusText = (status) => ({
+  ONLINE: '在线',
+  OFFLINE: '离线',
+  MAINTENANCE: '维护中',
+  BUSY: '繁忙',
+  IDLE: '空闲',
+  CONNECTED: '已连接'
+}[status] || status || '未知');
 
-const sensors = ref([
-  { id: 'SNS-LIDAR-01', type: 'LiDAR', model: 'Livox Avia', calibrateTime: '2026-05-01', statusText: '正常', statusClass: 'status-ok' },
-  { id: 'SNS-CAM-01', type: '多光谱相机', model: 'Micasense MX', calibrateTime: '2026-06-10', statusText: '待校准', statusClass: 'status-warn' },
-  { id: 'SNS-PROBE-01', type: '土壤探针', model: 'Decagon 5TE', calibrateTime: '2026-04-15', statusText: '正常', statusClass: 'status-ok' }
-]);
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const res = await getDeviceList();
+    if (res && res.data) {
+      const devices = res.data;
+      overview.value.total = devices.length;
+      overview.value.online = devices.filter(d => d.status === 'ONLINE').length;
+      overview.value.offline = devices.filter(d => d.status === 'OFFLINE').length;
+      
+      drones.value = devices.filter(d => d.deviceType === 'UAV').map(d => ({
+        id: d.deviceCode || d.id,
+        model: d.deviceName || d.model || '-',
+        statusText: getStatusText(d.status),
+        statusClass: getStatusClass(d.status),
+        battery: d.batteryLevel || 0
+      }));
+      
+      rtkStations.value = devices.filter(d => d.deviceType === 'GNSS').map(d => ({
+        id: d.deviceCode || d.id,
+        model: d.deviceName || d.model || '-',
+        statusText: getStatusText(d.status),
+        statusClass: getStatusClass(d.status),
+        satellites: '-'
+      }));
+      
+      computeNodes.value = devices.filter(d => d.deviceType === 'COMPUTE').map(d => ({
+        id: d.deviceCode || d.id,
+        statusText: getStatusText(d.status),
+        statusClass: getStatusClass(d.status)
+      }));
+      
+      sensors.value = devices.filter(d => d.deviceType === 'SENSOR').map(d => ({
+        id: d.deviceCode || d.id,
+        type: d.manufacturer || '-',
+        model: d.deviceName || d.model || '-',
+        calibrateTime: d.lastMaintenance || '-',
+        statusText: getStatusText(d.status),
+        statusClass: getStatusClass(d.status)
+      }));
+    }
+  } catch (e) {
+    console.warn('加载设备列表失败:', e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>

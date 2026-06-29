@@ -30,16 +30,67 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getDisasterRiskList, getDisasterRiskStats } from '@/api/disasterRisk';
 
-const risks = ref({ landslide: '高', flood: '中', mudslide: '低', erosion: '低' });
-const records = ref([
-  { area: '乔口镇 A区', type: '滑坡', levelText: '高风险', levelClass: 'status-err', score: 78, advice: '建议设置抗滑桩并加强排水' },
-  { area: '乔口镇 B区', type: '洪涝', levelText: '中风险', levelClass: 'status-warn', score: 62, advice: '完善排洪沟渠，定期清理淤泥' },
-  { area: '莲花镇', type: '泥石流', levelText: '低风险', levelClass: 'status-ok', score: 28, advice: '定期植被恢复和水土保持' }
-]);
+const risks = ref({ landslide: '-', flood: '-', mudslide: '-', erosion: '-' });
+const records = ref([]);
+const loading = ref(true);
+
+const getLevelText = (level) => {
+  const map = { 'LOW': '低风险', 'MEDIUM': '中风险', 'HIGH': '高风险', 'VERY_HIGH': '极高风险' };
+  return map[level] || level || '-';
+};
+
+const getLevelClass = (level) => {
+  const map = { 'LOW': 'status-ok', 'MEDIUM': 'status-warn', 'HIGH': 'status-err', 'VERY_HIGH': 'status-err' };
+  return map[level] || 'status-warn';
+};
+
+const getRiskIcon = (type) => {
+  const map = { '滑坡': '◬', '洪涝': '≈', '泥石流': '◈', '土壤侵蚀': '◊', '地面沉降': '▽' };
+  return map[type] || '◉';
+};
+
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const [listRes, statsRes] = await Promise.all([
+      getDisasterRiskList().catch(() => ({ data: [] })),
+      getDisasterRiskStats().catch(() => ({ data: {} }))
+    ]);
+    
+    if (listRes.data) {
+      records.value = listRes.data.map(r => ({
+        area: r.location || r.area || '-',
+        type: r.disasterType || '-',
+        levelText: getLevelText(r.riskLevel),
+        levelClass: getLevelClass(r.riskLevel),
+        score: r.riskScore || 0,
+        advice: r.suggestion || r.monitoringStatus || '-'
+      }));
+    }
+    
+    if (statsRes.data) {
+      risks.value = {
+        landslide: statsRes.data.landslide || '-',
+        flood: statsRes.data.flood || '-',
+        mudslide: statsRes.data.mudslide || '-',
+        erosion: statsRes.data.erosion || '-'
+      };
+    }
+  } catch (e) {
+    console.warn('灾害风险数据加载失败:', e.message);
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>

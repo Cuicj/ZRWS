@@ -76,20 +76,16 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
+import { getMissionList, createMission } from '@/api/mission';
 
 const searchKey = ref('');
 const statusFilter = ref('');
 const showCreateDialog = ref(false);
+const loading = ref(true);
 
-const tasks = ref([
-  { id: 'ZRS-2026-0617-001', area: '望城区乔口镇', operator: '王工', coverage: 860, altitude: 120, photos: 1247, date: '2026-06-17', status: 'completed' },
-  { id: 'ZRS-2026-0616-003', area: '岳麓区莲花镇', operator: '李工', coverage: 1250, altitude: 100, photos: 2100, date: '2026-06-16', status: 'completed' },
-  { id: 'ZRS-2026-0616-002', area: '雨花区跳马镇', operator: '王工', coverage: 680, altitude: 80, photos: 980, date: '2026-06-16', status: 'processing' },
-  { id: 'ZRS-2026-0615-001', area: '开福区青竹湖', operator: '张工', coverage: 520, altitude: 110, photos: 760, date: '2026-06-15', status: 'completed' },
-  { id: 'ZRS-2026-0614-002', area: '天心区暮云镇', operator: '李工', coverage: 320, altitude: 90, photos: 420, date: '2026-06-14', status: 'abnormal' }
-]);
+const tasks = ref([]);
 
 const newTask = ref({ name: '', area: '', altitude: 120 });
 
@@ -98,30 +94,66 @@ const total = computed(() => tasks.value.length);
 const filteredTasks = computed(() => {
   return tasks.value.filter(t => {
     if (statusFilter.value && t.status !== statusFilter.value) return false;
-    if (searchKey.value && !t.id.includes(searchKey.value) && !t.area.includes(searchKey.value)) return false;
+    if (searchKey.value && !(t.missionCode || t.id || '').includes(searchKey.value) && !(t.location || t.area || '').includes(searchKey.value)) return false;
     return true;
   });
 });
 
 const getStatusClass = (s) => ({
-  completed: 'status-ok',
-  processing: 'status-proc',
-  pending: 'status-dim',
-  abnormal: 'status-err'
+  COMPLETED: 'status-ok',
+  PROCESSING: 'status-proc',
+  PENDING: 'status-dim',
+  ABNORMAL: 'status-err'
 }[s] || 'status-dim');
 
 const getStatusText = (s) => ({
-  completed: '已完成',
-  processing: '进行中',
-  pending: '待执行',
-  abnormal: '异常'
+  COMPLETED: '已完成',
+  PROCESSING: '进行中',
+  PENDING: '待执行',
+  ABNORMAL: '异常'
 }[s] || s);
 
-const createTask = () => {
-  const id = 'ZRS-2026-' + new Date().toISOString().slice(5,10).replace(/-/g,'') + '-' + String(tasks.value.length + 1).padStart(3,'0');
-  tasks.value.unshift({ ...newTask.value, id, operator: '王工', coverage: 0, photos: 0, date: new Date().toISOString().slice(0,10), status: 'pending' });
-  showCreateDialog.value = false;
+const loadData = async () => {
+  try {
+    loading.value = true;
+    const res = await getMissionList();
+    if (res && res.data) {
+      tasks.value = res.data.map(t => ({
+        id: t.missionCode || t.id,
+        area: t.location || t.area || '-',
+        operator: t.operator || '-',
+        coverage: t.coverageArea || t.coverage || 0,
+        altitude: t.flightAltitude || t.altitude || 0,
+        photos: t.photoCount || t.photos || 0,
+        date: t.flightTime || t.createTime || '-',
+        status: t.status || 'PENDING'
+      }));
+    }
+  } catch (e) {
+    console.warn('加载任务列表失败:', e.message);
+  } finally {
+    loading.value = false;
+  }
 };
+
+const createTask = async () => {
+  try {
+    await createMission({
+      missionName: newTask.value.name,
+      location: newTask.value.area,
+      flightAltitude: newTask.value.altitude
+    });
+    showCreateDialog.value = false;
+    newTask.value = { name: '', area: '', altitude: 120 };
+    loadData();
+  } catch (e) {
+    console.warn('创建任务失败:', e.message);
+  }
+};
+
+onMounted(() => {
+  loadData();
+});
 </script>
 
 <style scoped>
