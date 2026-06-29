@@ -1,6 +1,6 @@
 {
   "name": "zrws-frontend",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "智壤卫士前端 - Vue 3 + Vite",
   "scripts": {
     "dev": "vite",

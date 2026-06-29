@@ -71,7 +71,7 @@ public class ExternalCompanyController {
         }
         try {
             externalCompanyService.delete(companyId);
-            return success(null);
+            return success();
         } catch (Exception e) {
             log.error("删除外部公司失败, companyId={}", companyId, e);
             return error("删除失败: " + e.getMessage());
@@ -118,11 +118,15 @@ public class ExternalCompanyController {
         }
         try {
             openApiAuthService.revokeApiKey(keyId);
-            return success(null);
+            return success();
         } catch (Exception e) {
             log.error("吊销API Key失败, keyId={}", keyId, e);
             return error("吊销失败: " + e.getMessage());
         }
+    }
+
+    private ResponseEntity<Map<String, Object>> success() {
+        return success(null, null);
     }
 
     private ResponseEntity<Map<String, Object>> success(String key, Object data) {
