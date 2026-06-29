@@ -11,7 +11,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 菜单数据初始化
@@ -28,13 +30,11 @@ public class MenuDataInitializer implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         try {
-            Long count = menuMapper.selectCount(new LambdaQueryWrapper<SysMenu>());
-            if (count != null && count > 0) {
-                log.info("[菜单] 菜单数据已存在（{}条），跳过初始化", count);
-                return;
+            List<SysMenu> existingMenus = menuMapper.selectList(null);
+            Map<String, SysMenu> existingPathMap = new HashMap<>();
+            for (SysMenu menu : existingMenus) {
+                existingPathMap.put(menu.getMenuPath(), menu);
             }
-
-            log.info("[菜单] 开始初始化菜单数据...");
 
             List<SysMenu> menus = Arrays.asList(
                     createMenu(0L, "运行仪表盘", "dashboard", "◧", "总览", 1),
@@ -43,8 +43,9 @@ public class MenuDataInitializer implements ApplicationRunner {
                     createMenu(0L, "GPS 航迹", "gps-track", "◎", "采集", 3),
                     createMenu(0L, "土壤采样", "soil-sample", "◉", "采集", 4),
                     createMenu(0L, "数据导入", "data-import", "↧", "处理", 1),
-                    createMenu(0L, "质量校验", "quality-check", "✓", "处理", 2),
-                    createMenu(0L, "3D 重建", "reconstruction", "◰", "处理", 3),
+                    createMenu(0L, "数据导出", "data-export", "↥", "处理", 2),
+                    createMenu(0L, "质量校验", "quality-check", "✓", "处理", 3),
+                    createMenu(0L, "3D 重建", "reconstruction", "◰", "处理", 4),
                     createMenu(0L, "土地地图", "land-map", "◍", "土地资源", 1),
                     createMenu(0L, "公告栏", "announcement-board", "📰", "土地资源", 2),
                     createMenu(0L, "土质分类", "soil-classify", "✦", "土地资源", 3),
@@ -59,14 +60,25 @@ public class MenuDataInitializer implements ApplicationRunner {
                     createMenu(0L, "用户管理", "user-manage", "◉", "系统", 2),
                     createMenu(0L, "角色管理", "role-manage", "◆", "系统", 3),
                     createMenu(0L, "系统配置", "sys-config", "⚙", "系统", 4),
-                    createMenu(0L, "公告管理", "announcement", "✉", "系统", 5)
+                    createMenu(0L, "公告管理", "announcement", "✉", "系统", 5),
+                    createMenu(0L, "报表中心", "report-center", "📊", "系统", 6),
+                    createMenu(0L, "对外接口", "open-api", "🔌", "系统", 7)
             );
 
+            int addedCount = 0;
             for (SysMenu menu : menus) {
-                menuMapper.insert(menu);
+                if (!existingPathMap.containsKey(menu.getMenuPath())) {
+                    menuMapper.insert(menu);
+                    addedCount++;
+                    log.info("[菜单] 新增菜单项: {}", menu.getMenuName());
+                }
             }
 
-            log.info("[菜单] 菜单数据初始化完成，共 {} 条", menus.size());
+            if (addedCount > 0) {
+                log.info("[菜单] 菜单数据补充完成，新增 {} 条", addedCount);
+            } else {
+                log.info("[菜单] 菜单数据已完整（{}条），无需补充", existingMenus.size());
+            }
         } catch (Exception e) {
             log.error("[菜单] 菜单数据初始化失败: {}", e.getMessage(), e);
         }

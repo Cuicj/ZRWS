@@ -48,6 +48,10 @@ public class MockDataInitializer implements ApplicationRunner {
     private ApprovalTaskMapper approvalTaskMapper;
     @Autowired
     private ReportTemplateMapper reportTemplateMapper;
+    @Autowired
+    private ExternalCompanyMapper externalCompanyMapper;
+    @Autowired
+    private ApiKeyMapper apiKeyMapper;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -65,6 +69,8 @@ public class MockDataInitializer implements ApplicationRunner {
             initAnnouncements();
             initApprovalTasks();
             initReportTemplates();
+            initExternalCompanies();
+            initApiKeys();
             log.info("[Mock数据] Mock数据初始化完成");
         } catch (Exception e) {
             log.warn("[Mock数据] Mock数据初始化失败（可能表不存在）: {}", e.getMessage());
@@ -1037,5 +1043,82 @@ public class MockDataInitializer implements ApplicationRunner {
         t.setStatus(ReportTemplate.Status.ACTIVE.name());
         t.setIsDeleted(0);
         return t;
+    }
+
+    private void initExternalCompanies() {
+        Long count = externalCompanyMapper.selectCount(new LambdaQueryWrapper<ExternalCompany>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 外部公司数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化外部公司数据...");
+        ExternalCompany[] companies = {
+            createExternalCompany("湖南省地质调查院", "HUNAN-GEO", "张工", "13800138001", 
+                "zhang@hunan-geo.gov.cn", "https://api.hunan-geo.gov.cn/callback", 
+                "soil-analysis,disaster-risk,geo-standards", "ACTIVE"),
+            createExternalCompany("中化地质测绘院", "ZH-GEO", "李工", "13900139002",
+                "li@zh-geo.com", "https://api.zh-geo.com/webhook",
+                "soil-analysis,rock-stratum,land-plot", "ACTIVE"),
+            createExternalCompany("长沙智土科技有限公司", "ZHITU-TECH", "王工", "13700137003",
+                "wang@zhitu-tech.com", "https://api.zhitu-tech.com/callback",
+                "all", "ACTIVE")
+        };
+        for (ExternalCompany company : companies) {
+            externalCompanyMapper.insert(company);
+        }
+        log.info("[Mock数据] 外部公司数据初始化完成，共 {} 条", companies.length);
+    }
+
+    private ExternalCompany createExternalCompany(String name, String code, String contact, String phone,
+                                                  String email, String callbackUrl, String dataScope, String status) {
+        ExternalCompany c = new ExternalCompany();
+        c.setCompanyName(name);
+        c.setCompanyCode(code);
+        c.setContactPerson(contact);
+        c.setContactPhone(phone);
+        c.setContactEmail(email);
+        c.setCallbackUrl(callbackUrl);
+        c.setDataScope(dataScope);
+        c.setStatus(status);
+        c.setApiConfig("{}");
+        c.setIsDeleted(0);
+        return c;
+    }
+
+    private void initApiKeys() {
+        Long count = apiKeyMapper.selectCount(new LambdaQueryWrapper<ApiKey>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] API Key数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化API Key数据...");
+        ApiKey[] keys = {
+            createApiKey(1L, "湖南省地质调查院", "ZRWS_HN_GEO_20260601", 
+                "ZRWS_SEC_HN_GEO_SECRET_2026", "soil-analysis:read,disaster-risk:read,geo-standards:read", 1000),
+            createApiKey(2L, "中化地质测绘院", "ZRWS_ZHGEO_20260615",
+                "ZRWS_SEC_ZHGEO_SECRET_2026", "soil-analysis:read,rock-stratum:read,land-plot:read", 500),
+            createApiKey(3L, "长沙智土科技有限公司", "ZRWS_ZTTECH_20260620",
+                "ZRWS_SEC_ZTTECH_SECRET_2026", "all", 2000)
+        };
+        for (ApiKey key : keys) {
+            apiKeyMapper.insert(key);
+        }
+        log.info("[Mock数据] API Key数据初始化完成，共 {} 条", keys.length);
+    }
+
+    private ApiKey createApiKey(Long companyId, String companyName, String apiKey, String apiSecret,
+                                String permissions, int rateLimit) {
+        ApiKey k = new ApiKey();
+        k.setCompanyId(companyId);
+        k.setCompanyName(companyName);
+        k.setApiKey(apiKey);
+        k.setApiSecret(apiSecret);
+        k.setPermissions(permissions);
+        k.setRateLimit(rateLimit);
+        k.setRequestCount(0);
+        k.setStatus("ACTIVE");
+        k.setExpireTime(LocalDateTime.now().plusYears(1));
+        k.setIsDeleted(0);
+        return k;
     }
 }
