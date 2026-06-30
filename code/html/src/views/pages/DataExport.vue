@@ -194,17 +194,6 @@ const exporting = ref(false)
 
 const loadBoList = async () => {
   try {
-    const res = await exportApi.getBoList()
-    if (res.data && res.data.length) {
-      boList.value = res.data
-    }
-  } catch (e) {
-    console.warn('加载BO列表失败:', e.message)
-  }
-}
-
-const loadBoList = async () => {
-  try {
     const res = await dataImportApi.getBoList()
     if (res.data && res.data.list) {
       boList.value = res.data.list.map(bo => ({
