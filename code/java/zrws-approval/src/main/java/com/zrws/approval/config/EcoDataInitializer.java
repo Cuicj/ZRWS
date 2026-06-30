@@ -55,10 +55,10 @@ public class EcoDataInitializer implements ApplicationRunner {
                 createStandard("CW-WT-03", "缓慢变暖", "CLIMATE_WARMING", "变暖趋势分级", "IPCC", "MODERATE", new BigDecimal("0.1"), new BigDecimal("0.2"), "°C/10a", "10年升温速率0.1-0.2°C，缓慢变暖", "IPCC AR6", 3),
                 createStandard("CW-WT-04", "稳定", "CLIMATE_WARMING", "变暖趋势分级", "IPCC", "MILD", new BigDecimal("-0.1"), new BigDecimal("0.1"), "°C/10a", "10年升温速率-0.1~0.1°C，基本稳定", "IPCC AR6", 4),
                 createStandard("CW-WT-05", "降温趋势", "CLIMATE_WARMING", "变暖趋势分级", "IPCC", "LOW", null, new BigDecimal("-0.1"), "°C/10a", "10年升温速率<-0.1°C，呈降温趋势", "IPCC AR6", 5),
-                createStandard("CW-RL-01", "低风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "LOW", new BigDecimal("0"), new BigDecimal("25"), "分", "综合评分0-25分，低风险", 1),
-                createStandard("CW-RL-02", "中风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "MEDIUM", new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，中风险", 2),
-                createStandard("CW-RL-03", "高风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "HIGH", new BigDecimal("51"), new BigDecimal("75"), "分", "综合评分51-75分，高风险", 3),
-                createStandard("CW-RL-04", "极高风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "EXTREME", new BigDecimal("76"), new BigDecimal("100"), "分", "综合评分76-100分，极高风险", 4)
+                createStandard("CW-RL-01", "低风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "LOW", new BigDecimal("0"), new BigDecimal("25"), "分", "综合评分0-25分，低风险", "系统自定义", 1),
+                createStandard("CW-RL-02", "中风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "MEDIUM", new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，中风险", "系统自定义", 2),
+                createStandard("CW-RL-03", "高风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "HIGH", new BigDecimal("51"), new BigDecimal("75"), "分", "综合评分51-75分，高风险", "系统自定义", 3),
+                createStandard("CW-RL-04", "极高风险", "CLIMATE_WARMING", "风险等级", "CUSTOM", "EXTREME", new BigDecimal("76"), new BigDecimal("100"), "分", "综合评分76-100分，极高风险", "系统自定义", 4)
         );
         saveIfNotExists(standards);
     }
@@ -85,14 +85,14 @@ public class EcoDataInitializer implements ApplicationRunner {
                 createStandard("DS-WE-04", "强烈风蚀", "DESERTIFICATION", "风蚀强度分级", "SL_190_2007", "SEVERE", new BigDecimal("5000"), new BigDecimal("8000"), "t/km²·a", "风蚀模数5000-8000 t/km²·a，强烈", "SL 190-2007土壤侵蚀分类分级标准", 4),
                 createStandard("DS-WE-05", "极强烈风蚀", "DESERTIFICATION", "风蚀强度分级", "SL_190_2007", "VERY_SEVERE", new BigDecimal("8000"), new BigDecimal("15000"), "t/km²·a", "风蚀模数8000-15000 t/km²·a，极强烈", "SL 190-2007土壤侵蚀分类分级标准", 5),
                 createStandard("DS-WE-06", "剧烈风蚀", "DESERTIFICATION", "风蚀强度分级", "SL_190_2007", "EXTREME", new BigDecimal("15000"), null, "t/km²·a", "风蚀模数>15000 t/km²·a，剧烈", "SL 190-2007土壤侵蚀分类分级标准", 6),
-                createStandard("DS-DT-01", "风蚀沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", 1),
-                createStandard("DS-DT-02", "水蚀沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", 2),
-                createStandard("DS-DT-03", "盐渍化沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", 3),
-                createStandard("DS-DT-04", "冻融沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", 4),
-                createStandard("DS-RL-01", "低风险", "DESERTIFICATION", "风险等级", "CUSTOM", "LOW", new BigDecimal("0"), new BigDecimal("25"), "分", "综合评分0-25分，低风险", 1),
-                createStandard("DS-RL-02", "中风险", "DESERTIFICATION", "风险等级", "CUSTOM", "MEDIUM", new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，中风险", 2),
-                createStandard("DS-RL-03", "高风险", "DESERTIFICATION", "风险等级", "CUSTOM", "HIGH", new BigDecimal("51"), new BigDecimal("75"), "分", "综合评分51-75分，高风险", 3),
-                createStandard("DS-RL-04", "极高风险", "DESERTIFICATION", "风险等级", "CUSTOM", "EXTREME", new BigDecimal("76"), new BigDecimal("100"), "分", "综合评分76-100分，极高风险", 4)
+                createStandard("DS-DT-01", "风蚀沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", "国家标准", 1),
+                createStandard("DS-DT-02", "水蚀沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", "国家标准", 2),
+                createStandard("DS-DT-03", "盐渍化沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", "国家标准", 3),
+                createStandard("DS-DT-04", "冻融沙漠化", "DESERTIFICATION", "沙漠化类型", "GB", null, null, null, "", "", "国家标准", 4),
+                createStandard("DS-RL-01", "低风险", "DESERTIFICATION", "风险等级", "CUSTOM", "LOW", new BigDecimal("0"), new BigDecimal("25"), "分", "综合评分0-25分，低风险", "系统自定义", 1),
+                createStandard("DS-RL-02", "中风险", "DESERTIFICATION", "风险等级", "CUSTOM", "MEDIUM", new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，中风险", "系统自定义", 2),
+                createStandard("DS-RL-03", "高风险", "DESERTIFICATION", "风险等级", "CUSTOM", "HIGH", new BigDecimal("51"), new BigDecimal("75"), "分", "综合评分51-75分，高风险", "系统自定义", 3),
+                createStandard("DS-RL-04", "极高风险", "DESERTIFICATION", "风险等级", "CUSTOM", "EXTREME", new BigDecimal("76"), new BigDecimal("100"), "分", "综合评分76-100分，极高风险", "系统自定义", 4)
         );
         saveIfNotExists(standards);
     }
@@ -128,18 +128,18 @@ public class EcoDataInitializer implements ApplicationRunner {
 
     private void initEcoSafetyStandards() {
         List<EcoStandard> standards = Arrays.asList(
-                createStandard("ES-CW-01", "气候变暖蓝色预警", "ECO_SAFETY", "气候变暖预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", 1),
-                createStandard("ES-CW-02", "气候变暖黄色预警", "ECO_SAFETY", "气候变暖预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", 2),
-                createStandard("ES-CW-03", "气候变暖橙色预警", "ECO_SAFETY", "气候变暖预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", 3),
-                createStandard("ES-CW-04", "气候变暖红色预警", "ECO_SAFETY", "气候变暖预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", 4),
-                createStandard("ES-DS-01", "沙漠化蓝色预警", "ECO_SAFETY", "沙漠化预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", 1),
-                createStandard("ES-DS-02", "沙漠化黄色预警", "ECO_SAFETY", "沙漠化预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", 2),
-                createStandard("ES-DS-03", "沙漠化橙色预警", "ECO_SAFETY", "沙漠化预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", 3),
-                createStandard("ES-DS-04", "沙漠化红色预警", "ECO_SAFETY", "沙漠化预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", 4),
-                createStandard("ES-SE-01", "水土流失蓝色预警", "ECO_SAFETY", "水土流失预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", 1),
-                createStandard("ES-SE-02", "水土流失黄色预警", "ECO_SAFETY", "水土流失预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", 2),
-                createStandard("ES-SE-03", "水土流失橙色预警", "ECO_SAFETY", "水土流失预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", 3),
-                createStandard("ES-SE-04", "水土流失红色预警", "ECO_SAFETY", "水土流失预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", 4)
+                createStandard("ES-CW-01", "气候变暖蓝色预警", "ECO_SAFETY", "气候变暖预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", "系统自定义", 1),
+                createStandard("ES-CW-02", "气候变暖黄色预警", "ECO_SAFETY", "气候变暖预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", "系统自定义", 2),
+                createStandard("ES-CW-03", "气候变暖橙色预警", "ECO_SAFETY", "气候变暖预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", "系统自定义", 3),
+                createStandard("ES-CW-04", "气候变暖红色预警", "ECO_SAFETY", "气候变暖预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", "系统自定义", 4),
+                createStandard("ES-DS-01", "沙漠化蓝色预警", "ECO_SAFETY", "沙漠化预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", "系统自定义", 1),
+                createStandard("ES-DS-02", "沙漠化黄色预警", "ECO_SAFETY", "沙漠化预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", "系统自定义", 2),
+                createStandard("ES-DS-03", "沙漠化橙色预警", "ECO_SAFETY", "沙漠化预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", "系统自定义", 3),
+                createStandard("ES-DS-04", "沙漠化红色预警", "ECO_SAFETY", "沙漠化预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", "系统自定义", 4),
+                createStandard("ES-SE-01", "水土流失蓝色预警", "ECO_SAFETY", "水土流失预警", "BLUE", null, new BigDecimal("26"), new BigDecimal("50"), "分", "综合评分26-50分，蓝色预警，需关注", "系统自定义", 1),
+                createStandard("ES-SE-02", "水土流失黄色预警", "ECO_SAFETY", "水土流失预警", "YELLOW", null, new BigDecimal("51"), new BigDecimal("65"), "分", "综合评分51-65分，黄色预警，需警惕", "系统自定义", 2),
+                createStandard("ES-SE-03", "水土流失橙色预警", "ECO_SAFETY", "水土流失预警", "ORANGE", null, new BigDecimal("66"), new BigDecimal("80"), "分", "综合评分66-80分，橙色预警，需防范", "系统自定义", 3),
+                createStandard("ES-SE-04", "水土流失红色预警", "ECO_SAFETY", "水土流失预警", "RED", null, new BigDecimal("81"), new BigDecimal("100"), "分", "综合评分81-100分，红色预警，紧急应对", "系统自定义", 4)
         );
         saveIfNotExists(standards);
     }
