@@ -146,27 +146,27 @@ public class EcoDataInitializer implements ApplicationRunner {
 
     private void initClimateZoneStandards() {
         List<EcoStandard> standards = Arrays.asList(
-                createStandard("CZ-CL-01", "热带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在海南岛、雷州半岛、台湾南部，全年高温，分旱雨两季", 1),
-                createStandard("CZ-CL-02", "亚热带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在秦岭-淮河以南，夏季高温多雨，冬季温和少雨", 2),
-                createStandard("CZ-CL-03", "暖温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在华北地区，夏季高温多雨，冬季寒冷干燥", 3),
-                createStandard("CZ-CL-04", "中温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在东北地区，夏季温暖短促，冬季寒冷漫长", 4),
-                createStandard("CZ-CL-05", "寒温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在大兴安岭北部，全年寒冷，冬季漫长", 5),
-                createStandard("CZ-CL-06", "高原山地气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在青藏高原，气候垂直差异显著", 6),
-                createStandard("CZ-HU-01", "湿润区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量>800mm，主要分布在秦岭-淮河以南", 1),
-                createStandard("CZ-HU-02", "半湿润区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量400-800mm，主要分布在东北平原、华北平原", 2),
-                createStandard("CZ-HU-03", "半干旱区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量200-400mm，主要分布在内蒙古高原、黄土高原", 3),
-                createStandard("CZ-HU-04", "干旱区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量<200mm，主要分布在新疆、内蒙古西部", 4),
-                createStandard("CZ-VE-01", "寒温带针叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在大兴安岭北部，以兴安落叶松、樟子松为主", 1),
-                createStandard("CZ-VE-02", "温带针阔混交林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在小兴安岭、长白山，以红松、水曲柳为主", 2),
-                createStandard("CZ-VE-03", "暖温带落叶阔叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在华北地区，以杨树、槐树、栎树为主", 3),
-                createStandard("CZ-VE-04", "亚热带常绿阔叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在长江流域，以樟树、楠竹、茶树为主", 4),
-                createStandard("CZ-VE-05", "热带季雨林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在海南岛、西双版纳，以榕树、望天树为主", 5),
-                createStandard("CZ-VE-06", "温带草原区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在内蒙古高原，以针茅、羊草为主", 6),
-                createStandard("CZ-VE-07", "温带荒漠区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在新疆、甘肃，以梭梭、红柳、胡杨为主", 7),
-                createStandard("CZ-VE-08", "青藏高原高山植被区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在青藏高原，以高寒草甸、垫状植物为主", 8),
-                createStandard("CZ-ER-01", "水力侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在东部季风区，以降雨侵蚀为主", 1),
-                createStandard("CZ-ER-02", "风力侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在西北干旱区，以风蚀沙化为主", 2),
-                createStandard("CZ-ER-03", "冻融侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在青藏高原、高山区，以冻融作用为主", 3)
+                createStandard("CZ-CL-01", "热带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在海南岛、雷州半岛、台湾南部，全年高温，分旱雨两季", "中国气候区划", 1),
+                createStandard("CZ-CL-02", "亚热带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在秦岭-淮河以南，夏季高温多雨，冬季温和少雨", "中国气候区划", 2),
+                createStandard("CZ-CL-03", "暖温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在华北地区，夏季高温多雨，冬季寒冷干燥", "中国气候区划", 3),
+                createStandard("CZ-CL-04", "中温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在东北地区，夏季温暖短促，冬季寒冷漫长", "中国气候区划", 4),
+                createStandard("CZ-CL-05", "寒温带季风气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在大兴安岭北部，全年寒冷，冬季漫长", "中国气候区划", 5),
+                createStandard("CZ-CL-06", "高原山地气候", "CLIMATE_ZONE", "中国气候分区", null, null, null, null, "", "主要分布在青藏高原，气候垂直差异显著", "中国气候区划", 6),
+                createStandard("CZ-HU-01", "湿润区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量>800mm，主要分布在秦岭-淮河以南", "中国干湿区划", 1),
+                createStandard("CZ-HU-02", "半湿润区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量400-800mm，主要分布在东北平原、华北平原", "中国干湿区划", 2),
+                createStandard("CZ-HU-03", "半干旱区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量200-400mm，主要分布在内蒙古高原、黄土高原", "中国干湿区划", 3),
+                createStandard("CZ-HU-04", "干旱区", "CLIMATE_ZONE", "中国干湿分区", null, null, null, null, "", "年降水量<200mm，主要分布在新疆、内蒙古西部", "中国干湿区划", 4),
+                createStandard("CZ-VE-01", "寒温带针叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在大兴安岭北部，以兴安落叶松、樟子松为主", "中国植被区划", 1),
+                createStandard("CZ-VE-02", "温带针阔混交林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在小兴安岭、长白山，以红松、水曲柳为主", "中国植被区划", 2),
+                createStandard("CZ-VE-03", "暖温带落叶阔叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在华北地区，以杨树、槐树、栎树为主", "中国植被区划", 3),
+                createStandard("CZ-VE-04", "亚热带常绿阔叶林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在长江流域，以樟树、楠竹、茶树为主", "中国植被区划", 4),
+                createStandard("CZ-VE-05", "热带季雨林区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在海南岛、西双版纳，以榕树、望天树为主", "中国植被区划", 5),
+                createStandard("CZ-VE-06", "温带草原区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在内蒙古高原，以针茅、羊草为主", "中国植被区划", 6),
+                createStandard("CZ-VE-07", "温带荒漠区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在新疆、甘肃，以梭梭、红柳、胡杨为主", "中国植被区划", 7),
+                createStandard("CZ-VE-08", "青藏高原高山植被区", "CLIMATE_ZONE", "中国植被分区", null, null, null, null, "", "主要分布在青藏高原，以高寒草甸、垫状植物为主", "中国植被区划", 8),
+                createStandard("CZ-ER-01", "水力侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在东部季风区，以降雨侵蚀为主", "中国土壤侵蚀区划", 1),
+                createStandard("CZ-ER-02", "风力侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在西北干旱区，以风蚀沙化为主", "中国土壤侵蚀区划", 2),
+                createStandard("CZ-ER-03", "冻融侵蚀为主区", "CLIMATE_ZONE", "土壤侵蚀类型分区", null, null, null, null, "", "主要分布在青藏高原、高山区，以冻融作用为主", "中国土壤侵蚀区划", 3)
         );
         saveIfNotExists(standards);
     }
