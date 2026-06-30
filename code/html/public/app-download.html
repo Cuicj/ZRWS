@@ -2,55 +2,86 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#C9A96E">
   <title>智壤卫士 - APP下载</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; overflow-x: hidden; }
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-      background: linear-gradient(180deg, #C9A96E 0%, #A88B4F 30%, #FEFBF6 100%);
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #C9A96E 0%, #B89A5D 28%, #F0EBE2 70%, #FEFBF6 100%);
       min-height: 100vh;
+      min-height: 100dvh;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 40px 20px;
+      padding: 24px 16px;
+      padding-top: calc(24px + env(safe-area-inset-top));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
     .download-card {
       width: 100%;
       max-width: 360px;
       background: #FAFAF8;
-      border-radius: 20px;
-      padding: 40px 30px;
-      box-shadow: 0 8px 32px rgba(93, 78, 55, 0.15);
+      border-radius: 24px;
+      padding: 36px 28px 32px;
+      box-shadow: 0 12px 40px rgba(93, 78, 55, 0.18);
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .download-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, rgba(201, 169, 110, 0.15) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
     }
     .app-logo {
-      width: 80px;
-      height: 80px;
-      border-radius: 50%;
+      width: 76px;
+      height: 76px;
+      border-radius: 22px;
       background: linear-gradient(135deg, #C9A96E 0%, #A88B4F 100%);
       display: flex;
       align-items: center;
       justify-content: center;
-      margin: 0 auto 20px;
-      font-size: 40px;
+      margin: 0 auto 18px;
+      font-size: 38px;
+      box-shadow: 0 6px 20px rgba(201, 169, 110, 0.4);
+      position: relative;
+      z-index: 1;
     }
     .app-name {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 600;
       color: #5D4E37;
-      margin-bottom: 8px;
+      margin-bottom: 6px;
+      position: relative;
+      z-index: 1;
     }
     .app-desc {
       font-size: 13px;
       color: #8B7355;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
       line-height: 1.6;
+      position: relative;
+      z-index: 1;
     }
     .btn-group {
       display: flex;
       flex-direction: column;
       gap: 12px;
+      position: relative;
+      z-index: 1;
     }
     .dl-btn {
       display: flex;
@@ -58,22 +89,25 @@
       justify-content: center;
       gap: 10px;
       padding: 14px 24px;
-      border-radius: 12px;
+      border-radius: 14px;
       font-size: 15px;
       font-weight: 500;
       text-decoration: none;
       cursor: pointer;
-      transition: all 0.3s ease;
+      transition: all 0.2s ease;
       border: none;
       width: 100%;
+      -webkit-user-select: none;
+      user-select: none;
     }
     .dl-btn.android {
-      background: linear-gradient(135deg, #C9A96E 0%, #A88B4F 100%);
+      background: linear-gradient(135deg, #D4B87A 0%, #B89561 100%);
       color: #fff;
-      box-shadow: 0 4px 12px rgba(201, 169, 110, 0.35);
+      box-shadow: 0 4px 14px rgba(201, 169, 110, 0.4);
     }
     .dl-btn.android:active {
-      transform: scale(0.98);
+      transform: scale(0.97);
+      box-shadow: 0 2px 8px rgba(201, 169, 110, 0.3);
     }
     .dl-btn.ios {
       background: #F5F2ED;
@@ -82,20 +116,23 @@
     }
     .dl-btn.ios:active {
       background: #EDE8DF;
+      transform: scale(0.97);
     }
     .dl-icon {
       font-size: 20px;
     }
     .tip-text {
-      margin-top: 24px;
+      margin-top: 22px;
       font-size: 12px;
       color: #B5A896;
-      line-height: 1.6;
+      line-height: 1.7;
+      position: relative;
+      z-index: 1;
     }
     .loading {
       display: none;
-      margin-top: 20px;
-      font-size: 14px;
+      margin-top: 18px;
+      font-size: 13px;
       color: #8B7355;
     }
     .loading.show {
@@ -103,8 +140,8 @@
     }
     .spinner {
       display: inline-block;
-      width: 20px;
-      height: 20px;
+      width: 18px;
+      height: 18px;
       border: 2px solid #E8E2D9;
       border-top-color: #C9A96E;
       border-radius: 50%;
@@ -114,6 +151,141 @@
     }
     @keyframes spin {
       to { transform: rotate(360deg); }
+    }
+
+    /* 微信/支付宝蒙层 */
+    .wx-mask {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      padding: 20px;
+      padding-top: calc(20px + env(safe-area-inset-top));
+    }
+    .wx-mask.show {
+      display: block;
+    }
+    .wx-mask-content {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      color: #fff;
+      text-align: center;
+    }
+    .wx-arrow {
+      position: absolute;
+      top: 10px;
+      right: 24px;
+      font-size: 60px;
+      animation: arrowBounce 1.5s ease-in-out infinite;
+    }
+    @keyframes arrowBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+    .wx-icon-big {
+      font-size: 64px;
+      margin-top: 90px;
+      margin-bottom: 20px;
+    }
+    .wx-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .wx-desc {
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.85);
+      padding: 0 10px;
+    }
+    .wx-steps {
+      margin-top: 30px;
+      text-align: left;
+      padding: 0 30px;
+    }
+    .wx-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 14px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+    }
+    .wx-step-num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .wx-close-btn {
+      position: absolute;
+      bottom: 40px;
+      bottom: calc(40px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 32px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 30px;
+      font-size: 14px;
+      color: #fff;
+      background: transparent;
+      cursor: pointer;
+    }
+    .wx-close-btn:active {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* 手机端小屏适配 */
+    @media (max-width: 340px) {
+      .download-card {
+        padding: 28px 22px 24px;
+        border-radius: 20px;
+      }
+      .app-logo {
+        width: 68px;
+        height: 68px;
+        font-size: 34px;
+      }
+      .app-name {
+        font-size: 20px;
+      }
+      .dl-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+      }
+    }
+
+    /* 横屏适配 */
+    @media (orientation: landscape) and (max-height: 500px) {
+      body {
+        padding: 16px;
+      }
+      .download-card {
+        display: flex;
+        max-width: 560px;
+        padding: 24px 28px;
+        text-align: left;
+        gap: 24px;
+      }
+      .app-logo {
+        flex-shrink: 0;
+        margin: 0;
+      }
+      .card-left {
+        flex: 1;
+      }
     }
   </style>
 </head>
@@ -140,9 +312,34 @@
     </div>
     
     <p class="tip-text">
-      版本 v3.4.0<br>
+      版本 v4.1.0<br>
       建议在WiFi环境下下载
     </p>
+  </div>
+
+  <!-- 微信/支付宝打开提示蒙层 -->
+  <div class="wx-mask" id="wxMask">
+    <div class="wx-mask-content">
+      <div class="wx-arrow">↗</div>
+      <div class="wx-icon-big" id="wxIconBig">💬</div>
+      <div class="wx-title" id="wxTitle">请在浏览器中打开</div>
+      <div class="wx-desc" id="wxDesc">当前在微信中打开<br>点击右上角「···」选择「在浏览器打开」</div>
+      <div class="wx-steps" id="wxSteps">
+        <div class="wx-step">
+          <span class="wx-step-num">1</span>
+          <span>点击右上角「···」按钮</span>
+        </div>
+        <div class="wx-step">
+          <span class="wx-step-num">2</span>
+          <span>选择「在浏览器打开」</span>
+        </div>
+        <div class="wx-step">
+          <span class="wx-step-num">3</span>
+          <span>下载APP或访问H5版本</span>
+        </div>
+      </div>
+      <button class="wx-close-btn" id="wxCloseBtn">我知道了</button>
+    </div>
   </div>
 
   <script>
@@ -151,16 +348,65 @@
     
     function getDeviceType() {
       var ua = navigator.userAgent.toLowerCase();
-      if (/android/.test(ua)) {
-        return 'android';
-      }
-      if (/iphone|ipad|ipod/.test(ua)) {
-        return 'ios';
-      }
+      if (/android/.test(ua)) return 'android';
+      if (/iphone|ipad|ipod/.test(ua)) return 'ios';
       return 'other';
     }
     
+    function isWeChat() {
+      return /micromessenger/.test(navigator.userAgent.toLowerCase());
+    }
+    
+    function isAlipay() {
+      return /alipay/.test(navigator.userAgent.toLowerCase());
+    }
+    
+    function isQQ() {
+      return /qq\//.test(navigator.userAgent.toLowerCase()) || /mqqbrowser/.test(navigator.userAgent.toLowerCase());
+    }
+    
+    function isInAppBrowser() {
+      return isWeChat() || isAlipay() || isQQ();
+    }
+    
+    function showWxMask() {
+      var mask = document.getElementById('wxMask');
+      var icon = document.getElementById('wxIconBig');
+      var title = document.getElementById('wxTitle');
+      var desc = document.getElementById('wxDesc');
+      var steps = document.getElementById('wxSteps');
+      
+      if (isWeChat()) {
+        icon.textContent = '💬';
+        title.textContent = '请在浏览器中打开';
+        desc.innerHTML = '当前在微信中打开<br>点击右上角「···」选择「在浏览器打开」';
+        steps.style.display = 'block';
+      } else if (isAlipay()) {
+        icon.textContent = '💰';
+        title.textContent = '请在浏览器中打开';
+        desc.innerHTML = '当前在支付宝中打开<br>点击右上角「···」选择「在浏览器打开」';
+        steps.style.display = 'block';
+      } else if (isQQ()) {
+        icon.textContent = '🐧';
+        title.textContent = '请在浏览器中打开';
+        desc.innerHTML = '当前在QQ中打开<br>点击右上角「···」选择「在浏览器打开」';
+        steps.style.display = 'block';
+      }
+      
+      mask.classList.add('show');
+    }
+    
+    function hideWxMask() {
+      document.getElementById('wxMask').classList.remove('show');
+    }
+    
+    document.getElementById('wxCloseBtn').addEventListener('click', hideWxMask);
+    
     function downloadAPK() {
+      if (isInAppBrowser()) {
+        showWxMask();
+        return;
+      }
       var loading = document.getElementById('loading');
       loading.classList.add('show');
       
@@ -173,24 +419,33 @@
     }
     
     function goToH5() {
+      if (isInAppBrowser()) {
+        showWxMask();
+        return;
+      }
       window.location.href = h5Url;
     }
     
     document.getElementById('androidBtn').addEventListener('click', downloadAPK);
     document.getElementById('iosBtn').addEventListener('click', goToH5);
     
-    // 自动检测设备并跳转
+    // 自动检测设备并跳转（仅在普通浏览器中自动跳转）
     var device = getDeviceType();
-    if (device === 'android') {
-      // 安卓设备：显示提示后自动下载
+    if (!isInAppBrowser()) {
+      if (device === 'android') {
+        setTimeout(function() {
+          downloadAPK();
+        }, 1200);
+      } else if (device === 'ios') {
+        setTimeout(function() {
+          goToH5();
+        }, 600);
+      }
+    } else {
+      // 在微信/支付宝等内打开，先显示提示
       setTimeout(function() {
-        downloadAPK();
-      }, 1000);
-    } else if (device === 'ios') {
-      // iOS设备：直接跳转到H5
-      setTimeout(function() {
-        goToH5();
-      }, 500);
+        showWxMask();
+      }, 300);
     }
   </script>
 </body>

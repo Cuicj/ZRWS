@@ -11,6 +11,25 @@
 
     <!-- 右侧：用户信息 + 操作 -->
     <div class="header-right">
+      <!-- APP下载 -->
+      <div class="app-download-trigger" @mouseenter="showAppQR = true" @mouseleave="showAppQR = false">
+        <el-icon :size="18" class="icon-btn"><Iphone /></el-icon>
+        <span class="link-text">APP下载</span>
+        <div class="app-qr-popover" :class="{ show: showAppQR }">
+          <div class="qr-popover-inner">
+            <div class="qr-img-box">
+              <img :src="appDownloadQRUrl" alt="扫码下载APP" class="qr-img" />
+            </div>
+            <div class="qr-title">扫码下载APP</div>
+            <div class="qr-desc">
+              <span class="qr-tag android">🤖 安卓</span>
+              <span class="qr-tag ios">🍎 iOS H5</span>
+            </div>
+            <div class="qr-tip">手机扫码自动识别设备</div>
+          </div>
+        </div>
+      </div>
+
       <!-- 公告栏跳转 -->
       <a href="https://www.zrws.cloud/TZ" target="_blank" class="header-link-outer" title="公告栏">
         <el-icon :size="18" class="icon-btn"><Notification /></el-icon>
@@ -49,10 +68,12 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
-import { Notification } from '@element-plus/icons-vue';
+import { Notification, Iphone } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const appVersion = __APP_VERSION__;
+const showAppQR = ref(false);
+const appDownloadQRUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=' + encodeURIComponent(window.location.origin + '/app-download.html');
 
 // 用户信息
 const user = ref({
@@ -134,6 +155,115 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.app-download-trigger {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #8B7355;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.app-download-trigger:hover {
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.1);
+  transform: translateY(-1px);
+}
+
+.app-download-trigger:hover .icon-btn {
+  color: #C9A86C;
+  background: transparent;
+  transform: none;
+}
+
+.app-qr-popover {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  padding-top: 10px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.25s ease;
+  z-index: 1000;
+}
+
+.app-qr-popover.show {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.qr-popover-inner {
+  background: #fff;
+  border-radius: 14px;
+  padding: 20px 22px 18px;
+  box-shadow: 0 8px 32px rgba(93, 78, 55, 0.18);
+  border: 1px solid #EDE6DA;
+  text-align: center;
+  width: 220px;
+}
+
+.qr-img-box {
+  width: 160px;
+  height: 160px;
+  margin: 0 auto 14px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #F5F2ED;
+  border: 1px solid #EDE6DA;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.qr-img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.qr-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: #5D4E37;
+  margin-bottom: 8px;
+}
+
+.qr-desc {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.qr-tag {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.qr-tag.android {
+  background: rgba(201, 168, 108, 0.12);
+  color: #A88B4F;
+}
+
+.qr-tag.ios {
+  background: rgba(139, 115, 85, 0.1);
+  color: #8B7355;
+}
+
+.qr-tip {
+  font-size: 11px;
+  color: #B5A896;
 }
 
 .header-link-outer {
