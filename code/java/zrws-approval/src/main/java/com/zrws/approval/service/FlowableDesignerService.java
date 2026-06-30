@@ -1,15 +1,20 @@
 package com.zrws.approval.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zrws.approval.domain.entity.BpmnDraft;
+import com.zrws.approval.mapper.BpmnDraftMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
 import org.flowable.engine.RepositoryService;
 import org.flowable.engine.repository.ProcessDefinition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.time.LocalDateTime;
 import java.util.*;
 import javax.xml.stream.XMLInputFactory;
 import javax.xml.stream.XMLStreamReader;
@@ -22,6 +27,9 @@ public class FlowableDesignerService {
 
     @Autowired
     private FlowableDeployService deployService;
+
+    @Autowired
+    private BpmnDraftMapper draftMapper;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
@@ -416,99 +424,163 @@ public class FlowableDesignerService {
     }
 
     // ============================================================
-    // 3. 流程生命周期管理（设计-保存-审核-发布-部署）
+    // 3. 流程生命周期管理（设计-保存-审核-发布-部署）- 持久化到数据库
     // ============================================================
 
-    private final Map<String, Map<String, Object>> draftStore = new HashMap<>();
-
+    @Transactional
     public Map<String, Object> saveDraft(String processKey, Map<String, Object> json) {
-        Map<String, Object> draft = new HashMap<>();
-        draft.put("processKey", processKey);
-        draft.put("processName", json.get("processName"));
-        draft.put("xml", json.get("xml"));
-        draft.put("json", json);
-        draft.put("status", "DRAFT");
-        draft.put("version", 1);
-        draft.put("createTime", new Date());
-        draft.put("updateTime", new Date());
-
-        if (draftStore.containsKey(processKey)) {
-            Map<String, Object> old = draftStore.get(processKey);
-            int oldVersion = (Integer) old.get("version");
-            draft.put("version", oldVersion + 1);
+        String xml = (String) json.get("xml");
+        String processName = (String) json.getOrDefault("processName", "未命名流程");
+        String description = (String) json.getOrDefault("description", "");
+        String jsonDef = null;
+        try {
+            jsonDef = objectMapper.writeValueAsString(json);
+        } catch (Exception e) {
+            // ignore
         }
 
-        draftStore.put(processKey, draft);
-        return draft;
+        // 查询是否已存在草稿
+        BpmnDraft existingDraft = draftMapper.selectByProcessKey(processKey);
+
+        BpmnDraft draft = new BpmnDraft();
+        draft.setProcessKey(processKey);
+        draft.setProcessName(processName);
+        draft.setDescription(description);
+        draft.setXml(xml);
+        draft.setJsonDef(jsonDef);
+        draft.setStatus(BpmnDraft.Status.DRAFT);
+        draft.setUpdatedTime(LocalDateTime.now());
+
+        if (existingDraft != null) {
+            // 更新已有草稿
+            draft.setId(existingDraft.getId());
+            draft.setVersion(existingDraft.getVersion() + 1);
+            draft.setCreatedTime(existingDraft.getCreatedTime());
+            draft.setCreatorId(existingDraft.getCreatorId());
+            draft.setCreatorName(existingDraft.getCreatorName());
+            draftMapper.updateById(draft);
+        } else {
+            // 新建草稿
+            draft.setVersion(1);
+            draft.setCreatedTime(LocalDateTime.now());
+            draft.setCreatorId(1L);
+            draft.setCreatorName("系统");
+            draftMapper.insert(draft);
+        }
+
+        return draftToMap(draft);
     }
 
     public Map<String, Object> getDraft(String processKey) {
-        return draftStore.get(processKey);
+        BpmnDraft draft = draftMapper.selectByProcessKey(processKey);
+        return draftToMap(draft);
     }
 
     public List<Map<String, Object>> listDrafts() {
-        return new ArrayList<>(draftStore.values());
+        List<BpmnDraft> drafts = draftMapper.selectAllDrafts();
+        List<Map<String, Object>> result = new ArrayList<>();
+        for (BpmnDraft draft : drafts) {
+            result.add(draftToMap(draft));
+        }
+        return result;
     }
 
+    private Map<String, Object> draftToMap(BpmnDraft draft) {
+        if (draft == null) {
+            return null;
+        }
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", draft.getId());
+        map.put("processKey", draft.getProcessKey());
+        map.put("processName", draft.getProcessName());
+        map.put("description", draft.getDescription());
+        map.put("xml", draft.getXml());
+        map.put("json", draft.getJsonDef());
+        map.put("version", draft.getVersion());
+        map.put("status", draft.getStatus());
+        map.put("submitTime", draft.getSubmitTime());
+        map.put("reviewTime", draft.getReviewTime());
+        map.put("reviewComment", draft.getReviewComment());
+        map.put("publishTime", draft.getPublishTime());
+        map.put("deploymentId", draft.getDeploymentId());
+        map.put("processDefinitionId", draft.getProcessDefinitionId());
+        map.put("createdTime", draft.getCreatedTime());
+        map.put("updatedTime", draft.getUpdatedTime());
+        return map;
+    }
+
+    @Transactional
     public Map<String, Object> submitForReview(String processKey) {
-        Map<String, Object> draft = draftStore.get(processKey);
+        BpmnDraft draft = draftMapper.selectByProcessKey(processKey);
         if (draft == null) {
             throw new RuntimeException("流程草稿不存在");
         }
-        draft.put("status", "PENDING_REVIEW");
-        draft.put("submitTime", new Date());
-        draft.put("updateTime", new Date());
-        return draft;
+        draft.setStatus(BpmnDraft.Status.PENDING_REVIEW);
+        draft.setSubmitTime(LocalDateTime.now());
+        draft.setUpdatedTime(LocalDateTime.now());
+        draftMapper.updateById(draft);
+        return draftToMap(draft);
     }
 
+    @Transactional
     public Map<String, Object> review(String processKey, boolean approved, String comment) {
-        Map<String, Object> draft = draftStore.get(processKey);
+        BpmnDraft draft = draftMapper.selectByProcessKey(processKey);
         if (draft == null) {
             throw new RuntimeException("流程草稿不存在");
         }
-        draft.put("status", approved ? "APPROVED" : "REJECTED");
-        draft.put("reviewComment", comment);
-        draft.put("reviewTime", new Date());
-        draft.put("updateTime", new Date());
-        return draft;
+        draft.setStatus(approved ? BpmnDraft.Status.APPROVED : BpmnDraft.Status.REJECTED);
+        draft.setReviewComment(comment);
+        draft.setReviewTime(LocalDateTime.now());
+        draft.setUpdatedTime(LocalDateTime.now());
+        draftMapper.updateById(draft);
+        return draftToMap(draft);
     }
 
+    @Transactional
     public Map<String, Object> publish(String processKey) {
-        Map<String, Object> draft = draftStore.get(processKey);
+        BpmnDraft draft = draftMapper.selectByProcessKey(processKey);
         if (draft == null) {
             throw new RuntimeException("流程草稿不存在");
         }
-        if (!"APPROVED".equals(draft.get("status"))) {
+        if (!BpmnDraft.Status.APPROVED.equals(draft.getStatus())) {
             throw new RuntimeException("流程未通过审核，无法发布");
         }
-        draft.put("status", "PUBLISHED");
-        draft.put("publishTime", new Date());
-        draft.put("updateTime", new Date());
-        return draft;
+        draft.setStatus(BpmnDraft.Status.PUBLISHED);
+        draft.setPublishTime(LocalDateTime.now());
+        draft.setUpdatedTime(LocalDateTime.now());
+        draftMapper.updateById(draft);
+        return draftToMap(draft);
     }
 
-    @SuppressWarnings("unchecked")
+    @Transactional
     public Map<String, Object> deployPublished(String processKey) {
-        Map<String, Object> draft = draftStore.get(processKey);
+        BpmnDraft draft = draftMapper.selectByProcessKey(processKey);
         if (draft == null) {
             throw new RuntimeException("流程草稿不存在");
         }
-        if (!"PUBLISHED".equals(draft.get("status"))) {
+        if (!BpmnDraft.Status.PUBLISHED.equals(draft.getStatus())) {
             throw new RuntimeException("流程未发布，无法部署");
         }
 
-        Map<String, Object> json = (Map<String, Object>) draft.get("json");
-        String xml = jsonToBpmnXml(json);
-        String processName = (String) draft.get("processName");
+        String xml = draft.getXml();
+        if (xml == null || xml.isEmpty()) {
+            // 如果XML为空，从JSON重新生成
+            try {
+                Map<String, Object> json = objectMapper.readValue(draft.getJsonDef(), Map.class);
+                xml = jsonToBpmnXml(json);
+            } catch (Exception e) {
+                throw new RuntimeException("无法解析流程定义: " + e.getMessage());
+            }
+        }
 
         InputStream inputStream = new ByteArrayInputStream(xml.getBytes());
-        Map<String, Object> result = deployService.deployBPMN(processKey, processName, inputStream);
+        Map<String, Object> result = deployService.deployBPMN(processKey, draft.getProcessName(), inputStream);
 
-        draft.put("status", "DEPLOYED");
-        draft.put("deployTime", new Date());
-        draft.put("deploymentId", result.get("deploymentId"));
-        draft.put("processDefinitionId", result.get("processDefinitionId"));
-        draft.put("updateTime", new Date());
+        draft.setStatus(BpmnDraft.Status.DEPLOYED);
+        draft.setDeploymentId((String) result.get("deploymentId"));
+        draft.setProcessDefinitionId((String) result.get("processDefinitionId"));
+        draft.setUpdatedTime(LocalDateTime.now());
+        draftMapper.updateById(draft);
 
         return result;
     }
