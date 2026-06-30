@@ -108,6 +108,15 @@ const defaultMenus = [
     ]
   },
   {
+    title: '生态环境',
+    items: [
+      { path: 'climate-warming', name: '气候变暖监测', icon: '🌡️' },
+      { path: 'desertification', name: '沙漠化监测', icon: '🏜️' },
+      { path: 'soil-erosion', name: '水土流失监测', icon: '🌊' },
+      { path: 'eco-standard', name: '生态标准库', icon: '📋' }
+    ]
+  },
+  {
     title: 'GIS',
     items: [
       { path: 'cad-viewer', name: '三维地球', icon: '🌍' },

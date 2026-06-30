@@ -140,6 +140,32 @@ const routes = [
         meta: { group: '土地资源', title: '公告栏', icon: '📰' }
       },
 
+      // 生态环境监测
+      {
+        path: 'climate-warming',
+        name: 'ClimateWarming',
+        component: () => import('@/views/pages/ClimateWarming.vue'),
+        meta: { group: '生态环境', title: '气候变暖监测', icon: '🌡️' }
+      },
+      {
+        path: 'desertification',
+        name: 'Desertification',
+        component: () => import('@/views/pages/Desertification.vue'),
+        meta: { group: '生态环境', title: '沙漠化监测', icon: '🏜️' }
+      },
+      {
+        path: 'soil-erosion',
+        name: 'SoilErosion',
+        component: () => import('@/views/pages/SoilErosion.vue'),
+        meta: { group: '生态环境', title: '水土流失监测', icon: '🌊' }
+      },
+      {
+        path: 'eco-standard',
+        name: 'EcoStandard',
+        component: () => import('@/views/pages/EcoStandard.vue'),
+        meta: { group: '生态环境', title: '生态标准库', icon: '📋' }
+      },
+
       // GIS 地理信息
       {
         path: 'cad-viewer',

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.Arrays;
 
 /**
@@ -59,6 +60,10 @@ public class MockDataInitializer implements ApplicationRunner {
     private ExportTaskMapper exportTaskMapper;
     @Autowired
     private DataStatisticsMapper dataStatisticsMapper;
+    @Autowired
+    private ClimateWarmingMapper climateWarmingMapper;
+    @Autowired
+    private DesertificationMapper desertificationMapper;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -82,7 +87,9 @@ public class MockDataInitializer implements ApplicationRunner {
             {"岩层结构分析", "initRockStratumAnalyses"},
             {"系统配置", "initSysConfigs"},
             {"导出任务", "initExportTasks"},
-            {"数据统计", "initDataStatistics"}
+            {"数据统计", "initDataStatistics"},
+            {"气候变暖监测", "initClimateWarmingData"},
+            {"沙漠化监测", "initDesertificationData"}
         };
         for (String[] task : tasks) {
             try {
@@ -105,6 +112,8 @@ public class MockDataInitializer implements ApplicationRunner {
                     case "initSysConfigs": initSysConfigs(); break;
                     case "initExportTasks": initExportTasks(); break;
                     case "initDataStatistics": initDataStatistics(); break;
+                    case "initClimateWarmingData": initClimateWarmingData(); break;
+                    case "initDesertificationData": initDesertificationData(); break;
                 }
                 success++;
             } catch (Exception e) {
@@ -1441,5 +1450,134 @@ public class MockDataInitializer implements ApplicationRunner {
         s.setPeriodType(period);
         s.setIsDeleted(0);
         return s;
+    }
+
+    private void initClimateWarmingData() {
+        Long count = climateWarmingMapper.selectCount(new LambdaQueryWrapper<ClimateWarming>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 气候变暖监测数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化气候变暖监测Mock数据...");
+        LocalDate today = LocalDate.now();
+        String[] regions = {"南宁市", "柳州市", "桂林市", "梧州市", "北海市", "防城港市", "钦州市", "贵港市", "玉林市", "百色市", "贺州市", "河池市", "来宾市", "崇左市"};
+        String[] regionCodes = {"NN", "LZ", "GL", "WZ", "BH", "FCG", "QZ", "GG", "YL", "BS", "HZ", "HC", "LB", "CZ"};
+        double[] lats = {22.82, 24.33, 25.27, 23.48, 21.48, 21.69, 21.97, 23.11, 22.63, 23.90, 24.41, 24.70, 23.74, 22.37};
+        double[] lngs = {108.37, 109.42, 110.29, 111.34, 109.12, 108.35, 108.63, 109.60, 110.15, 106.62, 111.55, 108.06, 109.23, 107.37};
+
+        for (int i = 0; i < regions.length; i++) {
+            double baseTemp = 20 + Math.random() * 8;
+            double tempAnomaly = 0.3 + Math.random() * 0.8;
+            double precip = 80 + Math.random() * 150;
+            double precipAnomaly = -20 + Math.random() * 50;
+            int highTempDays = (int)(3 + Math.random() * 15);
+            int lowTempDays = (int)(Math.random() * 5);
+            int droughtDays = (int)(5 + Math.random() * 25);
+            int heatWaves = (int)(Math.random() * 3);
+            double warmingRate = 0.15 + Math.random() * 0.35;
+            double riskScore = 20 + Math.random() * 60;
+            String riskLevel = riskScore < 25 ? "LOW" : (riskScore < 50 ? "MEDIUM" : (riskScore < 75 ? "HIGH" : "EXTREME"));
+            String trend = warmingRate > 0.4 ? "RAPID" : (warmingRate > 0.2 ? "MODERATE" : (warmingRate > 0.1 ? "SLOW" : "STABLE"));
+
+            ClimateWarming cw = new ClimateWarming();
+            cw.setRecordCode("CW-" + regionCodes[i] + "-" + today.toString().replace("-", ""));
+            cw.setRegion(regions[i]);
+            cw.setRegionCode(regionCodes[i]);
+            cw.setLatitude(BigDecimal.valueOf(lats[i]));
+            cw.setLongitude(BigDecimal.valueOf(lngs[i]));
+            cw.setMonitorDate(today);
+            cw.setAvgTemperature(BigDecimal.valueOf(baseTemp).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setMaxTemperature(BigDecimal.valueOf(baseTemp + 8 + Math.random() * 5).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setMinTemperature(BigDecimal.valueOf(baseTemp - 6 - Math.random() * 4).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setTemperatureAnomaly(BigDecimal.valueOf(tempAnomaly).setScale(2, BigDecimal.ROUND_HALF_UP));
+            cw.setPrecipitation(BigDecimal.valueOf(precip).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setPrecipitationAnomaly(BigDecimal.valueOf(precipAnomaly).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setExtremeHighTempDays(highTempDays);
+            cw.setExtremeLowTempDays(lowTempDays);
+            cw.setDroughtDays(droughtDays);
+            cw.setHeatWaveEvents(heatWaves);
+            cw.setWarmingRate10y(BigDecimal.valueOf(warmingRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+            cw.setWarmingTrend(trend);
+            cw.setRiskLevel(riskLevel);
+            cw.setRiskScore(BigDecimal.valueOf(riskScore).setScale(1, BigDecimal.ROUND_HALF_UP));
+            cw.setImpactAssessment("气温偏高" + String.format("%.1f", tempAnomaly) + "°C，对农业生产、生态系统有一定影响");
+            cw.setAdaptationMeasures("加强节水灌溉、调整种植结构、完善高温预警机制");
+            cw.setDataSource("气象站观测+卫星遥感");
+            cw.setStatus("COMPLETED");
+            cw.setAnalyst("系统自动分析");
+            cw.setAnalysisTime(LocalDateTime.now());
+            cw.setIsDeleted(0);
+            climateWarmingMapper.insert(cw);
+        }
+        log.info("[Mock数据] 气候变暖监测Mock数据初始化完成，共 {} 条", regions.length);
+    }
+
+    private void initDesertificationData() {
+        Long count = desertificationMapper.selectCount(new LambdaQueryWrapper<Desertification>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 沙漠化监测数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化沙漠化监测Mock数据...");
+        LocalDate today = LocalDate.now();
+        String[] regions = {"南宁市", "柳州市", "桂林市", "梧州市", "北海市", "防城港市", "钦州市", "贵港市", "玉林市", "百色市", "贺州市", "河池市", "来宾市", "崇左市"};
+        String[] regionCodes = {"NN", "LZ", "GL", "WZ", "BH", "FCG", "QZ", "GG", "YL", "BS", "HZ", "HC", "LB", "CZ"};
+        double[] lats = {22.82, 24.33, 25.27, 23.48, 21.48, 21.69, 21.97, 23.11, 22.63, 23.90, 24.41, 24.70, 23.74, 22.37};
+        double[] lngs = {108.37, 109.42, 110.29, 111.34, 109.12, 108.35, 108.63, 109.60, 110.15, 106.62, 111.55, 108.06, 109.23, 107.37};
+        String[] types = {"WATER", "WIND", "WATER", "WATER", "WIND", "WIND", "WIND", "WATER", "WATER", "WIND", "WATER", "WATER", "WATER", "WIND"};
+
+        for (int i = 0; i < regions.length; i++) {
+            double vegCov = 35 + Math.random() * 55;
+            double bareLand = 5 + Math.random() * 30;
+            double sandHeight = 0.5 + Math.random() * 3;
+            double migrationRate = 0.5 + Math.random() * 5;
+            double soilOM = 0.5 + Math.random() * 2.5;
+            double soilMoisture = 10 + Math.random() * 25;
+            double aridity = 0.3 + Math.random() * 0.9;
+            double windErosion = 100 + Math.random() * 3000;
+            double desertArea = 10 + Math.random() * 200;
+            double desertRatio = 2 + Math.random() * 25;
+            double ldi = 0.2 + Math.random() * 0.6;
+            double riskScore = 15 + Math.random() * 55;
+            String riskLevel = riskScore < 25 ? "LOW" : (riskScore < 50 ? "MEDIUM" : (riskScore < 75 ? "HIGH" : "EXTREME"));
+            String grade = vegCov > 50 ? "MILD" : (vegCov > 30 ? "MODERATE" : (vegCov > 10 ? "SEVERE" : "EXTREME"));
+            String climateType = aridity > 1.0 ? "HUMID" : (aridity > 0.65 ? "SEMI_HUMID" : (aridity > 0.3 ? "SEMI_ARID" : (aridity > 0.13 ? "ARID" : "HYPER_ARID")));
+            String vegTrend = Math.random() > 0.6 ? "INCREASING" : (Math.random() > 0.3 ? "STABLE" : "DECREASING");
+
+            Desertification ds = new Desertification();
+            ds.setRecordCode("DS-" + regionCodes[i] + "-" + today.toString().replace("-", ""));
+            ds.setRegion(regions[i]);
+            ds.setRegionCode(regionCodes[i]);
+            ds.setLatitude(BigDecimal.valueOf(lats[i]));
+            ds.setLongitude(BigDecimal.valueOf(lngs[i]));
+            ds.setMonitorDate(today);
+            ds.setMonitorPeriod("MONTHLY");
+            ds.setVegetationCoverage(BigDecimal.valueOf(vegCov).setScale(1, BigDecimal.ROUND_HALF_UP));
+            ds.setVegetationTrend(vegTrend);
+            ds.setBareLandRatio(BigDecimal.valueOf(bareLand).setScale(1, BigDecimal.ROUND_HALF_UP));
+            ds.setSandDuneHeightAvg(BigDecimal.valueOf(sandHeight).setScale(2, BigDecimal.ROUND_HALF_UP));
+            ds.setSandDuneMigrationRate(BigDecimal.valueOf(migrationRate).setScale(2, BigDecimal.ROUND_HALF_UP));
+            ds.setSoilOrganicMatter(BigDecimal.valueOf(soilOM).setScale(2, BigDecimal.ROUND_HALF_UP));
+            ds.setSoilMoisture(BigDecimal.valueOf(soilMoisture).setScale(1, BigDecimal.ROUND_HALF_UP));
+            ds.setAridityIndex(BigDecimal.valueOf(aridity).setScale(3, BigDecimal.ROUND_HALF_UP));
+            ds.setClimateType(climateType);
+            ds.setWindErosionModulus(BigDecimal.valueOf(windErosion).setScale(0, BigDecimal.ROUND_HALF_UP));
+            ds.setDesertificationType(types[i]);
+            ds.setDesertificationGrade(grade);
+            ds.setDesertificationArea(BigDecimal.valueOf(desertArea).setScale(2, BigDecimal.ROUND_HALF_UP));
+            ds.setDesertificationRatio(BigDecimal.valueOf(desertRatio).setScale(1, BigDecimal.ROUND_HALF_UP));
+            ds.setLandDegradationIndex(BigDecimal.valueOf(ldi).setScale(2, BigDecimal.ROUND_HALF_UP));
+            ds.setRiskLevel(riskLevel);
+            ds.setRiskScore(BigDecimal.valueOf(riskScore).setScale(1, BigDecimal.ROUND_HALF_UP));
+            ds.setImpactAssessment("土地退化指数" + String.format("%.2f", ldi) + "，生态系统服务功能有所下降");
+            ds.setControlMeasures("实施退耕还林还草、设置沙障、推广节水农业技术");
+            ds.setDataSource("卫星遥感+地面调查");
+            ds.setStatus("COMPLETED");
+            ds.setAnalyst("系统自动分析");
+            ds.setAnalysisTime(LocalDateTime.now());
+            ds.setIsDeleted(0);
+            desertificationMapper.insert(ds);
+        }
+        log.info("[Mock数据] 沙漠化监测Mock数据初始化完成，共 {} 条", regions.length);
     }
 }
