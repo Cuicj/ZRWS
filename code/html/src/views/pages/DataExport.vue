@@ -172,10 +172,11 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import Panel from '@/components/common/Panel.vue'
 import { exportApi } from '@/api/dataExport'
+import { dataImportApi } from '@/api/dataImport'
 
 const form = ref({
   boType: '',
@@ -184,25 +185,8 @@ const form = ref({
   filters: []
 })
 
-const boList = ref([
-  { code: 'soil_sample', name: '土壤采样数据' },
-  { code: 'quality_check', name: '质量校验数据' },
-  { code: 'device_data', name: '设备运行数据' },
-  { code: 'mission_data', name: '采集任务数据' },
-  { code: 'disaster_risk', name: '灾害风险数据' }
-])
-
-const fieldList = ref([
-  { code: 'id', name: 'ID' },
-  { code: 'name', name: '名称' },
-  { code: 'code', name: '编号' },
-  { code: 'type', name: '类型' },
-  { code: 'status', name: '状态' },
-  { code: 'createTime', name: '创建时间' },
-  { code: 'updateTime', name: '更新时间' },
-  { code: 'creator', name: '创建人' },
-  { code: 'remark', name: '备注' }
-])
+const boList = ref([])
+const fieldList = ref([])
 
 const tasks = ref([])
 const loading = ref(false)
@@ -219,78 +203,81 @@ const loadBoList = async () => {
   }
 }
 
+const loadBoList = async () => {
+  try {
+    const res = await dataImportApi.getBoList()
+    if (res.data && res.data.list) {
+      boList.value = res.data.list.map(bo => ({
+        code: bo.boCode,
+        name: bo.boName
+      }))
+    }
+  } catch (e) {
+    console.warn('加载BO列表失败:', e.message)
+    boList.value = [
+      { code: 'soil_sample', name: '土壤采样数据' },
+      { code: 'quality_check', name: '质量校验数据' },
+      { code: 'device_data', name: '设备运行数据' },
+      { code: 'mission_data', name: '采集任务数据' },
+      { code: 'disaster_risk', name: '灾害风险数据' }
+    ]
+  }
+}
+
+const loadFields = async (boCode) => {
+  if (!boCode) {
+    fieldList.value = []
+    return
+  }
+  try {
+    const res = await dataImportApi.getBoFields(boCode)
+    if (res.data && res.data.fields) {
+      fieldList.value = res.data.fields
+        .filter(f => f.status === 1)
+        .map(f => ({
+          code: f.fieldCode,
+          name: f.fieldName,
+          type: f.fieldType
+        }))
+    }
+  } catch (e) {
+    console.warn('加载字段列表失败:', e.message)
+    fieldList.value = [
+      { code: 'id', name: 'ID', type: 'BIGINT' },
+      { code: 'name', name: '名称', type: 'VARCHAR' },
+      { code: 'code', name: '编号', type: 'VARCHAR' },
+      { code: 'type', name: '类型', type: 'VARCHAR' },
+      { code: 'status', name: '状态', type: 'VARCHAR' },
+      { code: 'create_time', name: '创建时间', type: 'DATETIME' },
+      { code: 'update_time', name: '更新时间', type: 'DATETIME' },
+      { code: 'remark', name: '备注', type: 'TEXT' }
+    ]
+  }
+}
+
 const loadTasks = async () => {
   try {
     loading.value = true
     const res = await exportApi.listTasks({})
-    if (res.data && res.data.records) {
-      tasks.value = res.data.records
+    if (res.data && res.data.tasks) {
+      tasks.value = res.data.tasks.slice(0, 20)
     } else {
-      tasks.value = [
-        {
-          id: 1,
-          taskNo: 'EXP20240115001',
-          name: '土壤采样数据导出',
-          format: 'EXCEL',
-          status: 'SUCCESS',
-          rowCount: 1256,
-          createTime: '2024-01-15 10:30:00'
-        },
-        {
-          id: 2,
-          taskNo: 'EXP20240115002',
-          name: '质量校验报告',
-          format: 'PDF',
-          status: 'PROCESSING',
-          rowCount: 0,
-          createTime: '2024-01-15 11:20:00'
-        },
-        {
-          id: 3,
-          taskNo: 'EXP20240114003',
-          name: '设备运行数据',
-          format: 'CSV',
-          status: 'PENDING',
-          rowCount: 0,
-          createTime: '2024-01-14 16:45:00'
-        },
-        {
-          id: 4,
-          taskNo: 'EXP20240114001',
-          name: '灾害风险分析',
-          format: 'EXCEL',
-          status: 'FAILED',
-          rowCount: 0,
-          createTime: '2024-01-14 09:10:00'
-        }
-      ]
+      tasks.value = []
     }
   } catch (e) {
     console.warn('加载任务列表失败:', e.message)
-    tasks.value = [
-      {
-        id: 1,
-        taskNo: 'EXP20240115001',
-        name: '土壤采样数据导出',
-        format: 'EXCEL',
-        status: 'SUCCESS',
-        rowCount: 1256,
-        createTime: '2024-01-15 10:30:00'
-      },
-      {
-        id: 2,
-        taskNo: 'EXP20240115002',
-        name: '质量校验报告',
-        format: 'PDF',
-        status: 'PROCESSING',
-        rowCount: 0,
-        createTime: '2024-01-15 11:20:00'
-      }
-    ]
+    tasks.value = []
   } finally {
     loading.value = false
   }
 }
+
+// 监听BO类型变化，加载对应字段
+watch(() => form.value.boType, (newBoType) => {
+  form.value.fields = []
+  form.value.filters = []
+  loadFields(newBoType)
+})
 
 const selectAllFields = () => {
   form.value.fields = fieldList.value.map(f => f.code)

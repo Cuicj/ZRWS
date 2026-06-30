@@ -5,7 +5,7 @@
         <h1 class="page-title display">系统配置</h1>
         <div class="page-meta mono">SYSTEM CONFIGURATION · {{ configCount }} 项配置</div>
       </div>
-      <button class="btn-primary btn-sm" @click="saveAll">保存配置</button>
+      <button class="btn btn-primary btn-sm" @click="saveAll">保存配置</button>
     </div>
 
     <div class="config-tabs">
@@ -196,33 +196,6 @@ const saveAll = () => {
 }
 .mono {
   color: #8B7355;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #C9A86C 0%, #B8956A 100%);
-  color: #FFFFFF;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #D4B57A 0%, #C9A86C 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
 }
 
 :deep(.el-switch) {

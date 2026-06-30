@@ -22,8 +22,8 @@
             3D 地球
           </button>
         </div>
-        <button class="btn-primary btn-sm" @click="exportScene">💾 截图</button>
-        <button class="btn-ghost btn-sm" @click="toggleFullscreen">⛶ 全屏</button>
+        <button class="btn btn-primary btn-sm" @click="exportScene">💾 截图</button>
+        <button class="btn btn-ghost btn-sm" @click="toggleFullscreen">⛶ 全屏</button>
       </div>
     </div>
 

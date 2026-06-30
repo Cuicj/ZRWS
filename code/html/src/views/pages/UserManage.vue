@@ -5,7 +5,7 @@
         <h1 class="page-title display">用户管理</h1>
         <div class="page-meta mono">USER MANAGEMENT · {{ users.length }} 位用户</div>
       </div>
-      <button class="btn-primary btn-sm">+ 添加用户</button>
+      <button class="btn btn-primary btn-sm">+ 添加用户</button>
     </div>
 
     <div class="stat-row">
@@ -37,8 +37,8 @@
             <td><span class="status-badge" :class="u.statusClass">{{ u.statusText }}</span></td>
             <td class="mono">{{ u.createTime }}</td>
             <td>
-              <button class="btn-ghost btn-sm">编辑</button>
-              <button class="btn-ghost btn-sm btn-danger" style="margin-left:4px">禁用</button>
+              <button class="btn btn-ghost btn-sm">编辑</button>
+              <button class="btn btn-ghost btn-sm btn-danger" style="margin-left:4px">禁用</button>
             </td>
           </tr>
         </tbody>
@@ -154,53 +154,6 @@ const filteredUsers = computed(() => {
 .status-dim {
   background: rgba(139, 115, 85, 0.12);
   color: #8B7355;
-}
-.btn-primary {
-  background: linear-gradient(135deg, #C9A86C 0%, #B8956A 100%);
-  color: #FFF;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.3);
-}
-.btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(201, 168, 108, 0.4);
-}
-.btn-primary:active {
-  transform: translateY(0);
-}
-.btn-sm {
-  padding: 8px 16px;
-  font-size: 13px;
-}
-.btn-ghost {
-  background: transparent;
-  color: #8B7355;
-  border: 1px solid #E8E2D9;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn-ghost:hover {
-  background: rgba(201, 168, 108, 0.1);
-  border-color: #C9A86C;
-  color: #C9A86C;
-}
-.btn-danger {
-  color: #C47A6E;
-  border-color: rgba(196, 122, 110, 0.3);
-}
-.btn-danger:hover {
-  background: rgba(196, 122, 110, 0.1);
-  border-color: #C47A6E;
-  color: #C47A6E;
 }
 table {
   width: 100%;

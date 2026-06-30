@@ -14,7 +14,7 @@
           <el-option label="待执行" value="pending" />
           <el-option label="异常" value="abnormal" />
         </el-select>
-        <button class="btn-primary btn-sm" @click="showCreateDialog = true">+ 新建任务</button>
+        <button class="btn btn-primary btn-sm" @click="showCreateDialog = true">+ 新建任务</button>
       </div>
     </div>
 
@@ -48,7 +48,7 @@
               </span>
             </td>
             <td>
-              <router-link to="/app/flight-control" class="btn-ghost btn-sm">详情</router-link>
+              <router-link to="/app/flight-control" class="btn btn-ghost btn-sm">详情</router-link>
             </td>
           </tr>
         </tbody>
@@ -251,59 +251,6 @@ onMounted(() => {
   color: #5D4E37;
 }
 
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  background: transparent;
-  border: 1px solid #E8E2D9;
-  color: #5D4E37;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  text-decoration: none;
-}
-
-.btn-ghost:hover {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.08);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.15);
-}
-
-.btn-sm {
-  padding: 6px 14px;
-  font-size: 12px;
-}
-
 table {
   width: 100%;
   border-collapse: separate;
@@ -447,33 +394,5 @@ tr:last-child td:last-child {
 
 :deep(.el-input__inner) {
   color: #5D4E37;
-}
-
-:deep(.el-button--default) {
-  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
-  border: 1px solid #E8E2D9;
-  color: #5D4E37;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.el-button--default:hover) {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.05);
-}
-
-:deep(.el-button--primary) {
-  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
 }
 </style>

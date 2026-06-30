@@ -6,7 +6,7 @@
         <h1 class="page-title display">运行仪表盘</h1>
         <div class="page-meta mono">DASHBOARD · {{ currentDate }} · {{ currentUser.name }}</div>
       </div>
-      <button class="btn-ghost btn-sm" @click="refreshData">
+      <button class="btn btn-ghost btn-sm" @click="refreshData">
         <span>↻</span> 刷新
       </button>
     </div>
@@ -68,7 +68,7 @@
     <!-- 最近任务 -->
     <Panel title="最近任务">
       <template #actions>
-        <router-link to="/app/mission-list" class="btn-ghost btn-sm">查看全部 →</router-link>
+        <router-link to="/app/mission-list" class="btn btn-ghost btn-sm">查看全部 →</router-link>
       </template>
       <table>
         <thead>

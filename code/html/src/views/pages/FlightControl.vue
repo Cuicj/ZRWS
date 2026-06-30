@@ -54,13 +54,13 @@
 
     <!-- 控制按钮 -->
     <div class="control-row">
-      <button class="btn-primary" @click="startFlight" :disabled="flightStatus === 'flying'">
+      <button class="btn btn-primary" @click="startFlight" :disabled="flightStatus === 'flying'">
         ▶ 开始采集
       </button>
-      <button class="btn-ghost" @click="pauseFlight" :disabled="flightStatus !== 'flying'">
+      <button class="btn btn-ghost" @click="pauseFlight" :disabled="flightStatus !== 'flying'">
         ⏸ 暂停
       </button>
-      <button class="btn-ghost" @click="returnHome" :disabled="flightStatus === 'standby'">
+      <button class="btn btn-ghost" @click="returnHome" :disabled="flightStatus === 'standby'">
         ↩ 返航
       </button>
     </div>
@@ -202,53 +202,5 @@ const returnHome = () => { flightStatus.value = 'returning'; };
   background: #F0F7EB;
   color: #67C23A;
   border: 1px solid #C8E6C9;
-}
-.btn-primary {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, #C9A86C 0%, #D4B97E 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(201, 168, 108, 0.4);
-}
-.btn-primary:active:not(:disabled) {
-  transform: translateY(0);
-}
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.btn-ghost {
-  padding: 12px 24px;
-  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
-  color: #5D4E37;
-  border: 1px solid #E8E2D9;
-  border-radius: 12px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  box-shadow: 0 2px 8px rgba(139, 115, 85, 0.12);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.btn-ghost:hover:not(:disabled) {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.2);
-}
-.btn-ghost:active:not(:disabled) {
-  transform: translateY(0);
-}
-.btn-ghost:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 </style>

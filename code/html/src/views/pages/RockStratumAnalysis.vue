@@ -14,7 +14,7 @@
             :value="a.analysisId"
           />
         </el-select>
-        <button class="btn-primary btn-sm">+ 新建分析</button>
+        <button class="btn btn-primary btn-sm">+ 新建分析</button>
       </div>
     </div>
 

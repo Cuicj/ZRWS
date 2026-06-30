@@ -6,15 +6,15 @@
         <div class="page-meta mono">WORKFLOW DESIGN · 拖拽绘制 → 保存审核 → 发布部署</div>
       </div>
       <div class="page-actions">
-        <button class="btn-ghost btn-sm" @click="createNew">📄 新建</button>
+        <button class="btn btn-ghost btn-sm" @click="createNew">📄 新建</button>
         <el-select v-model="selectedDraft" placeholder="加载草稿" size="small" style="width:160px" @change="loadDraft">
           <el-option v-for="d in drafts" :key="d.processKey" :label="d.processName + ' (' + d.processKey + ')'" :value="d.processKey" />
         </el-select>
-        <button class="btn-ghost btn-sm" @click="saveDraft">💾 保存草稿</button>
-        <button class="btn-ghost btn-sm" @click="submitReview">📝 提交审核</button>
-        <button class="btn-primary btn-sm" @click="deployFlow">🚀 部署到引擎</button>
+        <button class="btn btn-ghost btn-sm" @click="saveDraft">💾 保存草稿</button>
+        <button class="btn btn-ghost btn-sm" @click="submitReview">📝 提交审核</button>
+        <button class="btn btn-primary btn-sm" @click="deployFlow">🚀 部署到引擎</button>
         <el-dropdown @command="handleCommand">
-          <button class="btn-ghost btn-sm">
+          <button class="btn btn-ghost btn-sm">
             ⚙ 更多
             <el-icon style="margin-left:4px"><arrow-down /></el-icon>
           </button>
@@ -269,7 +269,7 @@
             <td><span class="status-badge status-ok">已部署</span></td>
             <td class="mono">{{ p.deployTime }}</td>
             <td>
-              <button class="btn-ghost btn-sm" @click="loadProcess(p.key)">加载</button>
+              <button class="btn btn-ghost btn-sm" @click="loadProcess(p.key)">加载</button>
             </td>
           </tr>
         </tbody>
@@ -1301,49 +1301,5 @@ onMounted(() => {
 
 :deep(.mono) {
   color: #8B7355;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #C9A86C 0%, #B8956A 100%);
-  color: #FFFFFF;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #D4B57A 0%, #C9A86C 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-.btn-primary:active {
-  transform: translateY(0);
-}
-
-.btn-ghost {
-  background: linear-gradient(135deg, #FFFFFF 0%, #FAFAF8 100%);
-  color: #5D4E37;
-  border: 1px solid #E8E2D9;
-  padding: 7px 15px;
-  border-radius: 8px;
-  font-size: 13px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-ghost:hover {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.08);
-}
-
-.btn-sm {
-  padding: 6px 12px;
-  font-size: 12px;
 }
 </style>

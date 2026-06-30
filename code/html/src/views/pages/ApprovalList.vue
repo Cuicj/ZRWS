@@ -26,7 +26,7 @@
             <td><span class="status-badge" :class="getStatusClass(a.status)">{{ getStatusText(a.status) }}</span></td>
             <td class="mono">{{ a.createTime }}</td>
             <td>
-              <button class="btn-ghost btn-sm" @click="openApproval(a)">审批</button>
+              <button class="btn btn-ghost btn-sm" @click="openApproval(a)">审批</button>
             </td>
           </tr>
         </tbody>
@@ -194,35 +194,6 @@ tr:last-child td:last-child {
   border: 1px solid #E0E0E0;
 }
 
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  background: transparent;
-  border: 1px solid #E8E2D9;
-  color: #5D4E37;
-  cursor: pointer;
-  border-radius: 10px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-ghost:hover {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.08);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.15);
-}
-
-.btn-sm {
-  padding: 5px 12px;
-  font-size: 11px;
-}
-
 .mono {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-size: 12px;
@@ -310,47 +281,5 @@ tr:last-child td:last-child {
 :deep(.el-textarea__inner:focus) {
   border-color: #C9A86C;
   box-shadow: 0 2px 8px rgba(201, 168, 108, 0.2);
-}
-
-:deep(.el-button--default) {
-  background: linear-gradient(135deg, #FAFAF8 0%, #F5F2ED 100%);
-  border: 1px solid #E8E2D9;
-  color: #5D4E37;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.el-button--default:hover) {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.05);
-}
-
-:deep(.el-button--primary) {
-  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.el-button--primary:hover) {
-  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-:deep(.el-button--danger) {
-  background: linear-gradient(135deg, #EF5350 0%, #E57373 100%);
-  border: none;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(239, 83, 80, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-:deep(.el-button--danger:hover) {
-  background: linear-gradient(135deg, #E53935 0%, #EF5350 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(239, 83, 80, 0.4);
 }
 </style>

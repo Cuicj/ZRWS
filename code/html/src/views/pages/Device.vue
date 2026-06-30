@@ -5,7 +5,7 @@
         <h1 class="page-title display">设备管理</h1>
         <div class="page-meta mono">DEVICE · {{ overview.total }} 台设备</div>
       </div>
-      <button class="btn-primary btn-sm">+ 添加设备</button>
+      <button class="btn btn-primary btn-sm">+ 添加设备</button>
     </div>
 
     <div class="stat-row">
@@ -69,7 +69,7 @@
             <td>{{ s.model }}</td>
             <td class="mono">{{ s.calibrateTime }}</td>
             <td><span class="status-badge" :class="s.statusClass">{{ s.statusText }}</span></td>
-            <td><button class="btn-ghost btn-sm">校准</button></td>
+            <td><button class="btn btn-ghost btn-sm">校准</button></td>
           </tr>
         </tbody>
       </table>
@@ -278,58 +278,6 @@ tr:last-child td {
   color: #E65100;
   border: 1px solid #FFCC80;
   box-shadow: 0 2px 6px rgba(230, 81, 0, 0.1);
-}
-
-.btn-primary {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 10px 20px;
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
-  color: #fff;
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, #B89855 0%, #C9A86C 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-.btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 18px;
-  font-family: inherit;
-  font-size: 12px;
-  font-weight: 500;
-  background: transparent;
-  border: 1px solid #E8E2D9;
-  color: #5D4E37;
-  cursor: pointer;
-  border-radius: 8px;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-ghost:hover {
-  border-color: #C9A86C;
-  color: #C9A86C;
-  background: rgba(201, 168, 108, 0.08);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.15);
-}
-
-.btn-sm {
-  padding: 6px 14px;
-  font-size: 12px;
 }
 
 .mono {
