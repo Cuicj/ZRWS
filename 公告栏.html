@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>智壤卫士 - 土地资源公告栏</title>
+  <style>
+    :root {
+      --bg: #F5F2ED;
+      --card-bg: #FAFAF8;
+      --ink: #2C261E;
+      --ink-light: #3D3528;
+      --muted: #8B7355;
+      --muted-light: #A09080;
+      --rule: #E8E2D9;
+      --accent: #C9A86C;
+      --accent-dark: #B8956A;
+      --hero-start: #5D4E37;
+      --hero-end: #C9A86C;
+      --tag-top: #FF6C37;
+      --tag-hot: #ff4b4b;
+      --tag-rec: #6CA878;
+      --level-province: #C96C6C;
+      --level-city: #B8956A;
+      --level-county: #6CA878;
+      --level-township: #6C8CC9;
+      --shadow: rgba(139, 115, 85, 0.08);
+      --shadow-hover: rgba(139, 115, 85, 0.15);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      font-family: 'PingFang SC', 'Microsoft YaHei', -apple-system, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* ===================== HEADER ===================== */
+    .site-header {
+      background: var(--ink);
+      color: #fff;
+      padding: 0.8rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    }
+
+    .site-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--accent-dark) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .site-brand {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .site-brand .name {
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    .site-brand .sub {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      letter-spacing: 0.1em;
+    }
+
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .header-time {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      font-family: 'SF Mono', 'Consolas', monospace;
+    }
+
+    .header-link {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .header-link:hover {
+      color: var(--accent);
+    }
+
+    /* ===================== HERO ===================== */
+    .hero {
+      background: linear-gradient(135deg, var(--hero-start) 0%, #7A6548 50%, var(--hero-end) 100%);
+      padding: 4rem 2rem 3.5rem;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(201,168,108,0.4) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .hero-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.9;
+      margin-bottom: 1.25rem;
+    }
+
+    .label-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--tag-top);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    .hero-title {
+      font-size: 2.25rem;
+      font-weight: 700;
+      line-height: 1.4;
+      margin-bottom: 1rem;
+      max-width: 800px;
+      cursor: pointer;
+    }
+
+    .hero-summary {
+      font-size: 0.95rem;
+      line-height: 1.8;
+      opacity: 0.85;
+      max-width: 700px;
+      margin-bottom: 1.5rem;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 500;
+    }
+
+    .meta-tag.category {
+      background: rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(10px);
+    }
+
+    .meta-tag.level {
+      background: rgba(255, 108, 55, 0.9);
+    }
+
+    .meta-text {
+      font-size: 0.75rem;
+      opacity: 0.8;
+    }
+
+    .read-more-btn {
+      background: #fff;
+      color: var(--hero-start);
+      border: none;
+      padding: 10px 24px;
+      border-radius: 24px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      margin-left: auto;
+    }
+
+    .read-more-btn:hover {
+      background: var(--tag-top);
+      color: #fff;
+      transform: translateX(3px);
+    }
+
+    .hero-sub {
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .sub-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      transition: opacity 0.2s;
+      padding: 0.5rem;
+      border-radius: 8px;
+    }
+
+    .sub-item:hover {
+      background: rgba(255,255,255,0.1);
+    }
+
+    .sub-tag {
+      padding: 4px 10px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+      font-size: 0.65rem;
+      flex-shrink: 0;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .sub-title {
+      flex: 1;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sub-time {
+      font-size: 0.7rem;
+      opacity: 0.7;
+      flex-shrink: 0;
+      font-family: 'SF Mono', monospace;
+    }
+
+    /* ===================== CATEGORY NAV ===================== */
+    .category-nav {
+      background: var(--card-bg);
+      border-bottom: 1px solid var(--rule);
+      position: sticky;
+      top: 56px;
+      z-index: 90;
+      box-shadow: 0 2px 8px var(--shadow);
+    }
+
+    .category-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem;
+      display: flex;
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 1rem 1.25rem;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .cat-btn:hover {
+      color: var(--ink);
+      background: var(--bg);
+    }
+
+    .cat-btn.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+
+    .cat-icon {
+      font-size: 1rem;
+    }
+
+    /* ===================== MAIN ===================== */
+    .main-wrapper {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 2rem;
+    }
+
+    /* List Header */
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+    }
+
+    .list-tabs {
+      display: flex;
+    }
+
+    .list-tab {
+      padding: 8px 18px;
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: var(--muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .list-tab:hover { color: var(--ink); }
+    .list-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .search-box {
+      display: flex;
+      align-items: center;
+      background: var(--card-bg);
+      border: 1px solid var(--rule);
+      border-radius: 24px;
+      padding: 4px 6px 4px 16px;
+      transition: border-color 0.2s;
+    }
+
+    .search-box:focus-within { border-color: var(--accent); }
+    .search-input {
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 0.8rem;
+      color: var(--ink);
+      width: 180px;
+    }
+
+    .search-btn {
+      background: var(--accent);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background 0.2s;
+    }
+
+    .search-btn:hover { background: var(--accent-dark); }
+
+    /* News List */
+    .news-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .news-item {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      gap: 1.25rem;
+      background: var(--card-bg);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .news-item:hover {
+      border-color: #D4C8B8;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 24px var(--shadow-hover);
+    }
+
+    .news-cover {
+      width: 220px;
+      height: 140px;
+      border-radius: 12px;
+      overflow: hidden;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--rule) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .news-cover img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .cover-icon {
+      font-size: 3rem;
+      opacity: 0.5;
+    }
+
+    .news-body {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .news-tags {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .tag.primary { background: rgba(201,168,108,0.15); color: var(--accent-dark); }
+    .tag.level-PROVINCE { background: rgba(201,108,108,0.15); color: var(--level-province); }
+    .tag.level-CITY { background: rgba(201,168,108,0.2); color: var(--level-city); }
+    .tag.level-COUNTY { background: rgba(108,168,120,0.15); color: var(--level-county); }
+    .tag.level-TOWNSHIP { background: rgba(108,140,201,0.15); color: var(--level-township); }
+    .tag.top { background: rgba(255,108,55,0.15); color: var(--tag-top); }
+    .tag.hot { background: rgba(255,75,75,0.15); color: var(--tag-hot); }
+    .tag.recommend { background: rgba(108,168,120,0.15); color: var(--tag-rec); }
+
+    .news-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--ink);
+      line-height: 1.5;
+      margin-bottom: 8px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .news-summary {
+      font-size: 0.8rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 12px;
+      flex: 1;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .news-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.75rem;
+      color: var(--muted-light);
+    }
+
+    .author { color: var(--muted); font-weight: 500; }
+    .dot { opacity: 0.5; }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.75rem;
+      color: var(--muted-light);
+    }
+
+    .land-type {
+      padding: 3px 10px;
+      background: var(--bg);
+      border-radius: 6px;
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .empty-list {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: var(--muted-light);
+    }
+
+    .empty-icon { font-size: 3rem; display: block; margin-bottom: 1rem; }
+
+    /* ===================== SIDEBAR ===================== */
+    .news-side {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    .side-card {
+      background: var(--card-bg);
+      border: 1px solid var(--rule);
+      border-radius: 16px;
+      padding: 1.25rem;
+    }
+
+    .side-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid #F0EBE3;
+    }
+
+    .side-icon { font-size: 1.1rem; }
+    .side-title { font-size: 0.9rem; font-weight: 600; color: var(--ink); }
+
+    .rank-list { display: flex; flex-direction: column; }
+    .rank-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 6px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .rank-item:hover { background: var(--bg); }
+
+    .rank-num {
+      width: 20px;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--muted-light);
+      background: var(--bg);
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    .rank-num.top {
+      background: linear-gradient(135deg, var(--tag-top) 0%, #FF8F5E 100%);
+      color: #fff;
+    }
+
+    .rank-title {
+      flex: 1;
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      line-height: 1.5;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .rank-views {
+      font-size: 0.7rem;
+      color: var(--muted-light);
+      flex-shrink: 0;
+      font-family: 'SF Mono', monospace;
+    }
+
+    .recommend-list { display: flex; flex-direction: column; gap: 10px; }
+    .recommend-item {
+      display: flex;
+      gap: 10px;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 10px;
+      transition: background 0.2s;
+    }
+
+    .recommend-item:hover { background: var(--bg); }
+
+    .rec-cover {
+      width: 56px;
+      height: 56px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--rule) 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rec-icon { font-size: 1.5rem; opacity: 0.5; }
+    .rec-body { flex: 1; min-width: 0; }
+
+    .rec-title {
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      line-height: 1.5;
+      margin: 0 0 4px 0;
+      font-weight: 500;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .rec-time {
+      font-size: 0.7rem;
+      color: var(--muted-light);
+    }
+
+    .land-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .land-tag {
+      padding: 6px 12px;
+      background: var(--bg);
+      border: 1px solid var(--rule);
+      border-radius: 20px;
+      font-size: 0.75rem;
+      color: var(--muted);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .land-tag:hover { border-color: var(--accent); color: var(--accent); }
+    .land-tag.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+    .tag-count { font-size: 0.65rem; opacity: 0.8; font-family: 'SF Mono', monospace; }
+
+    .stats-grid-mini {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-mini {
+      text-align: center;
+      padding: 1rem 8px;
+      background: var(--bg);
+      border-radius: 12px;
+    }
+
+    .stat-num {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--accent);
+      font-family: 'Courier New', monospace;
+    }
+
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* ===================== DETAIL MODAL ===================== */
+    .detail-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(44, 38, 30, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .detail-modal {
+      background: #fff;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 800px;
+      max-height: 88vh;
+      position: relative;
+      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.3);
+      animation: slideUp 0.3s ease;
+      overflow: hidden;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .close-btn {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      width: 36px;
+      height: 36px;
+      border: none;
+      background: var(--bg);
+      border-radius: 50%;
+      font-size: 1.5rem;
+      color: var(--muted);
+      cursor: pointer;
+      z-index: 10;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .close-btn:hover { background: var(--rule); color: var(--ink); }
+
+    .detail-scroll {
+      max-height: 88vh;
+      overflow-y: auto;
+    }
+
+    .detail-article { padding: 2.5rem 3rem; }
+
+    .article-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--rule); }
+
+    .article-tags { display: flex; gap: 8px; margin-bottom: 1rem; }
+    .article-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--ink);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .article-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+      flex-wrap: wrap;
+    }
+
+    .article-summary {
+      margin-top: 1.25rem;
+      padding: 1rem 1.25rem;
+      background: var(--bg);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+    }
+
+    .summary-label {
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .article-summary p {
+      margin: 8px 0 0 0;
+      font-size: 0.875rem;
+      color: var(--ink-light);
+      line-height: 1.8;
+    }
+
+    .article-content {
+      font-size: 0.95rem;
+      line-height: 2;
+      color: var(--ink-light);
+      margin-bottom: 2rem;
+      white-space: pre-wrap;
+    }
+
+    .article-footer { border-top: 1px solid var(--rule); padding-top: 1.5rem; }
+
+    .footer-actions { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+
+    .action-btn {
+      padding: 10px 20px;
+      border: 1px solid var(--rule);
+      background: #fff;
+      border-radius: 12px;
+      font-size: 0.875rem;
+      color: var(--ink-light);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 500;
+    }
+
+    .action-btn:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--shadow-hover);
+    }
+
+    .action-btn.like {
+      background: linear-gradient(135deg, var(--tag-top) 0%, #FF8F5E 100%);
+      border-color: var(--tag-top);
+      color: #fff;
+    }
+
+    .footer-keywords {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 1.25rem;
+    }
+
+    .kw-label { font-size: 0.8rem; color: var(--muted); }
+    .kw-tag {
+      padding: 4px 12px;
+      background: var(--bg);
+      border-radius: 16px;
+      font-size: 0.75rem;
+      color: var(--muted);
+    }
+
+    .footer-ai-summary {
+      background: linear-gradient(135deg, rgba(201,168,108,0.08) 0%, rgba(184,149,106,0.08) 100%);
+      border: 1px solid rgba(201,168,108,0.2);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .ai-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent-dark);
+      margin-bottom: 8px;
+    }
+
+    .footer-ai-summary p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: var(--ink-light);
+      line-height: 1.8;
+    }
+
+    /* ===================== LOAD MORE ===================== */
+    .load-more {
+      margin-top: 2rem;
+      text-align: center;
+    }
+
+    .load-more-btn {
+      padding: 12px 48px;
+      background: var(--card-bg);
+      border: 1px solid var(--rule);
+      border-radius: 24px;
+      color: var(--muted);
+      font-size: 0.875rem;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .load-more-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+    /* ===================== FOOTER ===================== */
+    .site-footer {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: var(--ink);
+      color: rgba(255,255,255,0.6);
+      text-align: center;
+      font-size: 0.8rem;
+    }
+
+    .footer-brand {
+      font-size: 1rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+    }
+
+    /* ===================== RESPONSIVE ===================== */
+    @media (max-width: 900px) {
+      .content-grid { grid-template-columns: 1fr; }
+      .news-side { order: -1; }
+      .news-item { grid-template-columns: 180px 1fr; }
+      .news-cover { width: 180px; height: 120px; }
+      .hero-title { font-size: 1.75rem; }
+      .hero-sub { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 600px) {
+      .site-header { padding: 0.6rem 1rem; }
+      .header-right { display: none; }
+      .hero { padding: 2.5rem 1rem 2rem; }
+      .hero-title { font-size: 1.4rem; }
+      .category-inner { padding: 0 1rem; overflow-x: auto; }
+      .main-wrapper { padding: 1.5rem 1rem; }
+      .news-item { grid-template-columns: 1fr; }
+      .news-cover { width: 100%; height: 180px; }
+      .detail-article { padding: 1.5rem; }
+      .article-title { font-size: 1.3rem; }
+    }
+
+    .mono { font-family: 'SF Mono', 'Courier New', monospace; }
+  </style>
+</head>
+<body>
+
+<!-- ==================== SITE HEADER ==================== -->
+<header class="site-header">
+  <div class="site-logo">🌱</div>
+  <div class="site-brand">
+    <span class="name">智壤卫士</span>
+    <span class="sub">土地资源公告栏</span>
+  </div>
+  <div class="header-right">
+    <span class="header-time" id="currentTime"></span>
+    <a href="#" class="header-link">关于我们</a>
+    <a href="#" class="header-link">联系我们</a>
+  </div>
+</header>
+
+<!-- ==================== HERO ==================== -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-label mono">
+      <span class="label-dot"></span>
+      头条 · 置顶公告
+    </div>
+    <div id="heroHeadline">
+      <!-- Dynamic content -->
+    </div>
+    <div id="heroSub" class="hero-sub">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+</section>
+
+<!-- ==================== CATEGORY NAV ==================== -->
+<nav class="category-nav">
+  <div class="category-inner" id="categoryNav">
+    <!-- Dynamic content -->
+  </div>
+</nav>
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main-wrapper">
+  <div class="content-grid">
+    <!-- Left: News List -->
+    <div class="news-main">
+      <div class="list-header">
+        <div class="list-tabs" id="listTabs">
+          <button class="list-tab active" data-sort="latest">最新发布</button>
+          <button class="list-tab" data-sort="hot">热门阅读</button>
+          <button class="list-tab" data-sort="recommend">编辑推荐</button>
+        </div>
+        <div class="search-box">
+          <input type="text" class="search-input" placeholder="搜索公告..." id="searchInput" />
+          <button class="search-btn" onclick="handleSearch()">🔍</button>
+        </div>
+      </div>
+      <div class="news-list" id="newsList">
+        <!-- Dynamic content -->
+      </div>
+      <div class="load-more" id="loadMore">
+        <button class="load-more-btn" onclick="loadMore()">加载更多</button>
+      </div>
+    </div>
+
+    <!-- Right: Sidebar -->
+    <aside class="news-side">
+      <!-- Hot Rank -->
+      <div class="side-card">
+        <div class="side-head">
+          <span class="side-icon">🔥</span>
+          <span class="side-title">热门排行</span>
+        </div>
+        <div class="rank-list" id="hotRank">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+
+      <!-- Recommend -->
+      <div class="side-card">
+        <div class="side-head">
+          <span class="side-icon">⭐</span>
+          <span class="side-title">编辑推荐</span>
+        </div>
+        <div class="recommend-list" id="recommendList">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+
+      <!-- Land Type Filter -->
+      <div class="side-card">
+        <div class="side-head">
+          <span class="side-icon">🌱</span>
+          <span class="side-title">土地类型</span>
+        </div>
+        <div class="land-tags" id="landTags">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="side-card">
+        <div class="side-head">
+          <span class="side-icon">📊</span>
+          <span class="side-title">数据统计</span>
+        </div>
+        <div class="stats-grid-mini" id="statsGrid">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+    </aside>
+  </div>
+</div>
+
+<!-- ==================== DETAIL MODAL ==================== -->
+<div class="detail-overlay" id="detailOverlay" style="display:none" onclick="closeDetail(event)">
+  <div class="detail-modal" onclick="event.stopPropagation()">
+    <button class="close-btn" onclick="closeDetail()">×</button>
+    <div class="detail-scroll" id="detailContent">
+      <!-- Dynamic content -->
+    </div>
+  </div>
+</div>
+
+<!-- ==================== FOOTER ==================== -->
+<footer class="site-footer">
+  <div class="footer-brand">智壤卫士</div>
+  <p>© 2025 智壤卫士 - 土地资源公告栏 | 无人机地形数据采集与土质分析社会服务平台</p>
+</footer>
+
+<script>
+  // ============ DATA ============
+  // 部署时自动检测路径，支持独立部署和主系统部署
+  const API_BASE = (function() {
+    // 优先使用主系统API
+    const mainApi = '/api/v1';
+    // 公告栏独立API（通过nginx代理）
+    const tzApi = '/TZ/api/v1';
+    // 检测当前域名下是否存在主系统API
+    return mainApi; // 默认使用主系统API
+  })();
+
+  const CATEGORY_ICONS = {
+    '政策法规': '📜', '通知公告': '📢', '土地新闻': '🗞️',
+    '行业动态': '📈', '技术指南': '🔬', '市场信息': '💹'
+  };
+
+  const LEVEL_NAMES = {
+    'PROVINCE': '省级', 'CITY': '市级', 'COUNTY': '县级', 'TOWNSHIP': '乡级'
+  };
+
+  let allData = [];
+  let categories = [];
+  let currentCategory = null;
+  let currentSort = 'latest';
+  let currentLandType = null;
+
+  // ============ MOCK DATA ============
+  const MOCK_CATEGORIES = [
+    { categoryId: 1, categoryName: '政策法规' },
+    { categoryId: 2, categoryName: '通知公告' },
+    { categoryId: 3, categoryName: '土地新闻' },
+    { categoryId: 4, categoryName: '行业动态' },
+    { categoryId: 5, categoryName: '技术指南' },
+    { categoryId: 6, categoryName: '市场信息' }
+  ];
+
+  const MOCK_DATA = [
+    {
+      announcementId: 1, title: '湖南省自然资源厅关于进一步加强耕地保护工作的实施意见',
+      summary: '为深入贯彻党中央、国务院关于耕地保护的决策部署，坚决守住耕地保护红线，保障国家粮食安全，结合我省实际，现就进一步加强耕地保护工作提出如下实施意见...',
+      content: '一、总体要求\n以习近平新时代中国特色社会主义思想为指导，全面贯彻党的二十大精神，牢固树立耕地保护优先理念，落实最严格的耕地保护制度。\n\n二、主要任务\n（一）严格耕地用途管制。严禁违规占用耕地从事非农建设，严格控制耕地转为林地、草地、园地等其他农用地。\n（二）强化耕地占补平衡。严格执行占用耕地补偿制度，确保补充耕地数量相等、质量相当。\n（三）推进高标准农田建设。2025年计划建成高标准农田400万亩，提升耕地质量等级。\n\n三、保障措施\n各级党委政府要切实履行耕地保护主体责任，将耕地保护工作纳入绩效考核重要内容。',
+      categoryId: 1, categoryName: '政策法规', adminLevel: 'PROVINCE', province: '湖南省', city: '长沙市',
+      author: '湖南省自然资源厅', source: '湖南省自然资源厅官网', isTop: 1, isRecommend: 1, isHot: 1,
+      viewCount: 8652, likeCount: 328, landType: '农田', publishTime: new Date(Date.now() - 2*60*60*1000).toISOString(),
+      keywords: '耕地保护,占补平衡,高标准农田', aiSummary: '湖南省自然资源厅发布关于进一步加强耕地保护工作的实施意见，明确严格耕地用途管制、强化占补平衡、推进高标准农田建设等主要任务。'
+    },
+    {
+      announcementId: 2, title: '长沙市2025年度土地整治项目实施方案发布',
+      summary: '长沙市自然资源和规划局正式发布2025年度土地整治项目实施方案，计划实施土地整治项目23个，总投资约12.8亿元...',
+      content: '一、项目概况\n2025年全市计划实施土地整治项目23个，涉及长沙县、望城区、浏阳市、宁乡市等区县（市），总投资约12.8亿元。\n\n二、建设内容\n1. 农用地整理：整治面积约5.2万亩，增加有效耕地面积3000亩\n2. 建设用地整理：实施城乡建设用地增减挂钩项目8个\n3. 生态修复：开展矿山生态修复项目3个',
+      categoryId: 2, categoryName: '通知公告', adminLevel: 'CITY', province: '湖南省', city: '长沙市',
+      author: '长沙市自然资源和规划局', source: '长沙市自然资源和规划局', isTop: 1, isRecommend: 1, isHot: 1,
+      viewCount: 5432, likeCount: 215, landType: '农田', publishTime: new Date(Date.now() - 5*60*60*1000).toISOString(),
+      keywords: '土地整治,增减挂钩,生态修复', aiSummary: '长沙市发布2025年度土地整治实施方案，计划投资12.8亿元实施23个项目，涵盖农用地整理、建设用地整理和生态修复。'
+    },
+    {
+      announcementId: 3, title: '长沙县耕地质量等级调查评价工作启动',
+      summary: '长沙县农业农村局启动全县耕地质量等级调查评价工作，将对全县68万亩耕地进行全面采样检测和等级评定...',
+      content: '长沙县农业农村局近日启动全县耕地质量等级调查评价工作。\n\n本次调查评价将覆盖全县18个乡镇（街道），涉及耕地面积约68万亩。工作内容包括土壤样品采集、理化性状检测、耕地质量等级评定等。',
+      categoryId: 3, categoryName: '土地新闻', adminLevel: 'COUNTY', province: '湖南省', city: '长沙市', county: '长沙县',
+      author: '长沙县农业农村局', source: '长沙县人民政府', isTop: 1, isRecommend: 0, isHot: 1,
+      viewCount: 3210, likeCount: 156, landType: '农田', publishTime: new Date(Date.now() - 10*60*60*1000).toISOString(),
+      keywords: '耕地质量,土壤检测,调查评价', aiSummary: '长沙县启动68万亩耕地质量等级调查评价，分三阶段进行，为耕地保护和高标准农田建设提供科学依据。'
+    },
+    {
+      announcementId: 4, title: '全国土壤普查工作进展：已完成外业调查采样85%',
+      summary: '第三次全国土壤普查工作取得阶段性进展，截至目前已完成外业调查采样任务的85%，预计2025年底全面完成...',
+      content: '第三次全国土壤普查工作取得阶段性进展。\n\n截至2025年6月底，全国已完成外业调查采样任务的85%，其中湖南省完成率达92%，位居全国前列。',
+      categoryId: 4, categoryName: '行业动态', adminLevel: 'PROVINCE', province: '湖南省',
+      author: '自然资源部', source: '自然资源部官网', isTop: 0, isRecommend: 1, isHot: 1,
+      viewCount: 12890, likeCount: 567, landType: '综合', publishTime: new Date(Date.now() - 1*24*60*60*1000).toISOString(),
+      keywords: '土壤普查,调查采样,土壤质量', aiSummary: '第三次全国土壤普查完成85%，湖南92%领先全国，普查将为耕地保护、农业发展、生态建设提供基础数据。'
+    },
+    {
+      announcementId: 5, title: '土壤有机质含量快速检测技术指南',
+      summary: '本文详细介绍土壤有机质含量的几种快速检测方法，包括灼烧法、比色法、近红外光谱法等的操作要点和注意事项...',
+      content: '土壤有机质是土壤肥力的核心指标之一，快速准确地检测土壤有机质含量对农业生产和土壤管理具有重要意义。\n\n一、灼烧法\n原理：土壤有机质在高温下氧化分解，通过测定灼烧前后的质量差计算有机质含量。\n优点：操作简单，成本低\n缺点：精度一般，耗时较长\n\n二、比色法\n原理：有机质与重铬酸钾反应后溶液颜色变化与有机质含量正相关。\n优点：检测速度快，适合批量检测\n缺点：需要标准曲线校准\n\n三、近红外光谱法\n原理：利用近红外光谱仪扫描土壤样品，通过模型预测有机质含量。\n优点：快速无损，可同时检测多个指标\n缺点：设备成本高，需要建模',
+      categoryId: 5, categoryName: '技术指南', adminLevel: 'CITY', province: '湖南省', city: '长沙市',
+      author: '智壤卫士技术团队', source: '原创', isTop: 0, isRecommend: 1, isHot: 1,
+      viewCount: 6543, likeCount: 389, landType: '农田', publishTime: new Date(Date.now() - 2*24*60*60*1000).toISOString(),
+      keywords: '有机质,检测技术,近红外光谱', aiSummary: '详细介绍土壤有机质三种快速检测方法：灼烧法、比色法、近红外光谱法，分别适用于不同场景和精度要求。'
+    },
+    {
+      announcementId: 6, title: '2025年湖南省土地流转市场分析报告',
+      summary: '2025年上半年湖南省农村土地经营权流转面积达2480万亩，流转率41.2%，耕地流转均价约800元/亩·年...',
+      content: '一、流转规模\n全省农村土地经营权流转面积达2480万亩，流转率41.2%，较上年同期提高2.3个百分点。\n\n二、流转价格\n耕地流转均价约800元/亩·年，其中：\n- 长株潭地区：1000-1200元/亩·年\n- 洞庭湖地区：700-900元/亩·年\n- 湘西山区：400-600元/亩·年',
+      categoryId: 6, categoryName: '市场信息', adminLevel: 'PROVINCE', province: '湖南省',
+      author: '湖南省农村经营管理服务站', source: '湖南省农业农村厅', isTop: 0, isRecommend: 1, isHot: 0,
+      viewCount: 4567, likeCount: 234, landType: '农田', publishTime: new Date(Date.now() - 3*24*60*60*1000).toISOString(),
+      keywords: '土地流转,市场分析,规模经营', aiSummary: '湖南土地流转面积达2480万亩，流转率41.2%，长株潭价格最高，5年以上长期流转占比提升至45%。'
+    },
+    {
+      announcementId: 7, title: '望城区农村宅基地改革试点工作推进会召开',
+      summary: '望城区召开农村宅基地制度改革试点工作推进会，总结改革经验，部署下一阶段重点任务...',
+      content: '望城区近日召开农村宅基地制度改革试点工作推进会。\n\n会议指出，望城区作为全国农村宅基地制度改革试点区，两年来取得了阶段性成效：\n- 完成宅基地确权登记发证98%\n- 建立宅基地有偿使用制度\n- 盘活闲置宅基地2300余宗\n- 增加村集体收入1.2亿元',
+      categoryId: 2, categoryName: '通知公告', adminLevel: 'COUNTY', province: '湖南省', city: '长沙市', county: '望城区',
+      author: '望城区农业农村局', source: '望城区人民政府', isTop: 0, isRecommend: 0, isHot: 1,
+      viewCount: 2345, likeCount: 128, landType: '建设用地', publishTime: new Date(Date.now() - 4*24*60*60*1000).toISOString(),
+      keywords: '宅基地,改革试点,三权分置', aiSummary: '望城区宅基地改革试点成效显著，确权发证98%，盘活闲置宅基地2300余宗，增加村集体收入1.2亿元。'
+    },
+    {
+      announcementId: 8, title: '土壤pH值对作物生长的影响及调节措施',
+      summary: '土壤pH值是影响土壤肥力和作物生长的重要因素，本文详细介绍不同pH值对作物的影响及常用调节方法...',
+      content: '土壤pH值是土壤酸碱度的量化指标，对土壤养分有效性、微生物活性、作物生长都有重要影响。\n\n一、pH值对养分有效性的影响\n- 氮素：pH6-8时有效性最高\n- 磷素：pH6.5-7.5时有效性最高\n- 钾素：pH6-7.5时有效性最高\n\n二、主要作物适宜pH范围\n- 水稻：5.5-7.0\n- 小麦：6.0-7.5\n- 玉米：6.0-7.5',
+      categoryId: 5, categoryName: '技术指南', adminLevel: 'CITY', province: '湖南省', city: '长沙市',
+      author: '智壤卫士技术团队', source: '原创', isTop: 0, isRecommend: 1, isHot: 1,
+      viewCount: 7890, likeCount: 456, landType: '农田', publishTime: new Date(Date.now() - 5*24*60*60*1000).toISOString(),
+      keywords: 'pH值,土壤改良,养分有效性', aiSummary: '详细介绍土壤pH对养分有效性的影响、主要作物适宜pH范围，以及酸性/碱性土壤的调节措施。'
+    }
+  ];
+
+  // ============ UTILITIES ============
+  function formatDate(time) {
+    if (!time) return '';
+    const date = new Date(time);
+    const now = new Date();
+    const diff = now - date;
+    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    if (days === 0) return '今天';
+    if (days === 1) return '昨天';
+    if (days < 7) return `${days}天前`;
+    return date.toLocaleDateString('zh-CN');
+  }
+
+  function formatDateTime(time) {
+    if (!time) return '';
+    return new Date(time).toLocaleString('zh-CN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+  }
+
+  function getLevelName(code) { return LEVEL_NAMES[code] || '未分类'; }
+  function getCategoryIcon(name) { return CATEGORY_ICONS[name] || '📰'; }
+
+  function buildTags(item) {
+    let html = `<span class="tag primary">${item.categoryName}</span>`;
+    html += `<span class="tag level-${item.adminLevel}">${getLevelName(item.adminLevel)}</span>`;
+    if (item.isTop) html += `<span class="tag top">置顶</span>`;
+    if (item.isHot) html += `<span class="tag hot">热门</span>`;
+    if (item.isRecommend) html += `<span class="tag recommend">推荐</span>`;
+    return html;
+  }
+
+  // ============ RENDER ============
+  function renderHero() {
+    const topItems = allData.filter(n => n.isTop);
+    const headline = document.getElementById('heroHeadline');
+    const sub = document.getElementById('heroSub');
+
+    if (topItems.length === 0) {
+      headline.innerHTML = '<p style="opacity:0.7;font-size:0.9rem;">暂无置顶公告</p>';
+      sub.innerHTML = '';
+      return;
+    }
+
+    const main = topItems[0];
+    headline.innerHTML = `
+      <h1 class="hero-title" onclick="openDetail(${main.announcementId})">${main.title}</h1>
+      <p class="hero-summary">${main.summary || main.aiSummary}</p>
+      <div class="hero-meta">
+        <span class="meta-tag category">${main.categoryName}</span>
+        <span class="meta-tag level">${getLevelName(main.adminLevel)}</span>
+        <span class="meta-text mono">${formatDate(main.publishTime)}</span>
+        <span class="meta-text">👁️ ${main.viewCount || 0}</span>
+        <button class="read-more-btn" onclick="openDetail(${main.announcementId})">阅读全文 →</button>
+      </div>`;
+
+    if (topItems.length > 1) {
+      sub.innerHTML = topItems.slice(1, 3).map(item => `
+        <div class="sub-item" onclick="openDetail(${item.announcementId})">
+          <span class="sub-tag">${item.categoryName}</span>
+          <span class="sub-title">${item.title}</span>
+          <span class="sub-time">${formatDate(item.publishTime)}</span>
+        </div>`).join('');
+    } else {
+      sub.innerHTML = '';
+    }
+  }
+
+  function renderCategories() {
+    const nav = document.getElementById('categoryNav');
+    nav.innerHTML = `<button class="cat-btn ${!currentCategory ? 'active' : ''}" onclick="selectCategory(null)">
+      <span class="cat-icon">📰</span><span class="cat-name">全部</span>
+    </button>` +
+    categories.map(c => `
+      <button class="cat-btn ${currentCategory === c.categoryId ? 'active' : ''}" onclick="selectCategory(${c.categoryId})">
+        <span class="cat-icon">${getCategoryIcon(c.categoryName)}</span>
+        <span class="cat-name">${c.categoryName}</span>
+      </button>`).join('');
+  }
+
+  function renderList() {
+    const list = document.getElementById('newsList');
+    let items = [...allData];
+
+    // Category filter
+    if (currentCategory) {
+      items = items.filter(n => n.categoryId === currentCategory);
+    }
+
+    // Sort
+    if (currentSort === 'hot') {
+      items.sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0));
+    } else if (currentSort === 'recommend') {
+      items = items.filter(n => n.isRecommend);
+    }
+
+    // Land type filter
+    if (currentLandType) {
+      items = items.filter(n => n.landType === currentLandType);
+    }
+
+    if (items.length === 0) {
+      list.innerHTML = '<div class="empty-list"><span class="empty-icon">📭</span><p>暂无相关公告</p></div>';
+      return;
+    }
+
+    list.innerHTML = items.map(item => `
+      <div class="news-item" onclick="openDetail(${item.announcementId})">
+        <div class="news-cover">
+          <span class="cover-icon">${getCategoryIcon(item.categoryName)}</span>
+        </div>
+        <div class="news-body">
+          <div class="news-tags">${buildTags(item)}</div>
+          <h3 class="news-title">${item.title}</h3>
+          <p class="news-summary">${item.summary || item.aiSummary}</p>
+          <div class="news-footer">
+            <div class="footer-left">
+              <span class="author">${item.author || item.source || '智壤卫士'}</span>
+              <span class="dot">·</span>
+              <span class="mono">${formatDate(item.publishTime)}</span>
+            </div>
+            <div class="footer-right">
+              <span>👁️ ${item.viewCount || 0}</span>
+              <span>👍 ${item.likeCount || 0}</span>
+              ${item.landType ? `<span class="land-type">${item.landType}</span>` : ''}
+            </div>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderHotRank() {
+    const el = document.getElementById('hotRank');
+    const hot = allData.filter(n => n.isHot).sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0)).slice(0, 8);
+    el.innerHTML = hot.map((item, i) => `
+      <div class="rank-item" onclick="openDetail(${item.announcementId})">
+        <span class="rank-num ${i < 3 ? 'top' : ''}">${i + 1}</span>
+        <span class="rank-title">${item.title}</span>
+        <span class="rank-views mono">${item.viewCount || 0}</span>
+      </div>`).join('');
+  }
+
+  function renderRecommend() {
+    const el = document.getElementById('recommendList');
+    const rec = allData.filter(n => n.isRecommend).slice(0, 5);
+    el.innerHTML = rec.map(item => `
+      <div class="recommend-item" onclick="openDetail(${item.announcementId})">
+        <div class="rec-cover"><span class="rec-icon">${getCategoryIcon(item.categoryName)}</span></div>
+        <div class="rec-body">
+          <h4 class="rec-title">${item.title}</h4>
+          <span class="rec-time mono">${formatDate(item.publishTime)}</span>
+        </div>
+      </div>`).join('');
+  }
+
+  function renderLandTags() {
+    const el = document.getElementById('landTags');
+    const landTypes = [...new Set(allData.filter(n => n.landType).map(n => n.landType))];
+    el.innerHTML = landTypes.map(type => `
+      <span class="land-tag ${currentLandType === type ? 'active' : ''}" onclick="filterLandType('${type}')">
+        ${type}<span class="tag-count">${allData.filter(n => n.landType === type).length}</span>
+      </span>`).join('');
+  }
+
+  function renderStats() {
+    const el = document.getElementById('statsGrid');
+    el.innerHTML = `
+      <div class="stat-mini">
+        <div class="stat-num">${allData.length}</div>
+        <div class="stat-label">全部公告</div>
+      </div>
+      <div class="stat-mini">
+        <div class="stat-num">${allData.filter(n => {
+          const d = new Date(n.publishTime);
+          const now = new Date();
+          return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+        }).length}</div>
+        <div class="stat-label">本月新增</div>
+      </div>`;
+  }
+
+  // ============ ACTIONS ============
+  function selectCategory(id) {
+    currentCategory = currentCategory === id ? null : id;
+    renderCategories();
+    renderList();
+  }
+
+  function filterLandType(type) {
+    currentLandType = currentLandType === type ? null : type;
+    renderLandTags();
+    renderList();
+  }
+
+  function handleSearch() {
+    const kw = document.getElementById('searchInput').value.trim();
+    if (!kw) {
+      loadData();
+      return;
+    }
+    allData = MOCK_DATA.filter(n =>
+      n.title.includes(kw) || (n.summary && n.summary.includes(kw)) || (n.keywords && n.keywords.includes(kw))
+    );
+    renderHero();
+    renderList();
+  }
+
+  function openDetail(id) {
+    const item = allData.find(n => n.announcementId === id);
+    if (!item) return;
+    document.getElementById('detailContent').innerHTML = `
+      <article class="detail-article">
+        <header class="article-header">
+          <div class="article-tags">${buildTags(item)}</div>
+          <h1 class="article-title">${item.title}</h1>
+          <div class="article-meta">
+            <span>${item.author || '智壤卫士编辑部'}</span>
+            <span class="dot">·</span>
+            <span class="mono">${formatDateTime(item.publishTime)}</span>
+            <span class="dot">·</span>
+            <span>阅读 ${item.viewCount || 0}</span>
+            ${item.source ? `<span class="dot">·</span><span>${item.source}</span>` : ''}
+          </div>
+          ${item.summary ? `
+          <div class="article-summary">
+            <span class="summary-label">摘要</span>
+            <p>${item.summary}</p>
+          </div>` : ''}
+        </header>
+        <div class="article-content">${item.content}</div>
+        <footer class="article-footer">
+          <div class="footer-actions">
+            <button class="action-btn like" onclick="handleLike(${item.announcementId})">👍 点赞 (${(item.likeCount || 0) + (item._liked ? 1 : 0)})</button>
+            <button class="action-btn">🔗 分享</button>
+          </div>
+          ${item.aiKeywords ? `
+          <div class="footer-keywords">
+            <span class="kw-label">关键词：</span>
+            ${item.aiKeywords.split(',').map(k => `<span class="kw-tag">${k.trim()}</span>`).join('')}
+          </div>` : ''}
+          ${item.aiSummary ? `
+          <div class="footer-ai-summary">
+            <div class="ai-head"><span>🤖</span><span>AI智能摘要</span></div>
+            <p>${item.aiSummary}</p>
+          </div>` : ''}
+        </footer>
+      </article>`;
+    document.getElementById('detailOverlay').style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeDetail(e) {
+    if (e && e.target !== e.currentTarget) return;
+    document.getElementById('detailOverlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  function handleLike(id) {
+    const item = allData.find(n => n.announcementId === id);
+    if (item) {
+      item._liked = true;
+      openDetail(id); // Re-render
+    }
+  }
+
+  function loadMore() {
+    // Placeholder for pagination
+  }
+
+  // ============ INIT ============
+  function updateTime() {
+    document.getElementById('currentTime').textContent = new Date().toLocaleString('zh-CN', {
+      year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit'
+    });
+  }
+
+  async function loadData() {
+    try {
+      const [topRes, hotRes, recRes, catRes, listRes] = await Promise.all([
+        fetch(`${API_BASE}/announcement/top`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`${API_BASE}/announcement/hot`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`${API_BASE}/announcement/recommend`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`${API_BASE}/announcement/category`).then(r => r.json()).catch(() => ({ success: false })),
+        fetch(`${API_BASE}/announcement/list`).then(r => r.json()).catch(() => ({ success: false }))
+      ]);
+
+      if (listRes.success && listRes.list?.length) {
+        allData = listRes.list;
+      } else {
+        allData = MOCK_DATA;
+      }
+
+      if (catRes.success && catRes.list?.length) {
+        categories = catRes.list;
+      } else {
+        categories = MOCK_CATEGORIES;
+      }
+    } catch (e) {
+      console.warn('API请求失败，使用Mock数据');
+      allData = MOCK_DATA;
+      categories = MOCK_CATEGORIES;
+    }
+
+    renderHero();
+    renderCategories();
+    renderList();
+    renderHotRank();
+    renderRecommend();
+    renderLandTags();
+    renderStats();
+  }
+
+  // Tab listeners
+  document.getElementById('listTabs').addEventListener('click', e => {
+    if (e.target.classList.contains('list-tab')) {
+      document.querySelectorAll('.list-tab').forEach(t => t.classList.remove('active'));
+      e.target.classList.add('active');
+      currentSort = e.target.dataset.sort;
+      renderList();
+    }
+  });
+
+  // Search enter
+  document.getElementById('searchInput').addEventListener('keyup', e => {
+    if (e.key === 'Enter') handleSearch();
+  });
+
+  // ESC close modal
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeDetail();
+  });
+
+  // Init
+  updateTime();
+  setInterval(updateTime, 1000);
+  loadData();
+</script>
+</body>
+</html>

@@ -5,7 +5,7 @@
         <h1 class="page-title display">公告管理</h1>
         <div class="page-meta mono">ANNOUNCEMENT · {{ announcements.length }} 条公告</div>
       </div>
-      <button class="btn-primary btn-sm" @click="showCreate = true">+ 发布公告</button>
+      <button class="btn btn-primary btn-sm" @click="showCreate = true">+ 发布公告</button>
     </div>
 
     <div class="stat-row">
@@ -44,9 +44,9 @@
             <td>{{ a.publisher }}</td>
             <td class="mono">{{ a.publishTime }}</td>
             <td>
-              <button class="btn-ghost btn-sm">编辑</button>
-              <button class="btn-ghost btn-sm" style="margin-left:4px">查看</button>
-              <button class="btn-ghost btn-sm btn-danger" style="margin-left:4px">删除</button>
+              <button class="btn btn-ghost btn-sm">编辑</button>
+              <button class="btn btn-ghost btn-sm" style="margin-left:4px">查看</button>
+              <button class="btn btn-ghost btn-sm btn-danger" style="margin-left:4px">删除</button>
             </td>
           </tr>
         </tbody>
@@ -150,5 +150,4 @@ const publish = () => {
 .cat-system { background: rgba(74, 144, 226, 0.15); color: #4a90e2; }
 .cat-business { background: rgba(116, 192, 116, 0.15); color: #74c074; }
 .cat-maintenance { background: rgba(230, 162, 60, 0.15); color: #e6a23c; }
-.btn-danger { color: #e74c3c; }
 </style>

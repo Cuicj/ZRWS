@@ -58,6 +58,29 @@ export function getCategories() {
   });
 }
 
+export function getCategoryList() {
+  return request({
+    url: '/v1/announcement/category',
+    method: 'get'
+  });
+}
+
+export function getAnnouncementsByCategory(categoryId) {
+  return request({
+    url: '/v1/announcement/list',
+    method: 'get',
+    params: { categoryId }
+  });
+}
+
+export function searchAnnouncements(keyword) {
+  return request({
+    url: '/v1/announcement/list',
+    method: 'get',
+    params: { keyword }
+  });
+}
+
 export function getAdminLevels() {
   return request({
     url: '/v1/announcement/admin-levels',

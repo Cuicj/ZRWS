@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -26,6 +27,15 @@ import java.util.stream.Collectors;
 @Slf4j
 @Service
 public class AnnouncementService {
+
+    private static final String CACHE_PREFIX = "announcement:";
+    private static final String CACHE_LIST_PREFIX = CACHE_PREFIX + "list:";
+    private static final String CACHE_DETAIL_PREFIX = CACHE_PREFIX + "detail:";
+    private static final String CACHE_TOP_KEY = CACHE_PREFIX + "top";
+    private static final String CACHE_RECOMMEND_KEY = CACHE_PREFIX + "recommend";
+    private static final String CACHE_HOT_KEY = CACHE_PREFIX + "hot";
+    private static final String CACHE_LATEST_PREFIX = CACHE_PREFIX + "latest:";
+    private static final long CACHE_EXPIRE_HOURS = 24;
 
     @Autowired
     private AnnouncementMapper announcementMapper;
@@ -38,6 +48,9 @@ public class AnnouncementService {
 
     @Autowired
     private ObjectMapper objectMapper;
+
+    @Autowired
+    private RedisService redisService;
 
     // ============================================================
     // 分类管理
@@ -74,44 +87,132 @@ public class AnnouncementService {
     // 公告管理
     // ============================================================
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getPublishedAnnouncements() {
-        return announcementMapper.selectPublished();
+        String cacheKey = CACHE_LIST_PREFIX + "all";
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", cacheKey);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectPublished();
+        redisService.set(cacheKey, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getAnnouncementsByCategory(Long categoryId) {
-        return announcementMapper.selectByCategory(categoryId);
+        String cacheKey = CACHE_LIST_PREFIX + "category:" + categoryId;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", cacheKey);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectByCategory(categoryId);
+        redisService.set(cacheKey, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getTopAnnouncements() {
-        return announcementMapper.selectTop();
+        Object cached = redisService.get(CACHE_TOP_KEY);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", CACHE_TOP_KEY);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectTop();
+        redisService.set(CACHE_TOP_KEY, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getRecommendAnnouncements() {
-        return announcementMapper.selectRecommend();
+        Object cached = redisService.get(CACHE_RECOMMEND_KEY);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", CACHE_RECOMMEND_KEY);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectRecommend();
+        redisService.set(CACHE_RECOMMEND_KEY, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getHotAnnouncements() {
-        return announcementMapper.selectHot();
+        Object cached = redisService.get(CACHE_HOT_KEY);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", CACHE_HOT_KEY);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectHot();
+        redisService.set(CACHE_HOT_KEY, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
     public List<Announcement> getPendingAnnouncements() {
         return announcementMapper.selectPending();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> getLatestAnnouncements(int limit) {
-        return announcementMapper.selectLatest(limit);
+        String cacheKey = CACHE_LATEST_PREFIX + limit;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", cacheKey);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.selectLatest(limit);
+        redisService.set(cacheKey, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
     public List<Announcement> getTodayAnnouncements() {
         return announcementMapper.selectToday();
     }
 
+    @SuppressWarnings("unchecked")
     public List<Announcement> searchAnnouncements(String keyword) {
-        return announcementMapper.searchByKeyword(keyword);
+        String cacheKey = CACHE_LIST_PREFIX + "search:" + (keyword != null ? keyword : "");
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", cacheKey);
+            return convertToList(cached);
+        }
+        List<Announcement> list = announcementMapper.searchByKeyword(keyword);
+        redisService.set(cacheKey, list, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        return list;
     }
 
     public Announcement getAnnouncementById(Long id) {
-        return announcementMapper.selectById(id);
+        String cacheKey = CACHE_DETAIL_PREFIX + id;
+        Object cached = redisService.get(cacheKey);
+        if (cached != null) {
+            log.debug("Redis缓存命中: {}", cacheKey);
+            return objectMapper.convertValue(cached, Announcement.class);
+        }
+        Announcement announcement = announcementMapper.selectById(id);
+        if (announcement != null) {
+            redisService.set(cacheKey, announcement, CACHE_EXPIRE_HOURS, TimeUnit.HOURS);
+        }
+        return announcement;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Announcement> convertToList(Object obj) {
+        if (obj instanceof List) {
+            List<?> list = (List<?>) obj;
+            List<Announcement> result = new ArrayList<>();
+            for (Object item : list) {
+                result.add(objectMapper.convertValue(item, Announcement.class));
+            }
+            return result;
+        }
+        return Collections.emptyList();
+    }
+
+    private void clearAnnouncementCache() {
+        redisService.deleteByPrefix(CACHE_PREFIX);
+        log.info("已清除公告相关Redis缓存");
     }
 
     @Transactional
@@ -126,22 +227,28 @@ public class AnnouncementService {
             announcement.setCommentCount(0);
             announcementMapper.insert(announcement);
         }
+        clearAnnouncementCache();
         return announcement;
     }
 
     @Transactional
     public void deleteAnnouncement(Long announcementId) {
         announcementMapper.deleteById(announcementId);
+        clearAnnouncementCache();
     }
 
     @Transactional
     public void viewAnnouncement(Long announcementId) {
         announcementMapper.incrementViewCount(announcementId);
+        String cacheKey = CACHE_DETAIL_PREFIX + announcementId;
+        redisService.delete(cacheKey);
     }
 
     @Transactional
     public void likeAnnouncement(Long announcementId) {
         announcementMapper.incrementLikeCount(announcementId);
+        String cacheKey = CACHE_DETAIL_PREFIX + announcementId;
+        redisService.delete(cacheKey);
     }
 
     // ============================================================
@@ -172,6 +279,8 @@ public class AnnouncementService {
         audit.setAuditorName(operatorName);
         audit.setAuditTime(LocalDateTime.now());
         auditMapper.insert(audit);
+
+        clearAnnouncementCache();
     }
 
     /**
@@ -198,6 +307,8 @@ public class AnnouncementService {
         audit.setAuditorName(auditorName);
         audit.setAuditTime(LocalDateTime.now());
         auditMapper.insert(audit);
+
+        clearAnnouncementCache();
     }
 
     /**
@@ -226,6 +337,8 @@ public class AnnouncementService {
         audit.setAuditorName(auditorName);
         audit.setAuditTime(LocalDateTime.now());
         auditMapper.insert(audit);
+
+        clearAnnouncementCache();
     }
 
     /**
@@ -252,6 +365,8 @@ public class AnnouncementService {
         audit.setAuditorName(operatorName);
         audit.setAuditTime(LocalDateTime.now());
         auditMapper.insert(audit);
+
+        clearAnnouncementCache();
     }
 
     /**
@@ -278,6 +393,8 @@ public class AnnouncementService {
         audit.setAuditorName(operatorName);
         audit.setAuditTime(LocalDateTime.now());
         auditMapper.insert(audit);
+
+        clearAnnouncementCache();
     }
 
     /**
@@ -355,6 +472,7 @@ public class AnnouncementService {
         announcementMapper.updateById(announcement);
         log.info("AI分析完成: 公告ID={}, 行政级别={}", announcementId, announcement.getAdminLevel());
 
+        clearAnnouncementCache();
         return announcement;
     }
 
