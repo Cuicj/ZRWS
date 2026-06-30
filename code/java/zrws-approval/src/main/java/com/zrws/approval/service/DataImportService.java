@@ -274,6 +274,16 @@ public class DataImportService {
             response.setTotalRows(dataRows.size());
 
             Map<String, String> soilFieldMapping = buildSoilFieldMapping(dataRows.get(0).keySet());
+            
+            List<DataImportResponse.FieldMapping> fieldMappingList = new ArrayList<>();
+            for (Map.Entry<String, String> entry : soilFieldMapping.entrySet()) {
+                DataImportResponse.FieldMapping fm = new DataImportResponse.FieldMapping();
+                fm.setExcelColumn(entry.getKey());
+                fm.setTargetField(entry.getValue());
+                fm.setMappingType("AUTO");
+                fm.setConfidence(0.8);
+                fieldMappingList.add(fm);
+            }
 
             DataImportBatch batch = createSoilImportBatch(request, dataRows.size());
             response.setBatchId(batch.getBatchId());
@@ -322,7 +332,7 @@ public class DataImportService {
             response.setSkippedRows(0);
             response.setDuration((System.currentTimeMillis() - startTime) / 1000.0);
             response.setDetails(details);
-            response.setFieldMapping(soilFieldMapping);
+            response.setFieldMapping(fieldMappingList);
 
         } catch (Exception e) {
             log.error("土壤数据导入失败", e);
