@@ -377,7 +377,7 @@ public class DailyDataGenerator {
         task.setApplicantDept(depts[random.nextInt(depts.length)]);
         task.setCurStep(steps[index]);
         task.setCurStepKey(stepKeys[index]);
-        task.setStatus(ApprovalTask.Status.PROCESSING.name());
+        task.setStatus("PROCESSING");
         task.setPriority(random.nextInt(1, 3));
         task.setBizData("{}");
         task.setSlaDeadline(LocalDateTime.now().plusDays(2));

@@ -1,4 +1,43 @@
-package com.zrws.approval.service;
+#!/usr/bin/env python3
+"""修复服务器上的POI图表导入问题"""
+
+import paramiko
+import sys
+
+HOST = '8.163.137.149'
+PORT = 22
+USERNAME = 'root'
+PASSWORD = 'Test_admin'
+
+def exec_cmd(client, cmd, timeout=60):
+    """执行远程命令"""
+    print(f"$ {cmd}")
+    stdin, stdout, stderr = client.exec_command(cmd, timeout=timeout, get_pty=True)
+    output = stdout.read().decode('utf-8')
+    err = stderr.read().decode('utf-8')
+    if output:
+        print(output)
+    if err:
+        print(f"[stderr] {err}")
+    exit_code = stdout.channel.recv_exit_status()
+    return exit_code, output
+
+def main():
+    client = paramiko.SSHClient()
+    client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+
+    try:
+        print("连接到服务器...")
+        client.connect(HOST, PORT, USERNAME, PASSWORD, timeout=30)
+
+        FILE_PATH = "/root/workspace/ZRWS/code/java/zrws-approval/src/main/java/com/zrws/approval/service/DataExportService.java"
+
+        # 备份原文件
+        print("\n备份原文件...")
+        exec_cmd(client, f"cp {FILE_PATH} {FILE_PATH}.bak")
+
+        # 创建修复后的文件内容
+        fixed_content = '''package com.zrws.approval.service;
 
 import cn.hutool.core.date.DateUtil;
 import com.alibaba.excel.EasyExcel;
@@ -18,6 +57,20 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.xddf.usermodel.chart.ChartTypes;
+import org.apache.poi.xddf.usermodel.chart.AxisPosition;
+import org.apache.poi.xddf.usermodel.chart.LegendPosition;
+import org.apache.poi.xddf.usermodel.chart.XDDFChartLegend;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryAxis;
+import org.apache.poi.xddf.usermodel.chart.XDDFValueAxis;
+import org.apache.poi.xddf.usermodel.chart.XDDFCategoryDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFNumericalDataSource;
+import org.apache.poi.xddf.usermodel.chart.XDDFDataSourcesFactory;
+import org.apache.poi.xddf.usermodel.chart.XDDFLineChartData;
+import org.apache.poi.xddf.usermodel.chart.XDDFPieChartData;
+import org.apache.poi.xssf.usermodel.XSSFChart;
+import org.apache.poi.xssf.usermodel.XSSFClientAnchor;
+import org.apache.poi.xssf.usermodel.XSSFDrawing;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -428,9 +481,6 @@ public class DataExportService {
             row.createCell(2).setCellValue(sample.getOrganicMatter() != null ? sample.getOrganicMatter() : 0);
         }
 
-        // 图表功能暂时禁用（POI 5.x XDDF API需要额外配置）
-        // 如需启用图表功能，请在pom.xml中添加 poi-ooxml-lite 依赖
-        /*
         XSSFDrawing drawing = sheet.createDrawingPatriarch();
         XSSFClientAnchor anchor = drawing.createAnchor(0, 0, 0, 0, 5, 1, 15, 15);
 
@@ -465,7 +515,6 @@ public class DataExportService {
         omSeries.setSmooth(true);
 
         chart.plot(lineData);
-        */
 
         int textureDataStart = 25;
         Row textureChartHeader = sheet.createRow(textureDataStart);
@@ -483,7 +532,6 @@ public class DataExportService {
             row.createCell(1).setCellValue(entry.getValue().doubleValue());
         }
 
-        /*
         XSSFDrawing pieDrawing = sheet.createDrawingPatriarch();
         XSSFClientAnchor pieAnchor = pieDrawing.createAnchor(0, 0, 0, 0, 5, 20, 15, 35);
 
@@ -505,7 +553,6 @@ public class DataExportService {
         pieData.addSeries(pieCategories, pieValues);
 
         pieChart.plot(pieData);
-        */
     }
 
     private void createCell(Row row, int column, Object value, CellStyle style) {
@@ -595,3 +642,28 @@ public class DataExportService {
                String.format("%04d", new Random().nextInt(10000));
     }
 }
+'''
+
+        print("\n修复 POI 图表导入问题...")
+
+        # 使用cat和heredoc来写入文件
+        cmd = f'''cat > {FILE_PATH} << 'JAVAEOF'
+{fixed_content}
+JAVAEOF'''
+        exit_code, output = exec_cmd(client, cmd)
+
+        if exit_code == 0:
+            print("文件已更新")
+        else:
+            print(f"更新失败: {output}")
+            sys.exit(1)
+
+        print("\n修复完成!")
+        client.close()
+
+    except Exception as e:
+        print(f"错误: {e}")
+        sys.exit(1)
+
+if __name__ == '__main__':
+    main()

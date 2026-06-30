@@ -35,6 +35,24 @@ public class DataImportResponse {
     /** 导入耗时(秒) */
     private Double duration;
 
+    /** 错误信息 */
+    private String errorMessage;
+
+    /** 字段映射 */
+    private List<?> fieldMappings;
+
+    /** 字段映射详情 */
+    private List<FieldMapping> fieldMapping;
+
+    /** 数据预览 */
+    private List<Map<String, Object>> dataPreview;
+
+    /** AI分析结果 */
+    private Object aiAnalysis;
+
+    /** 验证摘要 */
+    private Object validationSummary;
+
     /** 导入详情 */
     private List<ImportDetail> details;
 
@@ -67,6 +85,21 @@ public class DataImportResponse {
         private Map<String, Integer> errorTypeStats;
         /** 错误行详情 */
         private List<ErrorRow> errorRows;
+    }
+
+    /**
+     * 字段映射
+     */
+    @Data
+    public static class FieldMapping {
+        /** Excel列名 */
+        private String excelColumn;
+        /** 目标字段名 */
+        private String targetField;
+        /** 映射类型 */
+        private String mappingType;
+        /** 置信度 */
+        private Double confidence;
     }
 
     /**
