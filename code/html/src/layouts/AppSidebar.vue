@@ -101,6 +101,7 @@ const defaultMenus = [
     items: [
       { path: 'land-map', name: '土地地图', icon: '◍' },
       { path: 'announcement-board', name: '公告栏', icon: '📰' },
+      { path: 'geo-standard', name: '地质标准库', icon: '📋' },
       { path: 'soil-classify', name: '土质分类', icon: '✦' },
       { path: 'disaster-risk', name: '灾害风险', icon: '◬' },
       { path: 'area-calc', name: '面积计算', icon: '◭' }
@@ -127,7 +128,9 @@ const defaultMenus = [
       { path: 'user-manage', name: '用户管理', icon: '◉' },
       { path: 'role-manage', name: '角色管理', icon: '◆' },
       { path: 'sys-config', name: '系统配置', icon: '⚙' },
-      { path: 'announcement', name: '公告管理', icon: '✉' }
+      { path: 'announcement', name: '公告管理', icon: '✉' },
+      { path: 'open-api', name: '对外接口', icon: '🔌' },
+      { path: 'api-playground', name: 'API调试', icon: '⚡' }
     ]
   }
 ];

@@ -102,6 +102,12 @@ const routes = [
         meta: { group: '土地资源', title: '土地地图', icon: '◍' }
       },
       {
+        path: 'geo-standard',
+        name: 'GeoStandard',
+        component: () => import('@/views/pages/GeoStandard.vue'),
+        meta: { group: '土地资源', title: '地质标准库', icon: '📋' }
+      },
+      {
         path: 'soil-classify',
         name: 'SoilClassify',
         component: () => import('@/views/pages/SoilClassify.vue'),
@@ -216,6 +222,14 @@ const routes = [
         name: 'OpenApiManage',
         component: () => import('@/views/pages/OpenApiManage.vue'),
         meta: { group: '系统', title: '对外接口', icon: '🔌' }
+      },
+
+      // API调试工具
+      {
+        path: 'api-playground',
+        name: 'ApiPlayground',
+        component: () => import('@/views/pages/ApiPlayground.vue'),
+        meta: { group: '系统', title: 'API调试', icon: '⚡' }
       }
     ]
   },

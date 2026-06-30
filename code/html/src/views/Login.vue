@@ -354,26 +354,18 @@ onMounted(() => {
 .login-btn {
   width: 100%;
   height: 44px;
-  background: linear-gradient(135deg, var(--sand-500) 0%, var(--sand-400) 100%);
-  color: #fff;
   font-family: var(--font-mono);
   letter-spacing: 0.05em;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  border: none;
-  border-radius: var(--radius-md);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.3);
-  transition: all var(--transition-normal);
   font-size: 14px;
   font-weight: 500;
 }
 
 .login-btn:hover {
-  background: linear-gradient(135deg, var(--sand-600) 0%, var(--sand-500) 100%);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(201, 168, 108, 0.4);
 }
 
 .btn-arrow {

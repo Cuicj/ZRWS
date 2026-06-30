@@ -11,7 +11,7 @@
         <a class="nav-link active" href="#modules">模块</a>
         <a class="nav-link" href="#specs">规范</a>
         <router-link class="nav-link" to="/login">登录</router-link>
-        <router-link class="nav-cta" to="/app/dashboard">进入工作台 →</router-link>
+        <router-link class="btn btn-primary" to="/app/dashboard">进入工作台 →</router-link>
       </nav>
     </header>
 
@@ -46,8 +46,8 @@
           为土地确权、地灾评估与高标准农田建设提供一站式数据中台。
         </p>
         <div class="hero-actions">
-          <router-link class="btn-primary" to="/app/dashboard">进入工作台</router-link>
-          <a class="btn-ghost" href="#modules">浏览模块 ↓</a>
+          <router-link class="btn btn-primary" to="/app/dashboard">进入工作台</router-link>
+          <a class="btn btn-ghost" href="#modules">浏览模块 ↓</a>
         </div>
       </div>
       <div class="hero-stats">
@@ -312,25 +312,6 @@ const modules = ref([
   border-bottom-color: var(--sand-500);
 }
 
-.nav-cta {
-  font-family: var(--font-mono);
-  font-size: 12px;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, var(--sand-500) 0%, var(--sand-400) 100%);
-  color: #fff;
-  text-decoration: none;
-  letter-spacing: 0.05em;
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-cta:hover {
-  background: linear-gradient(135deg, var(--sand-600) 0%, var(--sand-500) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
 /* Hero */
 .hero {
   position: relative;
@@ -432,43 +413,6 @@ const modules = ref([
 .hero-actions {
   display: flex;
   gap: var(--s-3);
-}
-
-.btn-primary {
-  padding: 12px 28px;
-  background: linear-gradient(135deg, var(--sand-500) 0%, var(--sand-400) 100%);
-  color: #fff;
-  font-family: var(--font-mono);
-  font-size: 13px;
-  text-decoration: none;
-  letter-spacing: 0.05em;
-  border-radius: var(--radius-md);
-  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, var(--sand-600) 0%, var(--sand-500) 100%);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
-}
-
-.btn-ghost {
-  padding: 12px 28px;
-  border: 1px solid var(--ink-600);
-  color: var(--signal);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  text-decoration: none;
-  border-radius: var(--radius-md);
-  background: rgba(255, 255, 255, 0.5);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.btn-ghost:hover {
-  border-color: var(--sand-500);
-  color: var(--sand-500);
-  background: rgba(201, 168, 108, 0.08);
 }
 
 .hero-stats {
