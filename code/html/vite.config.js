@@ -18,10 +18,10 @@ export default defineConfig({
     port: 5173,
     open: '/#/login',
     proxy: {
-      '/api': {
+      '/approval/api': {
         target: 'http://localhost:5571/approval',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
+        rewrite: (path) => path.replace(/^\/approval\/api/, '/api')
       }
     }
   },

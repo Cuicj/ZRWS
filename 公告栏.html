@@ -98,11 +98,27 @@
       font-size: 0.85rem;
       color: rgba(255,255,255,0.7);
       text-decoration: none;
-      transition: color 0.2s;
+      transition: all 0.2s;
     }
 
     .header-link:hover {
       color: var(--accent);
+    }
+
+    .header-link.back-main {
+      padding: 6px 14px;
+      border-radius: 20px;
+      background: rgba(201, 168, 108, 0.2);
+      border: 1px solid rgba(201, 168, 108, 0.4);
+      color: #fff;
+      font-weight: 500;
+    }
+
+    .header-link.back-main:hover {
+      background: rgba(201, 168, 108, 0.35);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateX(-2px);
     }
 
     /* ===================== HERO ===================== */
@@ -949,9 +965,8 @@
     <span class="sub">土地资源公告栏</span>
   </div>
   <div class="header-right">
+    <a href="https://www.zrws.cloud" class="header-link back-main">← 返回主系统</a>
     <span class="header-time" id="currentTime"></span>
-    <a href="#" class="header-link">关于我们</a>
-    <a href="#" class="header-link">联系我们</a>
   </div>
 </header>
 

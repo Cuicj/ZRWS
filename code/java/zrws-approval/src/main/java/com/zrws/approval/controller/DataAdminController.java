@@ -1,7 +1,7 @@
 package com.zrws.approval.controller;
 
 import com.zrws.approval.config.MockDataInitializer;
-import com.zrws.approval.scheduler.DailyDataScheduler;
+import com.zrws.approval.task.DailyDataGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class DataAdminController {
     private MockDataInitializer mockDataInitializer;
 
     @Autowired
-    private DailyDataScheduler dailyDataScheduler;
+    private DailyDataGenerator dailyDataGenerator;
 
     @PostMapping("/init-business-data")
     public ResponseEntity<Map<String, Object>> initBusinessData() {
@@ -43,13 +43,31 @@ public class DataAdminController {
     public ResponseEntity<Map<String, Object>> generateDailyData() {
         Map<String, Object> result = new HashMap<>();
         try {
-            dailyDataScheduler.generateDailyData();
+            dailyDataGenerator.generateDailyData();
             result.put("success", true);
             result.put("message", "每日数据生成完成");
             log.info("[数据管理] 手动执行每日数据生成");
             return ResponseEntity.ok(result);
         } catch (Exception e) {
             log.error("[数据管理] 每日数据生成失败", e);
+            result.put("success", false);
+            result.put("error", e.getMessage());
+            return ResponseEntity.badRequest().body(result);
+        }
+    }
+
+    @PostMapping("/generate-all-data")
+    public ResponseEntity<Map<String, Object>> generateAllData() {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            mockDataInitializer.run(null);
+            dailyDataGenerator.generateDailyData();
+            result.put("success", true);
+            result.put("message", "全部数据生成完成（初始化 + 每日数据）");
+            log.info("[数据管理] 手动执行全部数据生成");
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
+            log.error("[数据管理] 全部数据生成失败", e);
             result.put("success", false);
             result.put("error", e.getMessage());
             return ResponseEntity.badRequest().body(result);

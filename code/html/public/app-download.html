@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>智壤卫士 - APP下载</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #C9A96E 0%, #A88B4F 30%, #FEFBF6 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .download-card {
+      width: 100%;
+      max-width: 360px;
+      background: #FAFAF8;
+      border-radius: 20px;
+      padding: 40px 30px;
+      box-shadow: 0 8px 32px rgba(93, 78, 55, 0.15);
+      text-align: center;
+    }
+    .app-logo {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #C9A96E 0%, #A88B4F 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px;
+      font-size: 40px;
+    }
+    .app-name {
+      font-size: 24px;
+      font-weight: 600;
+      color: #5D4E37;
+      margin-bottom: 8px;
+    }
+    .app-desc {
+      font-size: 13px;
+      color: #8B7355;
+      margin-bottom: 30px;
+      line-height: 1.6;
+    }
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .dl-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: none;
+      width: 100%;
+    }
+    .dl-btn.android {
+      background: linear-gradient(135deg, #C9A96E 0%, #A88B4F 100%);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(201, 169, 110, 0.35);
+    }
+    .dl-btn.android:active {
+      transform: scale(0.98);
+    }
+    .dl-btn.ios {
+      background: #F5F2ED;
+      color: #5D4E37;
+      border: 1px solid #E8E2D9;
+    }
+    .dl-btn.ios:active {
+      background: #EDE8DF;
+    }
+    .dl-icon {
+      font-size: 20px;
+    }
+    .tip-text {
+      margin-top: 24px;
+      font-size: 12px;
+      color: #B5A896;
+      line-height: 1.6;
+    }
+    .loading {
+      display: none;
+      margin-top: 20px;
+      font-size: 14px;
+      color: #8B7355;
+    }
+    .loading.show {
+      display: block;
+    }
+    .spinner {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid #E8E2D9;
+      border-top-color: #C9A96E;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="download-card">
+    <div class="app-logo">🛰️</div>
+    <h1 class="app-name">智壤卫士</h1>
+    <p class="app-desc">无人机地形数据采集 · 土质分析平台</p>
+    
+    <div class="btn-group">
+      <a class="dl-btn android" id="androidBtn" href="javascript:void(0)">
+        <span class="dl-icon">🤖</span>
+        <span>安卓版下载</span>
+      </a>
+      <a class="dl-btn ios" id="iosBtn" href="javascript:void(0)">
+        <span class="dl-icon">🍎</span>
+        <span>iOS版 (H5)</span>
+      </a>
+    </div>
+    
+    <div class="loading" id="loading">
+      <span class="spinner"></span>
+      <span>正在准备下载...</span>
+    </div>
+    
+    <p class="tip-text">
+      版本 v3.4.0<br>
+      建议在WiFi环境下下载
+    </p>
+  </div>
+
+  <script>
+    var apkUrl = '/apk/zrws.apk';
+    var h5Url = '/h5/';
+    
+    function getDeviceType() {
+      var ua = navigator.userAgent.toLowerCase();
+      if (/android/.test(ua)) {
+        return 'android';
+      }
+      if (/iphone|ipad|ipod/.test(ua)) {
+        return 'ios';
+      }
+      return 'other';
+    }
+    
+    function downloadAPK() {
+      var loading = document.getElementById('loading');
+      loading.classList.add('show');
+      
+      setTimeout(function() {
+        window.location.href = apkUrl;
+        setTimeout(function() {
+          loading.classList.remove('show');
+        }, 2000);
+      }, 500);
+    }
+    
+    function goToH5() {
+      window.location.href = h5Url;
+    }
+    
+    document.getElementById('androidBtn').addEventListener('click', downloadAPK);
+    document.getElementById('iosBtn').addEventListener('click', goToH5);
+    
+    // 自动检测设备并跳转
+    var device = getDeviceType();
+    if (device === 'android') {
+      // 安卓设备：显示提示后自动下载
+      setTimeout(function() {
+        downloadAPK();
+      }, 1000);
+    } else if (device === 'ios') {
+      // iOS设备：直接跳转到H5
+      setTimeout(function() {
+        goToH5();
+      }, 500);
+    }
+  </script>
+</body>
+</html>

@@ -35,6 +35,14 @@ public class DailyDataGenerator {
     private ApprovalTaskMapper approvalTaskMapper;
     @Autowired
     private DisasterRiskMapper disasterRiskMapper;
+    @Autowired
+    private ExportTaskMapper exportTaskMapper;
+    @Autowired
+    private DataStatisticsMapper dataStatisticsMapper;
+    @Autowired
+    private LandPlotMapper landPlotMapper;
+    @Autowired
+    private SoilClassificationMapper soilClassificationMapper;
 
     private static final DateTimeFormatter DATE_FMT = DateTimeFormatter.ofPattern("yyyyMMdd");
 
@@ -75,6 +83,17 @@ public class DailyDataGenerator {
             // 生成灾害风险评估
             int risks = generateDisasterRisks();
             totalGenerated += risks;
+            
+            // 生成导出任务
+            int exports = generateExportTasks();
+            totalGenerated += exports;
+            
+            // 生成数据统计
+            generateDailyStatistics();
+            
+            // 生成土质分类分析
+            int classifications = generateSoilClassifications();
+            totalGenerated += classifications;
             
             log.info("[定时任务] 每日数据生成完成，共生成 {} 条数据", totalGenerated);
             
@@ -450,5 +469,169 @@ public class DailyDataGenerator {
         disasterRiskMapper.insert(risk);
         log.info("[定时任务] 生成灾害风险: {}", riskCode);
         return 1;
+    }
+
+    private int generateExportTasks() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        LocalDate today = LocalDate.now();
+        String dateStr = today.format(DATE_FMT);
+        
+        String[] boCodes = {"SOIL_SAMPLE", "FLIGHT_MISSION", "DEVICE", "APPROVAL_TASK"};
+        String[] boNames = {"土壤采样数据", "飞行任务数据", "设备台账", "审批数据"};
+        String[] formats = {"EXCEL", "PDF", "CSV"};
+        String[] statuses = {"SUCCESS", "SUCCESS", "SUCCESS", "PROCESSING"};
+        String[] operators = {"王工", "李工", "张工", "系统"};
+        
+        int count = random.nextInt(1, 4);
+        
+        for (int i = 1; i <= count; i++) {
+            String taskNo = "EXP-" + dateStr + "-" + String.format("%03d", i);
+            int boIndex = random.nextInt(boCodes.length);
+            
+            ExportTask task = new ExportTask();
+            task.setTaskNo(taskNo);
+            task.setTaskName(boNames[boIndex] + "导出 - " + dateStr);
+            task.setBoCode(boCodes[boIndex]);
+            task.setExportType("DATA_EXPORT");
+            task.setFileFormat(formats[random.nextInt(formats.length)]);
+            task.setFilterConditions("[]");
+            task.setFieldList("[]");
+            task.setStatus(statuses[random.nextInt(statuses.length)]);
+            task.setOperatorName(operators[random.nextInt(operators.length)]);
+            task.setStartTime(LocalDateTime.now().minusHours(random.nextInt(1, 8)));
+            
+            if ("SUCCESS".equals(task.getStatus())) {
+                task.setEndTime(task.getStartTime().plusMinutes(random.nextInt(2, 20)));
+                task.setTotalRows(random.nextInt(50, 500));
+                task.setFileSize((long)(random.nextInt(50, 500) * 1024));
+                task.setFileName(taskNo + "." + task.getFileFormat().toLowerCase());
+                task.setFilePath("/exports/" + taskNo + "." + task.getFileFormat().toLowerCase());
+            } else if ("FAILED".equals(task.getStatus())) {
+                task.setEndTime(task.getStartTime().plusMinutes(random.nextInt(1, 5)));
+                task.setErrorMessage("导出过程中发生异常");
+            }
+            
+            task.setIsDeleted(0);
+            exportTaskMapper.insert(task);
+        }
+        
+        log.info("[定时任务] 生成 {} 条导出任务", count);
+        return count;
+    }
+
+    private void generateDailyStatistics() {
+        LocalDate today = LocalDate.now();
+        String dateStr = today.toString();
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        
+        String[][] statConfigs = {
+            {"SOIL_SAMPLE", "土壤采样", "IMPORT"},
+            {"FLIGHT_MISSION", "飞行任务", "CREATE"},
+            {"APPROVAL_TASK", "审批任务", "SUBMIT"},
+            {"DEVICE", "设备管理", "MAINTENANCE"},
+            {"QUALITY_CHECK", "质量校验", "CHECK"}
+        };
+        
+        for (String[] config : statConfigs) {
+            int total = random.nextInt(20, 200);
+            int success = (int)(total * (0.9 + random.nextDouble() * 0.08));
+            int failed = total - success;
+            int approved = random.nextInt(total / 2);
+            int rejected = random.nextInt(total / 4);
+            int pending = total - approved - rejected;
+            if (pending < 0) pending = 0;
+            
+            DataStatistics stat = new DataStatistics();
+            stat.setStatsDate(dateStr);
+            stat.setBoCode(config[0]);
+            stat.setBoName(config[1]);
+            stat.setOperationType(config[2]);
+            stat.setTotalCount(total);
+            stat.setSuccessCount(success);
+            stat.setFailedCount(failed);
+            stat.setApprovedCount(approved);
+            stat.setRejectedCount(rejected);
+            stat.setPendingCount(pending);
+            stat.setFileCount(random.nextInt(1, 10));
+            stat.setTotalRecords(total);
+            stat.setQualityScore(85 + random.nextInt(15));
+            stat.setAvgProcessTime(30.0 + random.nextDouble() * 60);
+            stat.setPeriodType("DAILY");
+            stat.setIsDeleted(0);
+            
+            dataStatisticsMapper.insert(stat);
+        }
+        
+        log.info("[定时任务] 生成今日数据统计，共 {} 个模块", statConfigs.length);
+    }
+
+    private int generateSoilClassifications() {
+        ThreadLocalRandom random = ThreadLocalRandom.current();
+        LocalDate today = LocalDate.now();
+        String dateStr = today.format(DATE_FMT);
+        
+        FlightMission latestMission = flightMissionMapper.selectOne(
+            new LambdaQueryWrapper<FlightMission>()
+                .orderByDesc(FlightMission::getCreatedTime)
+                .last("LIMIT 1")
+        );
+        
+        if (latestMission == null) {
+            return 0;
+        }
+        
+        String[] soilTypes = {
+            SoilClassification.SoilType.PADDY_SOIL.name(),
+            SoilClassification.SoilType.YELLOW_BROWN_EARTH.name(),
+            SoilClassification.SoilType.RED_SOIL.name(),
+            SoilClassification.SoilType.GARDEN_SOIL.name()
+        };
+        String[] subtypes = {"潴育型水稻土", "黄棕壤", "红壤", "菜园土"};
+        String[] textures = {"壤土", "黏壤土", "砂壤土", "黏土"};
+        String[] structures = {"团粒结构", "块状结构", "柱状结构", "片状结构"};
+        String[] colors = {"灰棕色", "黄棕色", "红棕色", "暗棕色"};
+        String[] vegetations = {"水稻", "茶树/果树", "蔬菜", "旱作"};
+        String[] analysts = {"王工", "李工", "张工"};
+        
+        int count = random.nextInt(1, 3);
+        
+        for (int i = 1; i <= count; i++) {
+            String code = "SC-" + dateStr + "-" + String.format("%03d", i);
+            int typeIndex = random.nextInt(soilTypes.length);
+            int sampleCount = random.nextInt(10, 50);
+            
+            SoilClassification sc = new SoilClassification();
+            sc.setAnalysisCode(code);
+            sc.setMissionCode(latestMission.getMissionCode());
+            sc.setAnalysisName(latestMission.getAreaName() + "土壤分类 - " + dateStr);
+            sc.setSampleCount(sampleCount);
+            sc.setSoilType(soilTypes[typeIndex]);
+            sc.setSoilSubtype(subtypes[typeIndex]);
+            sc.setConfidence(85.0 + random.nextDouble() * 13);
+            sc.setDescription("AI自动分类分析结果");
+            sc.setPhValue(5.5 + random.nextDouble() * 2);
+            sc.setOrganicMatter(1.5 + random.nextDouble() * 2.5);
+            sc.setMoisture(25.0 + random.nextDouble() * 15);
+            sc.setNitrogen(0.8 + random.nextDouble() * 1.5);
+            sc.setPhosphorus(0.4 + random.nextDouble() * 0.8);
+            sc.setPotassium(1.0 + random.nextDouble() * 2.0);
+            sc.setTexture(textures[random.nextInt(textures.length)]);
+            sc.setStructure(structures[random.nextInt(structures.length)]);
+            sc.setColor(colors[random.nextInt(colors.length)]);
+            sc.setDepth(20.0 + random.nextDouble() * 40);
+            sc.setParentMaterial("第四纪红色黏土");
+            sc.setVegetation(vegetations[random.nextInt(vegetations.length)]);
+            sc.setAiAnalysis("AI基于光谱+理化数据综合分析，置信度" + String.format("%.1f", sc.getConfidence()) + "%");
+            sc.setAiSuggestion("建议根据土壤类型合理配置施肥方案");
+            sc.setStatus("COMPLETED");
+            sc.setAnalyst(analysts[random.nextInt(analysts.length)]);
+            sc.setAnalysisTime(LocalDateTime.now().minusHours(random.nextInt(1, 6)));
+            sc.setIsDeleted(0);
+            
+            soilClassificationMapper.insert(sc);
+        }
+        
+        log.info("[定时任务] 生成 {} 条土质分类数据", count);
+        return count;
     }
 }

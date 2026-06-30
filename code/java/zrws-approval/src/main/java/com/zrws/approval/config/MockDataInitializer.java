@@ -10,6 +10,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
@@ -52,6 +53,12 @@ public class MockDataInitializer implements ApplicationRunner {
     private ExternalCompanyMapper externalCompanyMapper;
     @Autowired
     private ApiKeyMapper apiKeyMapper;
+    @Autowired
+    private SysConfigMapper sysConfigMapper;
+    @Autowired
+    private ExportTaskMapper exportTaskMapper;
+    @Autowired
+    private DataStatisticsMapper dataStatisticsMapper;
 
     @Override
     public void run(ApplicationArguments args) {
@@ -72,7 +79,10 @@ public class MockDataInitializer implements ApplicationRunner {
             {"公告", "initAnnouncements"},
             {"审批任务", "initApprovalTasks"},
             {"报表模板", "initReportTemplates"},
-            {"岩层结构分析", "initRockStratumAnalyses"}
+            {"岩层结构分析", "initRockStratumAnalyses"},
+            {"系统配置", "initSysConfigs"},
+            {"导出任务", "initExportTasks"},
+            {"数据统计", "initDataStatistics"}
         };
         for (String[] task : tasks) {
             try {
@@ -92,6 +102,9 @@ public class MockDataInitializer implements ApplicationRunner {
                     case "initApprovalTasks": initApprovalTasks(); break;
                     case "initReportTemplates": initReportTemplates(); break;
                     case "initRockStratumAnalyses": initRockStratumAnalyses(); break;
+                    case "initSysConfigs": initSysConfigs(); break;
+                    case "initExportTasks": initExportTasks(); break;
+                    case "initDataStatistics": initDataStatistics(); break;
                 }
                 success++;
             } catch (Exception e) {
@@ -1253,5 +1266,180 @@ public class MockDataInitializer implements ApplicationRunner {
         k.setExpireTime(LocalDateTime.now().plusYears(1));
         k.setIsDeleted(0);
         return k;
+    }
+
+    private void initSysConfigs() {
+        Long count = sysConfigMapper.selectCount(new LambdaQueryWrapper<SysConfig>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 系统配置数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化系统配置Mock数据...");
+        SysConfig[] configs = {
+            createSysConfig("site_name", "智壤卫士", "STRING", "站点名称", "general", "系统显示的名称", 1),
+            createSysConfig("default_theme", "light", "STRING", "默认主题", "display", "新用户默认使用的主题", 2),
+            createSysConfig("enable_register", "false", "BOOLEAN", "开放注册", "security", "是否允许用户自行注册", 3),
+            createSysConfig("session_timeout", "30", "INT", "会话超时（分钟）", "security", "用户登录超时时间", 4),
+            createSysConfig("password_min_length", "8", "INT", "密码最小长度", "security", "用户密码最小字符数", 5),
+            createSysConfig("password_strong", "true", "BOOLEAN", "强密码要求", "security", "要求包含大小写字母、数字、特殊字符", 6),
+            createSysConfig("login_max_attempts", "5", "INT", "最大登录尝试", "security", "连续失败次数后锁定账户", 7),
+            createSysConfig("enable_captcha", "false", "BOOLEAN", "启用验证码", "security", "登录时显示图形验证码", 8),
+            createSysConfig("announcement_enabled", "true", "BOOLEAN", "启用公告", "content", "是否显示系统公告栏", 9),
+            createSysConfig("file_max_size", "50", "INT", "文件上传大小（MB）", "content", "单文件最大上传大小", 10),
+            createSysConfig("enable_audit", "true", "BOOLEAN", "内容审核", "content", "发布内容是否需要审核", 11),
+            createSysConfig("sidebar_width", "220", "INT", "侧边栏宽度（px）", "display", "左侧菜单宽度", 12),
+            createSysConfig("animation_enabled", "true", "BOOLEAN", "启用动画", "display", "是否启用页面切换动画", 13),
+            createSysConfig("show_breadcrumb", "true", "BOOLEAN", "显示面包屑", "display", "是否显示页面顶部面包屑导航", 14),
+            createSysConfig("font_size", "medium", "STRING", "字体大小", "display", "全局默认字体大小", 15)
+        };
+        for (SysConfig config : configs) {
+            sysConfigMapper.insert(config);
+        }
+        log.info("[Mock数据] 系统配置Mock数据初始化完成，共 {} 条", configs.length);
+    }
+
+    private SysConfig createSysConfig(String key, String value, String type, String name,
+                                       String group, String description, int sort) {
+        SysConfig c = new SysConfig();
+        c.setConfigKey(key);
+        c.setConfigValue(value);
+        c.setConfigType(type);
+        c.setConfigName(name);
+        c.setConfigGroup(group);
+        c.setDescription(description);
+        c.setSortOrder(sort);
+        c.setStatus(1);
+        c.setIsSystem(1);
+        c.setIsDeleted(0);
+        return c;
+    }
+
+    private void initExportTasks() {
+        Long count = exportTaskMapper.selectCount(new LambdaQueryWrapper<ExportTask>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 导出任务数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化导出任务Mock数据...");
+        ExportTask[] tasks = {
+            createExportTask("EXP-20260617-001", "乔口镇土壤采样数据导出", "SOIL_SAMPLE", "DATA_EXPORT", "EXCEL",
+                "[{\"field\":\"sampleCode\",\"op\":\"LIKE\",\"value\":\"SP-\"}]",
+                "[\"sampleCode\",\"missionCode\",\"phValue\",\"organicMatter\",\"soilType\",\"collectTime\"]",
+                "/exports/soil_sample_20260617.xlsx", "土壤采样数据_20260617.xlsx",
+                256000L, 128, "SUCCESS", "王工",
+                LocalDateTime.of(2026, 6, 17, 14, 0), LocalDateTime.of(2026, 6, 17, 14, 5)),
+            createExportTask("EXP-20260616-001", "莲花镇飞行任务报告", "FLIGHT_MISSION", "DATA_EXPORT", "PDF",
+                "[]", "[\"missionCode\",\"areaName\",\"droneId\",\"flightTime\",\"duration\",\"coverage\"]",
+                "/exports/flight_mission_20260616.pdf", "飞行任务报告_20260616.pdf",
+                1890000L, 56, "SUCCESS", "李工",
+                LocalDateTime.of(2026, 6, 16, 16, 0), LocalDateTime.of(2026, 6, 16, 16, 12)),
+            createExportTask("EXP-20260615-001", "灾害风险评估报表", "DISASTER_RISK", "DATA_EXPORT", "EXCEL",
+                "[{\"field\":\"riskLevel\",\"op\":\"EQ\",\"value\":\"MEDIUM\"}]",
+                "[\"riskCode\",\"region\",\"disasterType\",\"riskLevel\",\"riskScore\",\"assessmentTime\"]",
+                "/exports/disaster_risk_20260615.xlsx", "灾害风险评估_20260615.xlsx",
+                89000L, 32, "SUCCESS", "张工",
+                LocalDateTime.of(2026, 6, 15, 10, 0), LocalDateTime.of(2026, 6, 15, 10, 2)),
+            createExportTask("EXP-20260618-001", "设备台账导出", "DEVICE", "DATA_EXPORT", "EXCEL",
+                "[]", "[\"deviceCode\",\"deviceName\",\"deviceType\",\"deviceModel\",\"status\",\"owner\"]",
+                null, null, null, 0, "PROCESSING", "系统",
+                LocalDateTime.of(2026, 6, 18, 9, 0), null),
+            createExportTask("EXP-20260614-001", "审批数据导出", "APPROVAL_TASK", "DATA_EXPORT", "CSV",
+                "[{\"field\":\"status\",\"op\":\"EQ\",\"value\":\"PROCESSING\"}]",
+                "[\"bizType\",\"bizTitle\",\"applicantName\",\"curStep\",\"status\",\"createdTime\"]",
+                "/exports/approval_20260614.csv", "审批数据_20260614.csv",
+                45000L, 24, "FAILED", "系统",
+                LocalDateTime.of(2026, 6, 14, 11, 0), LocalDateTime.of(2026, 6, 14, 11, 1)),
+            createExportTask("EXP-20260613-001", "岩层分析数据", "ROCK_STRATUM", "DATA_EXPORT", "EXCEL",
+                "[]", "[\"analysisCode\",\"projectName\",\"location\",\"analysisType\",\"stratumCount\",\"riskLevel\"]",
+                "/exports/rock_stratum_20260613.xlsx", "岩层分析数据_20260613.xlsx",
+                156000L, 18, "SUCCESS", "李工",
+                LocalDateTime.of(2026, 6, 13, 15, 0), LocalDateTime.of(2026, 6, 13, 15, 8))
+        };
+        for (ExportTask task : tasks) {
+            exportTaskMapper.insert(task);
+        }
+        log.info("[Mock数据] 导出任务Mock数据初始化完成，共 {} 条", tasks.length);
+    }
+
+    private ExportTask createExportTask(String taskNo, String taskName, String boCode, String exportType,
+                                         String fileFormat, String filterConditions, String fieldList,
+                                         String filePath, String fileName, Long fileSize, Integer totalRows,
+                                         String status, String operatorName,
+                                         LocalDateTime startTime, LocalDateTime endTime) {
+        ExportTask t = new ExportTask();
+        t.setTaskNo(taskNo);
+        t.setTaskName(taskName);
+        t.setBoCode(boCode);
+        t.setExportType(exportType);
+        t.setFileFormat(fileFormat);
+        t.setFilterConditions(filterConditions);
+        t.setFieldList(fieldList);
+        t.setFilePath(filePath);
+        t.setFileName(fileName);
+        t.setFileSize(fileSize);
+        t.setTotalRows(totalRows);
+        t.setStatus(status);
+        t.setOperatorName(operatorName);
+        t.setStartTime(startTime);
+        t.setEndTime(endTime);
+        t.setIsDeleted(0);
+        return t;
+    }
+
+    private void initDataStatistics() {
+        Long count = dataStatisticsMapper.selectCount(new LambdaQueryWrapper<DataStatistics>());
+        if (count != null && count > 0) {
+            log.info("[Mock数据] 数据统计数据已存在，跳过初始化");
+            return;
+        }
+        log.info("[Mock数据] 开始初始化数据统计Mock数据...");
+        LocalDate today = LocalDate.now();
+        DataStatistics[] stats = {
+            createDataStats(today.minusDays(0).toString(), "SOIL_SAMPLE", "土壤采样", "IMPORT", 156, 148, 8, 0, 0, 0, 3, 156, 92, 85.5, "DAILY"),
+            createDataStats(today.minusDays(1).toString(), "SOIL_SAMPLE", "土壤采样", "IMPORT", 203, 195, 8, 0, 0, 0, 4, 203, 94, 72.3, "DAILY"),
+            createDataStats(today.minusDays(2).toString(), "SOIL_SAMPLE", "土壤采样", "IMPORT", 178, 172, 6, 0, 0, 0, 3, 178, 96, 68.7, "DAILY"),
+            createDataStats(today.minusDays(0).toString(), "FLIGHT_MISSION", "飞行任务", "CREATE", 5, 5, 0, 3, 1, 1, 0, 5, 100, 125.0, "DAILY"),
+            createDataStats(today.minusDays(1).toString(), "FLIGHT_MISSION", "飞行任务", "CREATE", 8, 8, 0, 6, 1, 1, 0, 8, 100, 98.5, "DAILY"),
+            createDataStats(today.minusDays(0).toString(), "APPROVAL_TASK", "审批任务", "SUBMIT", 12, 0, 0, 8, 3, 1, 0, 12, 67, 45.2, "DAILY"),
+            createDataStats(today.minusDays(1).toString(), "APPROVAL_TASK", "审批任务", "SUBMIT", 18, 0, 0, 12, 4, 2, 0, 18, 67, 52.8, "DAILY"),
+            createDataStats(today.minusDays(0).toString(), "DISASTER_RISK", "灾害风险", "ASSESSMENT", 4, 4, 0, 0, 0, 0, 0, 4, 100, 38.6, "DAILY"),
+            createDataStats(today.minusDays(7).toString(), "SOIL_SAMPLE", "土壤采样", "IMPORT", 1256, 1210, 46, 0, 0, 0, 25, 1256, 96, 92.5, "WEEKLY"),
+            createDataStats(today.minusDays(30).toString(), "SOIL_SAMPLE", "土壤采样", "IMPORT", 5280, 5120, 160, 0, 0, 0, 98, 5280, 97, 88.3, "MONTHLY"),
+            createDataStats(today.minusDays(7).toString(), "FLIGHT_MISSION", "飞行任务", "CREATE", 42, 42, 0, 35, 5, 2, 0, 42, 100, 105.6, "WEEKLY"),
+            createDataStats(today.minusDays(30).toString(), "FLIGHT_MISSION", "飞行任务", "CREATE", 168, 168, 0, 142, 18, 8, 0, 168, 100, 112.4, "MONTHLY"),
+            createDataStats(today.minusDays(7).toString(), "APPROVAL_TASK", "审批任务", "SUBMIT", 96, 0, 0, 72, 18, 6, 0, 96, 75, 68.9, "WEEKLY"),
+            createDataStats(today.minusDays(30).toString(), "APPROVAL_TASK", "审批任务", "SUBMIT", 385, 0, 0, 298, 62, 25, 0, 385, 77, 75.2, "MONTHLY"),
+            createDataStats(today.minusDays(7).toString(), "DEVICE", "设备管理", "MAINTENANCE", 6, 6, 0, 0, 0, 0, 0, 6, 100, 24.5, "WEEKLY"),
+            createDataStats(today.minusDays(7).toString(), "QUALITY_CHECK", "质量校验", "CHECK", 128, 122, 6, 0, 0, 0, 0, 128, 95, 42.8, "WEEKLY")
+        };
+        for (DataStatistics stat : stats) {
+            dataStatisticsMapper.insert(stat);
+        }
+        log.info("[Mock数据] 数据统计Mock数据初始化完成，共 {} 条", stats.length);
+    }
+
+    private DataStatistics createDataStats(String date, String boCode, String boName, String opType,
+                                            int total, int success, int failed,
+                                            int approved, int rejected, int pending,
+                                            int fileCount, int totalRecords, int qualityScore,
+                                            double avgProcessTime, String period) {
+        DataStatistics s = new DataStatistics();
+        s.setStatsDate(date);
+        s.setBoCode(boCode);
+        s.setBoName(boName);
+        s.setOperationType(opType);
+        s.setTotalCount(total);
+        s.setSuccessCount(success);
+        s.setFailedCount(failed);
+        s.setApprovedCount(approved);
+        s.setRejectedCount(rejected);
+        s.setPendingCount(pending);
+        s.setFileCount(fileCount);
+        s.setTotalRecords(totalRecords);
+        s.setQualityScore(qualityScore);
+        s.setAvgProcessTime(avgProcessTime);
+        s.setPeriodType(period);
+        s.setIsDeleted(0);
+        return s;
     }
 }

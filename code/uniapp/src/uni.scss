@@ -1,0 +1,164 @@
+/* 智壤卫士移动端设计代币 - 暖米白大地棕风格 */
+
+// 主色调
+$zrws-primary: #C9A96E;
+$zrws-primary-light: #D9C49A;
+$zrws-primary-dark: #A88B4F;
+$zrws-primary-bg: rgba(201, 169, 110, 0.1);
+
+// 背景色
+$zrws-bg-primary: #FEFBF6;
+$zrws-bg-secondary: #FAFAF8;
+$zrws-bg-tertiary: #F5F2ED;
+
+// 文字色
+$zrws-text-primary: #5D4E37;
+$zrws-text-secondary: #8B7355;
+$zrws-text-tertiary: #B5A896;
+$zrws-text-inverse: #FFFFFF;
+
+// 边框色
+$zrws-border-light: #F0EBE2;
+$zrws-border-medium: #E8E2D9;
+$zrws-border-dark: #D8CFBE;
+
+// 功能色
+$zrws-success: #7CB342;
+$zrws-warning: #F57C00;
+$zrws-error: #E53935;
+$zrws-info: #5D9CA7;
+
+// 圆角
+$zrws-radius-sm: 8rpx;
+$zrws-radius-md: 16rpx;
+$zrws-radius-lg: 24rpx;
+$zrws-radius-xl: 32rpx;
+
+// 阴影
+$zrws-shadow-sm: 0 4rpx 8rpx rgba(93, 78, 55, 0.06);
+$zrws-shadow-md: 0 8rpx 24rpx rgba(93, 78, 55, 0.08);
+$zrws-shadow-lg: 0 16rpx 48rpx rgba(93, 78, 55, 0.12);
+
+// 间距
+$zrws-space-xs: 8rpx;
+$zrws-space-sm: 16rpx;
+$zrws-space-md: 24rpx;
+$zrws-space-lg: 32rpx;
+$zrws-space-xl: 48rpx;
+
+// 字体
+$zrws-font-xs: 22rpx;
+$zrws-font-sm: 24rpx;
+$zrws-font-md: 28rpx;
+$zrws-font-lg: 32rpx;
+$zrws-font-xl: 36rpx;
+$zrws-font-xxl: 44rpx;
+
+/* 智壤卫士 uni-app 全局样式变量 - 暖米白大地棕风格 */
+
+/* 主题色 - 兼容旧变量名 */
+$primary: $zrws-primary;
+$primary-light: $zrws-primary-light;
+$primary-bg: $zrws-primary-bg;
+
+$success: $zrws-success;
+$success-bg: rgba($zrws-success, 0.1);
+
+$warning: $zrws-warning;
+$warning-bg: rgba($zrws-warning, 0.1);
+
+$danger: $zrws-error;
+$danger-bg: rgba($zrws-error, 0.1);
+
+$info: $zrws-info;
+$info-bg: rgba($zrws-info, 0.1);
+
+/* 文字色 */
+$text-primary: $zrws-text-primary;
+$text-regular: $zrws-text-secondary;
+$text-secondary: $zrws-text-tertiary;
+$text-placeholder: $zrws-text-tertiary;
+
+/* 背景色 */
+$bg-page: $zrws-bg-primary;
+$bg-card: $zrws-bg-secondary;
+$bg-gray: $zrws-bg-tertiary;
+
+/* 边框 */
+$border-color: $zrws-border-medium;
+$border-light: $zrws-border-light;
+
+/* 圆角 */
+$radius-sm: $zrws-radius-sm;
+$radius: $zrws-radius-md;
+$radius-lg: $zrws-radius-lg;
+$radius-xl: $zrws-radius-xl;
+
+/* 间距 */
+$spacing-xs: $zrws-space-xs;
+$spacing-sm: $zrws-space-sm;
+$spacing: $zrws-space-md;
+$spacing-lg: $zrws-space-lg;
+$spacing-xl: $zrws-space-xl;
+
+/* 字号 */
+$font-xs: $zrws-font-xs;
+$font-sm: $zrws-font-sm;
+$font-base: $zrws-font-md;
+$font-lg: $zrws-font-lg;
+$font-xl: $zrws-font-xl;
+$font-xxl: $zrws-font-xxl;
+
+/* 阴影 */
+$shadow-sm: $zrws-shadow-sm;
+$shadow: $zrws-shadow-md;
+$shadow-lg: $zrws-shadow-lg;
+
+/* 全局通用类 */
+.flex {
+  display: flex;
+}
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+.flex-1 {
+  flex: 1;
+}
+.text-primary {
+  color: $zrws-primary;
+}
+.text-success {
+  color: $zrws-success;
+}
+.text-warning {
+  color: $zrws-warning;
+}
+.text-danger {
+  color: $zrws-error;
+}
+.text-muted {
+  color: $zrws-text-tertiary;
+}
+.bg-white {
+  background-color: $zrws-bg-secondary;
+}
+.bg-primary {
+  background-color: $zrws-primary;
+}
+.mt-sm { margin-top: $zrws-space-sm; }
+.mt { margin-top: $zrws-space-md; }
+.mb-sm { margin-bottom: $zrws-space-sm; }
+.mb { margin-bottom: $zrws-space-md; }
+.p-sm { padding: $zrws-space-sm; }
+.p { padding: $zrws-space-md; }

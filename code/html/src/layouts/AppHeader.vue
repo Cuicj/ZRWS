@@ -11,6 +11,12 @@
 
     <!-- 右侧：用户信息 + 操作 -->
     <div class="header-right">
+      <!-- 公告栏跳转 -->
+      <a href="https://www.zrws.cloud/TZ" target="_blank" class="header-link-outer" title="公告栏">
+        <el-icon :size="18" class="icon-btn"><Notification /></el-icon>
+        <span class="link-text">公告栏</span>
+      </a>
+
       <!-- 消息通知 -->
       <el-badge :value="notificationCount" class="notification-badge">
         <el-icon :size="18" class="icon-btn"><Bell /></el-icon>
@@ -43,6 +49,7 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { ElMessageBox } from 'element-plus';
+import { Notification } from '@element-plus/icons-vue';
 
 const router = useRouter();
 const appVersion = __APP_VERSION__;
@@ -127,6 +134,39 @@ const handleLogout = async () => {
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.header-link-outer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none;
+  color: #8B7355;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.header-link-outer:hover {
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.1);
+  transform: translateY(-1px);
+}
+
+.header-link-outer .icon-btn {
+  padding: 0;
+}
+
+.header-link-outer:hover .icon-btn {
+  color: #C9A86C;
+  background: transparent;
+  transform: none;
+}
+
+.link-text {
+  font-size: 13px;
 }
 
 .icon-btn {

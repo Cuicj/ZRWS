@@ -40,6 +40,26 @@
       <div class="login-hint mono">
         <span>演示账号: admin / admin</span>
       </div>
+
+      <div class="app-download">
+        <div class="qr-code-box">
+          <img :src="qrCodeUrl" alt="下载APP" class="qr-code" />
+          <div class="qr-tip">
+            <span class="qr-icon">📱</span>
+            <span>扫码下载APP</span>
+          </div>
+        </div>
+        <div class="download-links">
+          <a class="dl-link android" @click="downloadAndroid">
+            <span class="dl-icon">🤖</span>
+            <span>安卓下载</span>
+          </a>
+          <a class="dl-link ios" @click="goToH5">
+            <span class="dl-icon">🍎</span>
+            <span>iOS版(H5)</span>
+          </a>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -56,6 +76,17 @@ const username = ref('admin');
 const password = ref('admin');
 const role = ref('admin');
 const loading = ref(false);
+
+const downloadPageUrl = window.location.origin + '/app-download.html';
+const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(downloadPageUrl);
+
+const downloadAndroid = () => {
+  window.open('/apk/zrws.apk', '_blank');
+};
+
+const goToH5 = () => {
+  window.open('/h5/', '_blank');
+};
 
 const getParticleStyle = (n) => {
   const left = Math.random() * 100;
@@ -380,5 +411,87 @@ onMounted(() => {
   text-align: center;
   font-size: 11px;
   color: var(--signal-dim);
+}
+
+.app-download {
+  margin-top: var(--s-5);
+  padding-top: var(--s-5);
+  border-top: 1px solid var(--ink-600);
+  display: flex;
+  align-items: center;
+  gap: var(--s-4);
+}
+
+.qr-code-box {
+  flex-shrink: 0;
+  text-align: center;
+}
+
+.qr-code {
+  width: 100px;
+  height: 100px;
+  border-radius: var(--radius-md);
+  background: #fff;
+  padding: 6px;
+  box-shadow: 0 2px 8px rgba(93, 78, 55, 0.1);
+}
+
+.qr-tip {
+  margin-top: 8px;
+  font-size: 12px;
+  color: var(--signal-dim);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.qr-icon {
+  font-size: 14px;
+}
+
+.download-links {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dl-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  text-decoration: none;
+}
+
+.dl-link.android {
+  background: linear-gradient(135deg, var(--sand-500) 0%, var(--sand-400) 100%);
+  color: #fff;
+}
+
+.dl-link.android:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.35);
+}
+
+.dl-link.ios {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-600);
+  color: var(--signal);
+}
+
+.dl-link.ios:hover {
+  border-color: var(--sand-500);
+  color: var(--sand-500);
+}
+
+.dl-icon {
+  font-size: 16px;
 }
 </style>
