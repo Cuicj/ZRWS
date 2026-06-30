@@ -75,12 +75,12 @@
 
     <!-- 操作按钮 -->
     <view v-if="mission" class="action-area">
-      <button class="action-btn primary" @tap="goFlight">
+      <zrws-button variant="primary" size="lg" block @click="goFlight">
         ✈️ 进入飞行控制
-      </button>
-      <button class="action-btn secondary" @tap="goGps">
+      </zrws-button>
+      <zrws-button variant="outline" size="lg" block @click="goGps">
         📍 查看GPS航迹
-      </button>
+      </zrws-button>
     </view>
 
     <view v-if="!mission" class="empty-state">未找到任务信息</view>
@@ -279,26 +279,6 @@
     flex-direction: column;
     gap: 20rpx;
     margin-top: 24rpx;
-  }
-  .action-btn {
-    width: 100%;
-    height: 90rpx;
-    font-size: 28rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .action-btn.primary {
-    background: linear-gradient(135deg, #1e3a5f, #2b6cb0);
-    color: #fff;
-  }
-  .action-btn.secondary {
-    background: #fff;
-    color: #2b6cb0;
-    border: 2rpx solid #2b6cb0;
   }
 
   .empty-state {

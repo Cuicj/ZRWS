@@ -61,11 +61,11 @@
       </view>
 
       <view v-if="currentTab === 'pending'" class="ac-actions">
-        <button class="ac-btn ac-btn-approve" @tap="onApprove(a)">✓ 通过</button>
-        <button class="ac-btn ac-btn-reject" @tap="onReject(a)">✕ 驳回</button>
+        <zrws-button variant="success" size="md" @click="onApprove(a)">✓ 通过</zrws-button>
+        <zrws-button variant="danger" size="md" @click="onReject(a)">✕ 驳回</zrws-button>
       </view>
       <view v-else class="ac-actions">
-        <button class="ac-btn ac-btn-view" @tap="onView(a)">📄 查看详情</button>
+        <zrws-button variant="ghost" size="md" @click="onView(a)">📄 查看详情</zrws-button>
       </view>
     </view>
 
@@ -331,28 +331,7 @@
   .flow-arrow { font-size: 24rpx; color: #c0c4cc; margin: 0 6rpx; }
 
   .ac-actions { display: flex; gap: 16rpx; }
-  .ac-btn {
+  .ac-actions zrws-button {
     flex: 1;
-    height: 76rpx;
-    font-size: 26rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .ac-btn-approve {
-    background: linear-gradient(135deg, #67c23a, #4299e1);
-    color: #fff;
-  }
-  .ac-btn-reject {
-    background: #fff;
-    color: #f56c6c;
-    border: 2rpx solid #f56c6c;
-  }
-  .ac-btn-view {
-    background: #f5f7fa;
-    color: #606266;
   }
 </style>

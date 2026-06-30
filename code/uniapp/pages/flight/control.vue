@@ -68,9 +68,9 @@
 
     <!-- 操作按钮区 -->
     <view class="action-row">
-      <button class="action-btn success" @tap="startFlight">▶ 开始采集</button>
-      <button class="action-btn warning" @tap="pauseFlight">⏸ 暂停</button>
-      <button class="action-btn danger" @tap="returnHome">↩ 返航</button>
+      <zrws-button variant="success" size="md" @click="startFlight">▶ 开始采集</zrws-button>
+      <zrws-button variant="outline" size="md" @click="pauseFlight">⏸ 暂停</zrws-button>
+      <zrws-button variant="danger" size="md" @click="returnHome">↩ 返航</zrws-button>
     </view>
 
     <view style="height: 40rpx;"></view>
@@ -408,29 +408,5 @@
     grid-template-columns: 1fr 1fr 1fr;
     gap: 16rpx;
     padding: 10rpx 0;
-  }
-  .action-btn {
-    height: 100rpx;
-    font-size: 26rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .action-btn.success {
-    background: linear-gradient(135deg, #67c23a, #4299e1);
-    color: #fff;
-  }
-  .action-btn.warning {
-    background: #fdf6ec;
-    color: #e6a23c;
-    border: 2rpx solid #e6a23c;
-  }
-  .action-btn.danger {
-    background: #fef0f0;
-    color: #f56c6c;
-    border: 2rpx solid #f56c6c;
   }
 </style>

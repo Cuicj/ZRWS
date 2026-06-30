@@ -79,7 +79,7 @@
     </view>
 
     <!-- 退出登录 -->
-    <button class="logout-btn" @tap="doLogout">退出登录</button>
+    <zrws-button variant="danger" size="lg" block @click="doLogout">退出登录</zrws-button>
 
     <view style="height: 40rpx;"></view>
   </app-page-layout>
@@ -357,17 +357,5 @@
     line-height: 1.7;
   }
 
-  .logout-btn {
-    width: 100%;
-    height: 90rpx;
-    background: #fff;
-    color: #f56c6c;
-    font-size: 30rpx;
-    font-weight: 600;
-    border-radius: 16rpx;
-    border: 2rpx solid #f56c6c;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
+
 </style>

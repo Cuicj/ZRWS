@@ -77,7 +77,9 @@
           :auto-height="true"></textarea>
       </view>
 
-      <button class="form-submit" @tap="saveSample">💾 保存采样数据</button>
+      <view class="form-submit-wrap">
+        <zrws-button variant="primary" size="lg" block @click="saveSample">💾 保存采样数据</zrws-button>
+      </view>
     </view>
 
     <!-- 历史采样列表 -->
@@ -345,19 +347,8 @@
     font-weight: 600;
   }
 
-  .form-submit {
-    width: 100%;
-    height: 90rpx;
-    background: linear-gradient(135deg, #67c23a, #4299e1);
-    color: #fff;
-    font-size: 30rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
+  .form-submit-wrap {
     margin-top: 20rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .history-head {

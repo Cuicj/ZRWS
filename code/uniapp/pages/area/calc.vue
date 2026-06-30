@@ -17,9 +17,9 @@
       </view>
 
       <view class="result-btns">
-        <button class="r-btn r-primary" @tap="addPoint">📍 新增边界点</button>
-        <button class="r-btn r-secondary" @tap="undoPoint">↩ 撤销</button>
-        <button class="r-btn r-danger" @tap="clearPoints">🗑 清空</button>
+        <zrws-button variant="primary" size="sm" @click="addPoint">📍 新增边界点</zrws-button>
+        <zrws-button variant="outline" size="sm" @click="undoPoint">↩ 撤销</zrws-button>
+        <zrws-button variant="danger" size="sm" @click="clearPoints">🗑 清空</zrws-button>
       </view>
     </view>
 
@@ -255,21 +255,9 @@
     padding-top: 20rpx;
     border-top: 1rpx solid rgba(255,255,255,0.2);
   }
-  .r-btn {
+  .result-btns zrws-button {
     flex: 1;
-    height: 80rpx;
-    font-size: 22rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0;
   }
-  .r-primary { background: rgba(255,255,255,0.28); color: #fff; }
-  .r-secondary { background: rgba(255,255,255,0.15); color: #fff; }
-  .r-danger { background: rgba(244,106,108,0.45); color: #fff; }
 
   .map-card {
     background: #fff;

@@ -46,9 +46,9 @@
       </view>
 
       <view v-if="selectedFile && importResult === null" class="card action-card">
-        <button class="import-btn" :disabled="importing" @tap="startImport">
-          <text>{{ importing ? '导入中...' : '🚀 开始导入' }}</text>
-        </button>
+        <zrws-button variant="primary" size="lg" block :loading="importing" @click="startImport">
+          {{ importing ? '导入中...' : '🚀 开始导入' }}
+        </zrws-button>
         <view class="import-tips">
           <text class="tips-title">💡 导入说明</text>
           <text class="tips-item">• 请确保文件格式符合模板要求</text>
@@ -90,9 +90,9 @@
             </view>
           </view>
         </view>
-        <button class="retry-btn" @tap="resetImport">
+        <zrws-button variant="outline" size="md" block @click="resetImport">
           重新导入
-        </button>
+        </zrws-button>
       </view>
 
       <view class="card history-card">
@@ -390,21 +390,7 @@ function resetImport() {
   line-height: 1;
 }
 
-.import-btn {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #D9C49A 0%, #C9A96E 100%);
-  color: #fff;
-  font-size: 30rpx;
-  font-weight: 600;
-  border-radius: 44rpx;
-  border: none;
-  box-shadow: 0 6rpx 20rpx rgba(201, 169, 110, 0.35);
 
-  &:disabled {
-    opacity: 0.6;
-  }
-}
 
 .import-tips {
   margin-top: 24rpx;
@@ -515,15 +501,7 @@ function resetImport() {
   padding: 12rpx 0 4rpx;
 }
 
-.retry-btn {
-  width: 100%;
-  height: 80rpx;
-  background: transparent;
-  color: #C9A96E;
-  font-size: 28rpx;
-  border: 2rpx solid #C9A96E;
-  border-radius: 40rpx;
-}
+
 
 .history-count {
   font-size: 24rpx;

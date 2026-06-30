@@ -39,9 +39,9 @@
         <text class="forget" @tap="onForget">忘记密码？</text>
       </view>
 
-      <button class="login-btn" @tap="doLogin" :disabled="loading">
+      <zrws-button variant="primary" size="lg" block :loading="loading" @click="doLogin">
         {{ loading ? '登录中...' : '登 录' }}
-      </button>
+      </zrws-button>
     </view>
 
     <view class="login-footer">版本 v1.0.0 · uni-app</view>
@@ -202,22 +202,7 @@
   .forget {
     color: #2b6cb0;
   }
-  .login-btn {
-    width: 100%;
-    height: 96rpx;
-    background: linear-gradient(135deg, #1e3a5f, #2b6cb0);
-    color: #fff;
-    font-size: 32rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .login-btn[disabled] {
-    opacity: 0.6;
-  }
+
   .login-footer {
     margin-top: auto;
     padding-top: 60rpx;

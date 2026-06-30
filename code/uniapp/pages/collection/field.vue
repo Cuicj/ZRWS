@@ -124,12 +124,12 @@
     </view>
 
     <view class="bottom-bar">
-      <button class="btn btn-outline" @tap="saveOffline">
-        <text>💾 离线保存</text>
-      </button>
-      <button class="btn btn-primary" @tap="submitOnline">
-        <text>📤 在线提交</text>
-      </button>
+      <zrws-button variant="outline" size="md" @click="saveOffline">
+        💾 离线保存
+      </zrws-button>
+      <zrws-button variant="primary" size="lg" @click="submitOnline">
+        📤 在线提交
+      </zrws-button>
     </view>
   </app-page-layout>
 </template>
@@ -691,28 +691,7 @@ function formatTime(timestamp) {
   z-index: 100;
 }
 
-.btn {
+.bottom-bar zrws-button {
   flex: 1;
-  height: 88rpx;
-  border-radius: 44rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  line-height: 1;
-}
-
-.btn-outline {
-  background: transparent;
-  color: #C9A96E;
-  border: 2rpx solid #C9A96E;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, #D9C49A 0%, #C9A96E 100%);
-  color: #fff;
-  box-shadow: 0 6rpx 20rpx rgba(201, 169, 110, 0.35);
 }
 </style>

@@ -68,7 +68,7 @@
     <view class="list-card">
       <view class="list-head">
         <text class="list-title">📋 航迹点位</text>
-        <button class="btn-export" @tap="exportCSV">导出CSV</button>
+        <zrws-button variant="ghost" size="sm" @click="exportCSV">导出CSV</zrws-button>
       </view>
 
       <view class="track-table">
@@ -381,16 +381,7 @@
     font-weight: 600;
     color: #303133;
   }
-  .btn-export {
-    background: #ecf5ff;
-    color: #2b6cb0;
-    font-size: 22rpx;
-    padding: 10rpx 24rpx;
-    border-radius: 20rpx;
-    border: none;
-    height: auto;
-    line-height: 1;
-  }
+
 
   .track-table {
     border-radius: 12rpx;

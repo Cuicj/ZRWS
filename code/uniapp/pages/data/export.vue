@@ -81,9 +81,9 @@
       </view>
 
       <view class="card action-card">
-        <button class="export-btn" :disabled="exporting" @tap="startExport">
-          <text>{{ exporting ? '导出中...' : '📤 开始导出' }}</text>
-        </button>
+        <zrws-button variant="primary" size="lg" block :loading="exporting" @click="startExport">
+          {{ exporting ? '导出中...' : '📤 开始导出' }}
+        </zrws-button>
         <view class="export-format">
           <text class="format-label">导出格式：</text>
           <view class="format-options">
@@ -518,21 +518,7 @@ function retryExport(task) {
   color: #5D4E37;
 }
 
-.export-btn {
-  width: 100%;
-  height: 88rpx;
-  background: linear-gradient(135deg, #D9C49A 0%, #C9A96E 100%);
-  color: #fff;
-  font-size: 30rpx;
-  font-weight: 600;
-  border-radius: 44rpx;
-  border: none;
-  box-shadow: 0 6rpx 20rpx rgba(201, 169, 110, 0.35);
 
-  &:disabled {
-    opacity: 0.6;
-  }
-}
 
 .export-format {
   margin-top: 20rpx;

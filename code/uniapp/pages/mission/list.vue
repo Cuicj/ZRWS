@@ -23,9 +23,11 @@
     </view>
 
     <!-- 新建按钮 -->
-    <button class="create-btn" @tap="showCreateDialog = true">
-      <text>＋ 新建采集任务</text>
-    </button>
+    <view class="create-btn-wrap">
+      <zrws-button variant="primary" size="lg" block @click="showCreateDialog = true">
+        ＋ 新建采集任务
+      </zrws-button>
+    </view>
 
     <!-- 任务卡片列表 -->
     <view v-if="list.length === 0" class="empty-state">
@@ -80,8 +82,8 @@
       </view>
 
       <view class="dialog-actions">
-        <button class="btn-cancel" @tap="showCreateDialog = false">取消</button>
-        <button class="btn-primary" @tap="createMission">创建</button>
+        <zrws-button variant="outline" size="md" @click="showCreateDialog = false">取消</zrws-button>
+        <zrws-button variant="primary" size="md" @click="createMission">创建</zrws-button>
       </view>
     </view>
   </view>
@@ -231,19 +233,8 @@
     color: #fff;
   }
 
-  .create-btn {
-    width: 100%;
-    height: 80rpx;
-    background: linear-gradient(135deg, #67c23a, #4299e1);
-    color: #fff;
-    font-size: 28rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
+  .create-btn-wrap {
     margin-bottom: 24rpx;
-    display: flex;
-    align-items: center;
-    justify-content: center;
   }
 
   .empty-state {
@@ -329,23 +320,7 @@
     gap: 20rpx;
     margin-top: 40rpx;
   }
-  .btn-cancel {
+  .dialog-actions zrws-button {
     flex: 1;
-    height: 84rpx;
-    background: #f0f2f5;
-    color: #606266;
-    font-size: 28rpx;
-    border-radius: 12rpx;
-    border: none;
-  }
-  .btn-primary {
-    flex: 1;
-    height: 84rpx;
-    background: linear-gradient(135deg, #1e3a5f, #2b6cb0);
-    color: #fff;
-    font-size: 28rpx;
-    font-weight: 600;
-    border-radius: 12rpx;
-    border: none;
   }
 </style>

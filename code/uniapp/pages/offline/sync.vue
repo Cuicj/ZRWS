@@ -102,19 +102,22 @@
     </view>
 
     <view class="bottom-bar">
-      <button
+      <zrws-button
         v-if="activeTab === 'pending'"
-        class="btn btn-outline"
+        variant="outline"
+        size="md"
         :disabled="stats.failed === 0"
-        @tap="clearFailed">
-        <text>清除失败</text>
-      </button>
-      <button
-        class="btn btn-primary"
-        :disabled="syncStatus === 'syncing' || stats.pending === 0"
-        @tap="startSyncAll">
-        <text>{{ syncStatus === 'syncing' ? '同步中...' : '一键同步' }}</text>
-      </button>
+        @click="clearFailed">
+        清除失败
+      </zrws-button>
+      <zrws-button
+        variant="primary"
+        size="lg"
+        :loading="syncStatus === 'syncing'"
+        :disabled="stats.pending === 0"
+        @click="startSyncAll">
+        {{ syncStatus === 'syncing' ? '同步中...' : '一键同步' }}
+      </zrws-button>
     </view>
   </app-page-layout>
 </template>
@@ -517,34 +520,11 @@ async function clearFailed() {
   z-index: 100;
 }
 
-.btn {
-  flex: 1;
-  height: 88rpx;
-  border-radius: 44rpx;
-  font-size: 30rpx;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  line-height: 1;
-
-  &:disabled {
-    opacity: 0.5;
-  }
-}
-
-.btn-outline {
+.bottom-bar zrws-button:first-of-type {
   flex: 0 0 30%;
-  background: transparent;
-  color: #C9A96E;
-  border: 2rpx solid #C9A96E;
 }
 
-.btn-primary {
+.bottom-bar zrws-button:last-of-type {
   flex: 1;
-  background: linear-gradient(135deg, #D9C49A 0%, #C9A96E 100%);
-  color: #fff;
-  box-shadow: 0 6rpx 20rpx rgba(201, 169, 110, 0.35);
 }
 </style>
