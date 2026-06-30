@@ -3,6 +3,7 @@ package com.zrws.approval;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * 智壤卫士 - 审批服务
@@ -10,6 +11,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringBootApplication
 @EnableFeignClients(basePackages = "com.zrws.**.feign")
+@EnableScheduling
 public class ZrwsApprovalApplication {
 
     public static void main(String[] args) {
