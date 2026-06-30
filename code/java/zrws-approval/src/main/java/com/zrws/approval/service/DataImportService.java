@@ -69,14 +69,12 @@ public class DataImportService {
         response.setSuccess(false);
 
         try {
-            // 查询BO定义
             BoDefinition bo = boDefinitionMapper.selectByBoCode(request.getBoCode());
             if (bo == null) {
                 response.setErrorMessage("BO定义不存在: " + request.getBoCode());
                 return response;
             }
 
-            // 解析数据文件
             List<Map<String, Object>> dataRows = parseDataFile(request);
             if (dataRows.isEmpty()) {
                 response.setErrorMessage("数据文件为空或解析失败");
@@ -85,36 +83,27 @@ public class DataImportService {
 
             response.setTotalRows(dataRows.size());
 
-            // 获取字段配置
             List<BoField> fieldConfigs = boFieldMapper.selectByBoId(bo.getBoId());
-
-            // 提取列头
             List<String> headers = new ArrayList<>(dataRows.get(0).keySet());
-
-            // AI智能字段映射
             List<DataAnalysisResponse.FieldMapping> mappings = aiAnalyzerService.intelligentFieldMapping(headers, request.getBoCode());
             response.setFieldMappings(mappings);
 
-            // 数据预览
             response.setDataPreview(dataRows.subList(0, Math.min(10, dataRows.size())));
 
-            // AI数据质量分析
             if (Boolean.TRUE.equals(request.getUseAiEnhance())) {
                 DataAnalysisResponse.AiAnalysisResult aiResult = aiAnalyzerService.analyzeDataQuality(dataRows, fieldConfigs);
                 response.setAiAnalysis(aiResult);
             }
 
-            // 基础校验
             DataAnalysisResponse.ValidationSummary summary = performBasicValidation(dataRows, fieldConfigs);
             response.setValidationSummary(summary);
 
-            // 创建批次记录
             DataImportBatch batch = createBatch(request, dataRows.size());
             response.setBatchNo(batch.getBatchNo());
             response.setBatchId(batch.getBatchId());
 
             response.setSuccess(true);
-            response.setSuccessRows(0); // 预览阶段未入库
+            response.setSuccessRows(0);
 
         } catch (Exception e) {
             log.error("数据分析失败", e);
@@ -135,14 +124,12 @@ public class DataImportService {
         long startTime = System.currentTimeMillis();
 
         try {
-            // 查询BO定义
             BoDefinition bo = boDefinitionMapper.selectByBoCode(request.getBoCode());
             if (bo == null) {
                 response.setSuccess(false);
                 return response;
             }
 
-            // 解析数据文件
             List<Map<String, Object>> dataRows = parseImportFile(request);
             if (dataRows.isEmpty()) {
                 return response;
@@ -150,20 +137,16 @@ public class DataImportService {
 
             response.setTotalRows(dataRows.size());
 
-            // 获取字段配置
             List<BoField> fieldConfigs = boFieldMapper.selectByBoId(bo.getBoId());
 
-            // 创建批次
             DataImportBatch batch = createImportBatch(request, dataRows.size());
             response.setBatchId(batch.getBatchId());
             response.setBatchNo(batch.getBatchNo());
 
-            // 更新批次状态为处理中
             batch.setStatus("PROCESSING");
             batch.setStartTime(LocalDateTime.now());
             batchMapper.updateById(batch);
 
-            // 获取AI字段映射（如果启用）
             Map<String, String> fieldMapping = new HashMap<>();
             if (Boolean.TRUE.equals(request.getUseAiMapping())) {
                 List<String> headers = new ArrayList<>(dataRows.get(0).keySet());
@@ -177,7 +160,6 @@ public class DataImportService {
                 }
             }
 
-            // 处理每行数据
             int successCount = 0;
             int failedCount = 0;
             int skippedCount = 0;
@@ -186,19 +168,15 @@ public class DataImportService {
 
             for (int i = 0; i < dataRows.size(); i++) {
                 Map<String, Object> row = dataRows.get(i);
-                int rowNumber = i + 2; // Excel行号从2开始（1是表头）
+                int rowNumber = i + 2;
 
                 DataImportResponse.ImportDetail detail = new DataImportResponse.ImportDetail();
                 detail.setRowNumber(rowNumber);
 
                 try {
-                    // 应用字段映射
                     Map<String, Object> mappedRow = applyFieldMapping(row, fieldMapping);
-
-                    // 校验数据
                     DataValidator.ValidationResult validationResult = dataValidator.validateRow(mappedRow, fieldConfigs);
 
-                    // 保存明细
                     DataImportDetail importDetail = new DataImportDetail();
                     importDetail.setBatchId(batch.getBatchId());
                     importDetail.setRowNumber(rowNumber);
@@ -207,13 +185,10 @@ public class DataImportService {
                     importDetail.setValidationResult(objectMapper.writeValueAsString(validationResult));
 
                     if (!validationResult.isValid()) {
-                        // 校验失败
                         detail.setStatus("FAILED");
                         detail.setErrorMessage(validationResult.getErrors().get(0).getMessage());
-
                         importDetail.setStatus("FAILED");
                         importDetail.setErrorMessage(detail.getErrorMessage());
-
                         failedCount++;
                         errorRows.add(new DataImportResponse.ErrorRow() {{
                             setRowNumber(rowNumber);
@@ -223,9 +198,7 @@ public class DataImportService {
                             setErrorType("VALIDATION");
                         }});
                     } else {
-                        // 校验通过，插入数据库
                         Long targetId = insertToTargetTable(bo.getTargetTable(), mappedRow, fieldConfigs, request.getImportMode());
-
                         if (targetId != null) {
                             detail.setStatus("SUCCESS");
                             detail.setTargetId(targetId);
@@ -247,12 +220,10 @@ public class DataImportService {
                     detail.setStatus("FAILED");
                     detail.setErrorMessage(e.getMessage());
                     failedCount++;
-
                     details.add(detail);
                 }
             }
 
-            // 更新批次结果
             batch.setSuccessRows(successCount);
             batch.setFailedRows(failedCount);
             batch.setSkippedRows(skippedCount);
@@ -261,7 +232,6 @@ public class DataImportService {
             batch.setAiAnalysis(objectMapper.writeValueAsString(response.getDetails()));
             batchMapper.updateById(batch);
 
-            // 构建响应
             response.setSuccess(true);
             response.setSuccessRows(successCount);
             response.setFailedRows(failedCount);
@@ -285,8 +255,84 @@ public class DataImportService {
     }
 
     /**
-     * 解析数据文件（预览）
+     * 土壤专用数据导入
+     * <p>自动识别土壤检测字段并映射
      */
+    public DataImportResponse importSoilData(DataImportRequest request) {
+        DataImportResponse response = new DataImportResponse();
+        response.setSuccess(false);
+
+        long startTime = System.currentTimeMillis();
+
+        try {
+            List<Map<String, Object>> dataRows = parseImportFile(request);
+            if (dataRows.isEmpty()) {
+                response.setErrorMessage("数据文件为空或解析失败");
+                return response;
+            }
+
+            response.setTotalRows(dataRows.size());
+
+            Map<String, String> soilFieldMapping = buildSoilFieldMapping(dataRows.get(0).keySet());
+
+            DataImportBatch batch = createSoilImportBatch(request, dataRows.size());
+            response.setBatchId(batch.getBatchId());
+            response.setBatchNo(batch.getBatchNo());
+
+            batch.setStatus("PROCESSING");
+            batch.setStartTime(LocalDateTime.now());
+            batchMapper.updateById(batch);
+
+            int successCount = 0;
+            int failedCount = 0;
+            List<DataImportResponse.ImportDetail> details = new ArrayList<>();
+
+            for (int i = 0; i < dataRows.size(); i++) {
+                Map<String, Object> row = dataRows.get(i);
+                int rowNumber = i + 2;
+
+                DataImportResponse.ImportDetail detail = new DataImportResponse.ImportDetail();
+                detail.setRowNumber(rowNumber);
+
+                try {
+                    Map<String, Object> mappedRow = applySoilFieldMapping(row, soilFieldMapping);
+                    validateSoilData(mappedRow);
+
+                    detail.setStatus("SUCCESS");
+                    successCount++;
+                } catch (Exception e) {
+                    detail.setStatus("FAILED");
+                    detail.setErrorMessage(e.getMessage());
+                    failedCount++;
+                }
+
+                details.add(detail);
+            }
+
+            batch.setSuccessRows(successCount);
+            batch.setFailedRows(failedCount);
+            batch.setSkippedRows(0);
+            batch.setStatus(failedCount == 0 ? "SUCCESS" : (successCount == 0 ? "FAILED" : "PARTIAL"));
+            batch.setEndTime(LocalDateTime.now());
+            batchMapper.updateById(batch);
+
+            response.setSuccess(true);
+            response.setSuccessRows(successCount);
+            response.setFailedRows(failedCount);
+            response.setSkippedRows(0);
+            response.setDuration((System.currentTimeMillis() - startTime) / 1000.0);
+            response.setDetails(details);
+            response.setFieldMapping(soilFieldMapping);
+
+        } catch (Exception e) {
+            log.error("土壤数据导入失败", e);
+            response.setSuccess(false);
+            response.setErrorMessage("导入失败: " + e.getMessage());
+        }
+
+        return response;
+    }
+
     private List<Map<String, Object>> parseDataFile(DataAnalysisRequest request) throws Exception {
         String filePath = request.getFilePath();
         String fileContent = request.getFileContent();
@@ -294,7 +340,6 @@ public class DataImportService {
         if (filePath != null && !filePath.isEmpty()) {
             return parseExcelFile(new File(filePath));
         } else if (fileContent != null && !fileContent.isEmpty()) {
-            // Base64解码
             byte[] bytes = Base64.getDecoder().decode(fileContent);
             File tempFile = File.createTempFile("import_", ".xlsx");
             FileUtil.writeBytes(bytes, tempFile);
@@ -308,9 +353,6 @@ public class DataImportService {
         return Collections.emptyList();
     }
 
-    /**
-     * 解析导入文件
-     */
     private List<Map<String, Object>> parseImportFile(DataImportRequest request) throws Exception {
         String filePath = request.getFilePath();
         String fileContent = request.getFileContent();
@@ -331,9 +373,6 @@ public class DataImportService {
         return Collections.emptyList();
     }
 
-    /**
-     * 解析Excel文件
-     */
     private List<Map<String, Object>> parseExcelFile(File file) throws Exception {
         List<Map<String, Object>> rows = new ArrayList<>();
 
@@ -347,7 +386,6 @@ public class DataImportService {
                 return rows;
             }
 
-            // 提取表头
             List<String> headers = new ArrayList<>();
             for (int i = 0; i < headerRow.getLastCellNum(); i++) {
                 Cell cell = headerRow.getCell(i);
@@ -355,7 +393,6 @@ public class DataImportService {
                 headers.add(header != null ? header.trim() : "column_" + i);
             }
 
-            // 读取数据行
             for (int rowNum = 1; rowNum <= sheet.getLastRowNum(); rowNum++) {
                 Row row = sheet.getRow(rowNum);
                 if (row == null) continue;
@@ -383,9 +420,6 @@ public class DataImportService {
         return rows;
     }
 
-    /**
-     * 获取单元格值
-     */
     private Object getCellValue(Cell cell) {
         if (cell == null) {
             return null;
@@ -399,7 +433,6 @@ public class DataImportService {
                     return cell.getLocalDateTimeCellValue();
                 }
                 double numValue = cell.getNumericCellValue();
-                // 如果是整数，返回Long类型
                 if (numValue == Math.floor(numValue) && !Double.isInfinite(numValue)) {
                     return (long) numValue;
                 }
@@ -417,17 +450,11 @@ public class DataImportService {
         }
     }
 
-    /**
-     * 获取单元格字符串值
-     */
     private String getCellValueAsString(Cell cell) {
         Object value = getCellValue(cell);
         return value != null ? String.valueOf(value) : null;
     }
 
-    /**
-     * 应用字段映射
-     */
     private Map<String, Object> applyFieldMapping(Map<String, Object> sourceData, Map<String, String> mapping) {
         if (mapping.isEmpty()) {
             return sourceData;
@@ -445,9 +472,133 @@ public class DataImportService {
         return result;
     }
 
-    /**
-     * 执行基础校验
-     */
+    private Map<String, String> buildSoilFieldMapping(Set<String> headers) {
+        Map<String, String> mapping = new HashMap<>();
+
+        Map<String, List<String>> fieldAliases = new HashMap<>();
+        fieldAliases.put("sampleCode", Arrays.asList("样品编号", "样本编号", "sampleCode", "sample_code", "样品号", "编号"));
+        fieldAliases.put("phValue", Arrays.asList("pH值", "ph", "pH", "phValue", "ph_value", "酸碱度", "PH值"));
+        fieldAliases.put("organicMatter", Arrays.asList("有机质", "有机碳", "organicMatter", "organic_matter", "OM", "有机质含量"));
+        fieldAliases.put("moisture", Arrays.asList("含水率", "水分", "moisture", "含水量", "湿度", "waterContent"));
+        fieldAliases.put("soilTexture", Arrays.asList("质地", "土壤质地", "texture", "soilTexture", "soil_texture", "机械组成"));
+        fieldAliases.put("soilType", Arrays.asList("土壤类型", "土类", "soilType", "soil_type", "类型"));
+        fieldAliases.put("nitrogen", Arrays.asList("全氮", "氮", "nitrogen", "总氮", "N", "全N"));
+        fieldAliases.put("phosphorus", Arrays.asList("全磷", "磷", "phosphorus", "总磷", "P", "全P"));
+        fieldAliases.put("potassium", Arrays.asList("全钾", "钾", "potassium", "总钾", "K", "全K"));
+        fieldAliases.put("ecValue", Arrays.asList("电导率", "EC值", "ecValue", "ec_value", "EC", "电导"));
+        fieldAliases.put("latitude", Arrays.asList("纬度", "latitude", "lat", "北纬"));
+        fieldAliases.put("longitude", Arrays.asList("经度", "longitude", "lon", "lng", "东经"));
+        fieldAliases.put("elevation", Arrays.asList("海拔", "高程", "elevation", "altitude"));
+        fieldAliases.put("depth", Arrays.asList("深度", "土层深度", "depth", "采样深度"));
+        fieldAliases.put("collector", Arrays.asList("采集人", "采样人", "collector", "采样员"));
+        fieldAliases.put("collectTime", Arrays.asList("采集时间", "采样时间", "collectTime", "collect_time", "时间"));
+        fieldAliases.put("remark", Arrays.asList("备注", "说明", "remark", "comment", "note"));
+
+        for (String header : headers) {
+            String headerLower = header.toLowerCase().trim();
+            String matchedField = null;
+
+            for (Map.Entry<String, List<String>> entry : fieldAliases.entrySet()) {
+                for (String alias : entry.getValue()) {
+                    if (headerLower.equals(alias.toLowerCase()) ||
+                        headerLower.contains(alias.toLowerCase()) ||
+                        alias.toLowerCase().contains(headerLower)) {
+                        matchedField = entry.getKey();
+                        break;
+                    }
+                }
+                if (matchedField != null) break;
+            }
+
+            if (matchedField != null) {
+                mapping.put(header, matchedField);
+            } else {
+                mapping.put(header, header);
+            }
+        }
+
+        return mapping;
+    }
+
+    private Map<String, Object> applySoilFieldMapping(Map<String, Object> sourceData, Map<String, String> mapping) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : sourceData.entrySet()) {
+            String targetField = mapping.get(entry.getKey());
+            if (targetField != null) {
+                result.put(targetField, convertSoilValue(targetField, entry.getValue()));
+            } else {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+
+    private Object convertSoilValue(String field, Object value) {
+        if (value == null) return null;
+        String strValue = String.valueOf(value).trim();
+        if (strValue.isEmpty()) return null;
+
+        try {
+            switch (field) {
+                case "phValue":
+                case "organicMatter":
+                case "moisture":
+                case "nitrogen":
+                case "phosphorus":
+                case "potassium":
+                case "latitude":
+                case "longitude":
+                case "elevation":
+                    return Double.parseDouble(strValue.replaceAll("[^\\d.]", ""));
+                case "ecValue":
+                    return Integer.parseInt(strValue.replaceAll("[^\\d]", ""));
+                default:
+                    return strValue;
+            }
+        } catch (Exception e) {
+            return strValue;
+        }
+    }
+
+    private void validateSoilData(Map<String, Object> data) {
+        List<String> errors = new ArrayList<>();
+
+        Object ph = data.get("phValue");
+        if (ph != null) {
+            double phVal = ((Number) ph).doubleValue();
+            if (phVal < 0 || phVal > 14) {
+                errors.add("pH值范围异常: " + phVal);
+            }
+        }
+
+        Object om = data.get("organicMatter");
+        if (om != null) {
+            double omVal = ((Number) om).doubleValue();
+            if (omVal < 0 || omVal > 100) {
+                errors.add("有机质含量异常: " + omVal + "%");
+            }
+        }
+
+        if (!errors.isEmpty()) {
+            throw new RuntimeException(String.join("; ", errors));
+        }
+    }
+
+    private DataImportBatch createSoilImportBatch(DataImportRequest request, int rowCount) {
+        DataImportBatch batch = new DataImportBatch();
+        batch.setBatchNo(generateBatchNo());
+        batch.setBoCode("SOIL_SAMPLE");
+        batch.setFileName(request.getFilePath());
+        batch.setFilePath(request.getFilePath());
+        batch.setTotalRows(rowCount);
+        batch.setImportMode("INSERT");
+        batch.setStatus("PENDING");
+        batch.setOperatorId(request.getOperatorId());
+        batch.setOperatorName(request.getOperatorName());
+        batchMapper.insert(batch);
+        return batch;
+    }
+
     private DataAnalysisResponse.ValidationSummary performBasicValidation(
             List<Map<String, Object>> dataRows, List<BoField> fieldConfigs) {
 
@@ -489,9 +640,6 @@ public class DataImportService {
         return summary;
     }
 
-    /**
-     * 创建批次记录（预览）
-     */
     private DataImportBatch createBatch(DataAnalysisRequest request, int rowCount) {
         DataImportBatch batch = new DataImportBatch();
         batch.setBatchNo(generateBatchNo());
@@ -508,9 +656,6 @@ public class DataImportService {
         return batch;
     }
 
-    /**
-     * 创建批次记录（导入）
-     */
     private DataImportBatch createImportBatch(DataImportRequest request, int rowCount) {
         DataImportBatch batch = new DataImportBatch();
         batch.setBatchNo(request.getBatchNo() != null ? request.getBatchNo() : generateBatchNo());
@@ -528,13 +673,9 @@ public class DataImportService {
         return batch;
     }
 
-    /**
-     * 插入目标表
-     */
     private Long insertToTargetTable(String tableName, Map<String, Object> data,
                                      List<BoField> fieldConfigs, String importMode) {
         try {
-            // 构建INSERT语句
             List<String> columns = new ArrayList<>();
             List<String> placeholders = new ArrayList<>();
             List<Object> values = new ArrayList<>();
@@ -546,12 +687,10 @@ public class DataImportService {
                 columns.add(field.getTargetColumn());
                 placeholders.add("?");
 
-                // 类型转换
                 value = convertValue(value, field.getFieldType());
                 values.add(value);
             }
 
-            // 添加审计字段
             columns.add("created_time");
             placeholders.add("NOW()");
             columns.add("updated_time");
@@ -562,7 +701,6 @@ public class DataImportService {
 
             jdbcTemplate.update(sql, values.toArray());
 
-            // 获取自增ID
             return jdbcTemplate.queryForObject("SELECT LAST_INSERT_ID()", Long.class);
 
         } catch (Exception e) {
@@ -571,9 +709,6 @@ public class DataImportService {
         }
     }
 
-    /**
-     * 值类型转换
-     */
     private Object convertValue(Object value, String fieldType) {
         if (value == null) {
             return null;
@@ -608,9 +743,6 @@ public class DataImportService {
         }
     }
 
-    /**
-     * 生成批次号
-     */
     private String generateBatchNo() {
         return "IMP" + DateUtil.format(new Date(), "yyyyMMddHHmmss") +
                String.format("%04d", new Random().nextInt(10000));
