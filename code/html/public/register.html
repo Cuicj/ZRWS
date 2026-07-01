@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#C9A96E">
+  <title>智壤卫士 - 注册</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { width: 100%; overflow-x: hidden; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Helvetica Neue", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(180deg, #C9A96E 0%, #B89A5D 28%, #F0EBE2 70%, #FEFBF6 100%);
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+      padding-top: calc(24px + env(safe-area-inset-top));
+      padding-bottom: calc(24px + env(safe-area-inset-bottom));
+    }
+
+    /* 注册卡片 */
+    .register-card {
+      width: 100%;
+      max-width: 380px;
+      background: #FAFAF8;
+      border-radius: 24px;
+      padding: 36px 28px 30px;
+      box-shadow: 0 12px 40px rgba(93, 78, 55, 0.18);
+      position: relative;
+      overflow: hidden;
+    }
+    .register-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 220px;
+      height: 220px;
+      background: radial-gradient(circle, rgba(201, 169, 110, 0.16) 0%, transparent 70%);
+      border-radius: 50%;
+      pointer-events: none;
+    }
+
+    .app-logo {
+      width: 72px;
+      height: 72px;
+      border-radius: 22px;
+      background: linear-gradient(135deg, #C9A96E 0%, #A88B4F 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 36px;
+      box-shadow: 0 6px 20px rgba(201, 169, 110, 0.4);
+      position: relative;
+      z-index: 1;
+    }
+    .app-name {
+      font-size: 22px;
+      font-weight: 600;
+      color: #5D4E37;
+      text-align: center;
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+    .app-subtitle {
+      font-size: 13px;
+      color: #8B7355;
+      text-align: center;
+      margin-bottom: 26px;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* OAuth 授权提示 */
+    .oauth-hint {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      background: #F5F2ED;
+      border: 1px solid #E8E2D9;
+      border-radius: 12px;
+      font-size: 12px;
+      color: #5D4E37;
+      position: relative;
+      z-index: 1;
+    }
+    .oauth-hint.show { display: flex; }
+    .oauth-hint .dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #7FBF6B;
+      flex-shrink: 0;
+    }
+
+    /* 表单 */
+    .form-group {
+      margin-bottom: 14px;
+      position: relative;
+      z-index: 1;
+    }
+    .input-wrap {
+      display: flex;
+      align-items: center;
+      background: #F5F2ED;
+      border: 1px solid #E8E2D9;
+      border-radius: 14px;
+      padding: 0 14px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+    .input-wrap:focus-within {
+      border-color: #C9A96E;
+      box-shadow: 0 0 0 3px rgba(201, 169, 110, 0.12);
+    }
+    .input-icon {
+      font-size: 17px;
+      flex-shrink: 0;
+      margin-right: 10px;
+      opacity: 0.7;
+    }
+    .form-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      padding: 14px 0;
+      font-size: 15px;
+      color: #5D4E37;
+      min-width: 0;
+    }
+    .form-input::placeholder { color: #B5A896; }
+    .form-input:-webkit-autofill {
+      -webkit-box-shadow: 0 0 0 1000px #F5F2ED inset;
+      -webkit-text-fill-color: #5D4E37;
+    }
+
+    /* 验证码行 */
+    .code-row {
+      display: flex;
+      gap: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .code-row .input-wrap { flex: 1; }
+    .send-btn {
+      flex-shrink: 0;
+      padding: 0 16px;
+      height: 48px;
+      border: 1px solid #C9A96E;
+      background: #FAFAF8;
+      color: #B89561;
+      border-radius: 14px;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+      -webkit-user-select: none;
+      user-select: none;
+    }
+    .send-btn:active { transform: scale(0.96); }
+    .send-btn:disabled {
+      color: #B5A896;
+      border-color: #E8E2D9;
+      background: #F5F2ED;
+      cursor: not-allowed;
+    }
+
+    /* 注册按钮 */
+    .register-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #D4B87A 0%, #B89561 100%);
+      color: #fff;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 8px;
+      box-shadow: 0 6px 18px rgba(201, 169, 110, 0.4);
+      transition: all 0.2s ease;
+      -webkit-user-select: none;
+      user-select: none;
+      position: relative;
+      z-index: 1;
+    }
+    .register-btn:active {
+      transform: scale(0.97);
+      box-shadow: 0 3px 10px rgba(201, 169, 110, 0.3);
+    }
+    .register-btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* 登录链接 */
+    .login-link {
+      text-align: center;
+      margin-top: 18px;
+      font-size: 13px;
+      color: #8B7355;
+      position: relative;
+      z-index: 1;
+    }
+    .login-link a {
+      color: #B89561;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    .login-link a:active { opacity: 0.7; }
+
+    /* 轻提示 toast */
+    .toast {
+      position: fixed;
+      top: calc(20px + env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-120%);
+      background: rgba(93, 78, 55, 0.92);
+      color: #fff;
+      padding: 11px 20px;
+      border-radius: 12px;
+      font-size: 13px;
+      z-index: 9998;
+      max-width: 80%;
+      text-align: center;
+      transition: transform 0.3s ease;
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+    .toast.error { background: rgba(180, 70, 60, 0.92); }
+    .toast.success { background: rgba(95, 150, 75, 0.92); }
+
+    /* 成功遮罩 */
+    .success-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.45);
+      z-index: 9997;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      -webkit-backdrop-filter: blur(4px);
+      backdrop-filter: blur(4px);
+    }
+    .success-overlay.show { display: flex; }
+    .success-card {
+      width: 100%;
+      max-width: 300px;
+      background: #FAFAF8;
+      border-radius: 24px;
+      padding: 36px 28px 28px;
+      text-align: center;
+      box-shadow: 0 16px 50px rgba(0, 0, 0, 0.25);
+      animation: popIn 0.3s ease;
+    }
+    @keyframes popIn {
+      from { transform: scale(0.85); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    .success-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #7FBF6B 0%, #5F964B 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      font-size: 32px;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(95, 150, 75, 0.4);
+    }
+    .success-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #5D4E37;
+      margin-bottom: 6px;
+    }
+    .success-desc {
+      font-size: 13px;
+      color: #8B7355;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .success-spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #E8E2D9;
+      border-top-color: #C9A96E;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* 微信/支付宝/QQ 蒙层 */
+    .wx-mask {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.85);
+      z-index: 9999;
+      padding: 20px;
+      padding-top: calc(20px + env(safe-area-inset-top));
+    }
+    .wx-mask.show { display: block; }
+    .wx-mask-content {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      color: #fff;
+      text-align: center;
+    }
+    .wx-arrow {
+      position: absolute;
+      top: 10px;
+      right: 24px;
+      font-size: 60px;
+      animation: arrowBounce 1.5s ease-in-out infinite;
+    }
+    @keyframes arrowBounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(8px); }
+    }
+    .wx-icon-big {
+      font-size: 64px;
+      margin-top: 80px;
+      margin-bottom: 18px;
+    }
+    .wx-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+    .wx-desc {
+      font-size: 15px;
+      line-height: 1.8;
+      color: rgba(255, 255, 255, 0.85);
+      padding: 0 10px;
+    }
+    .wx-steps {
+      margin-top: 26px;
+      text-align: left;
+      padding: 0 30px;
+    }
+    .wx-step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+    }
+    .wx-step-num {
+      flex-shrink: 0;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .wx-actions {
+      position: absolute;
+      bottom: 40px;
+      bottom: calc(40px + env(safe-area-inset-bottom));
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 320px;
+      padding: 0 20px;
+    }
+    .wx-oauth-btn {
+      width: 100%;
+      padding: 13px;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 12px;
+      cursor: pointer;
+      background: linear-gradient(135deg, #D4B87A 0%, #B89561 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(201, 169, 110, 0.4);
+    }
+    .wx-oauth-btn:active { transform: scale(0.97); }
+    .wx-close-btn {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.4);
+      border-radius: 30px;
+      font-size: 14px;
+      color: #fff;
+      background: transparent;
+      cursor: pointer;
+    }
+    .wx-close-btn:active { background: rgba(255, 255, 255, 0.1); }
+
+    /* 小屏适配 */
+    @media (max-width: 340px) {
+      .register-card {
+        padding: 30px 22px 24px;
+        border-radius: 20px;
+      }
+      .app-logo {
+        width: 64px;
+        height: 64px;
+        font-size: 32px;
+      }
+      .app-name { font-size: 20px; }
+      .form-input { font-size: 14px; padding: 12px 0; }
+      .send-btn { height: 44px; font-size: 12px; padding: 0 12px; }
+      .register-btn { padding: 14px; font-size: 15px; }
+    }
+
+    /* 横屏适配 */
+    @media (orientation: landscape) and (max-height: 560px) {
+      body { padding: 16px; align-items: flex-start; }
+      .register-card { max-width: 420px; margin-top: 8px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="register-card" id="registerCard">
+    <div class="app-logo">🛰️</div>
+    <h1 class="app-name">智壤卫士</h1>
+    <p class="app-subtitle">注册账号</p>
+
+    <div class="oauth-hint" id="oauthHint">
+      <span class="dot"></span>
+      <span id="oauthHintText">已获取第三方授权</span>
+    </div>
+
+    <form id="registerForm" autocomplete="off" novalidate>
+      <div class="form-group">
+        <div class="input-wrap">
+          <span class="input-icon">📱</span>
+          <input class="form-input" id="phone" name="phone" type="tel" maxlength="11"
+                 placeholder="请输入手机号" inputmode="numeric">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="code-row">
+          <div class="input-wrap">
+            <span class="input-icon">🔑</span>
+            <input class="form-input" id="verifyCode" name="verifyCode" type="text"
+                   maxlength="6" placeholder="验证码" inputmode="numeric">
+          </div>
+          <button type="button" class="send-btn" id="sendCodeBtn">发送验证码</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input class="form-input" id="password" name="password" type="password"
+                 placeholder="设置密码（6-20位）">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input class="form-input" id="realName" name="realName" type="text"
+                 placeholder="真实姓名">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="input-wrap">
+          <span class="input-icon">🏢</span>
+          <input class="form-input" id="orgName" name="orgName" type="text"
+                 placeholder="组织/单位名称">
+        </div>
+      </div>
+
+      <button type="submit" class="register-btn" id="registerBtn">注 册</button>
+    </form>
+
+    <div class="login-link">
+      已有账号？<a href="https://www.zrws.cloud/">去登录</a>
+    </div>
+  </div>
+
+  <!-- 轻提示 -->
+  <div class="toast" id="toast"></div>
+
+  <!-- 成功遮罩 -->
+  <div class="success-overlay" id="successOverlay">
+    <div class="success-card">
+      <div class="success-icon">✓</div>
+      <div class="success-title">注册成功</div>
+      <div class="success-desc" id="successDesc">
+        <span class="success-spinner"></span>正在跳转，请稍候...
+      </div>
+    </div>
+  </div>
+
+  <!-- 微信内打开提示蒙层 -->
+  <div class="wx-mask" id="wxMask">
+    <div class="wx-mask-content">
+      <div class="wx-arrow">↗</div>
+      <div class="wx-icon-big" id="wxIconBig">💬</div>
+      <div class="wx-title" id="wxTitle">请在浏览器中打开</div>
+      <div class="wx-desc" id="wxDesc">当前在微信中打开<br>点击右上角「···」选择「在浏览器打开」</div>
+      <div class="wx-steps" id="wxSteps">
+        <div class="wx-step">
+          <span class="wx-step-num">1</span>
+          <span>点击右上角「···」按钮</span>
+        </div>
+        <div class="wx-step">
+          <span class="wx-step-num">2</span>
+          <span>选择「在浏览器打开」</span>
+        </div>
+        <div class="wx-step">
+          <span class="wx-step-num">3</span>
+          <span>继续完成注册</span>
+        </div>
+      </div>
+      <div class="wx-actions">
+        <button class="wx-oauth-btn" id="wxOauthBtn">使用微信授权注册</button>
+        <button class="wx-close-btn" id="wxCloseBtn">我知道了</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ===== 配置 =====
+    var API_BASE = 'https://www.zrws.cloud/approval';
+    var OAUTH_BASE = API_BASE + '/api/v1/oauth';
+    var PC_LOGIN_URL = 'https://www.zrws.cloud/';
+    var H5_APP_URL = 'https://www.zrws.cloud/h5/';
+
+    // ===== 环境检测 =====
+    function isWeChat() {
+      return /micromessenger/i.test(navigator.userAgent);
+    }
+    function isAlipay() {
+      return /alipay/i.test(navigator.userAgent);
+    }
+    function isMobile() {
+      return /android|iphone|ipad|ipod/i.test(navigator.userAgent.toLowerCase());
+    }
+    function getQueryParam(name) {
+      var m = new RegExp('[?&]' + name + '=([^&#]*)').exec(window.location.href);
+      return m ? decodeURIComponent(m[1].replace(/\+/g, ' ')) : '';
+    }
+
+    // ===== OAuth 授权码处理 =====
+    var oauthChannel = '';      // 'alipay' | 'wechat'
+    var oauthCode = '';          // 支付宝 auth_code 或 微信 code
+
+    (function initOAuth() {
+      var alipayCode = getQueryParam('alipay_code');
+      var wechatCode = getQueryParam('wechat_code');
+
+      if (alipayCode) {
+        oauthChannel = 'alipay';
+        oauthCode = alipayCode;
+        showOauthHint('支付宝');
+      } else if (wechatCode) {
+        oauthChannel = 'wechat';
+        oauthCode = wechatCode;
+        showOauthHint('微信');
+      } else if (isAlipay()) {
+        // 支付宝内打开，跳转支付宝授权
+        window.location.replace(OAUTH_BASE + '/alipay/auth');
+        return;
+      } else if (isWeChat()) {
+        // 微信内打开，显示蒙层提示
+        showWxMask();
+      }
+    })();
+
+    function showOauthHint(label) {
+      var hint = document.getElementById('oauthHint');
+      document.getElementById('oauthHintText').textContent =
+        '已获取' + label + '授权，完善信息即可完成注册';
+      hint.classList.add('show');
+    }
+
+    // ===== 微信蒙层 =====
+    function showWxMask() {
+      var mask = document.getElementById('wxMask');
+      var icon = document.getElementById('wxIconBig');
+      var title = document.getElementById('wxTitle');
+      var desc = document.getElementById('wxDesc');
+      icon.textContent = '💬';
+      title.textContent = '请在浏览器中打开';
+      desc.innerHTML = '当前在微信中打开<br>点击右上角「···」选择「在浏览器打开」';
+      mask.classList.add('show');
+    }
+    function hideWxMask() {
+      document.getElementById('wxMask').classList.remove('show');
+    }
+    document.getElementById('wxCloseBtn').addEventListener('click', hideWxMask);
+    document.getElementById('wxOauthBtn').addEventListener('click', function () {
+      // 微信授权注册：跳转微信 OAuth
+      window.location.href = OAUTH_BASE + '/wechat/auth';
+    });
+
+    // ===== 轻提示 =====
+    var toastTimer = null;
+    function showToast(msg, type) {
+      var toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = 'toast show' + (type ? ' ' + type : '');
+      if (toastTimer) clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () {
+        toast.className = 'toast';
+      }, 2500);
+    }
+
+    // ===== 发送验证码 =====
+    var sendBtn = document.getElementById('sendCodeBtn');
+    var countdown = 0;
+    var countdownTimer = null;
+
+    function startCountdown() {
+      countdown = 60;
+      sendBtn.disabled = true;
+      sendBtn.textContent = countdown + 's 后重发';
+      countdownTimer = setInterval(function () {
+        countdown--;
+        if (countdown <= 0) {
+          clearInterval(countdownTimer);
+          sendBtn.disabled = false;
+          sendBtn.textContent = '发送验证码';
+        } else {
+          sendBtn.textContent = countdown + 's 后重发';
+        }
+      }, 1000);
+    }
+
+    sendBtn.addEventListener('click', function () {
+      var phone = document.getElementById('phone').value.trim();
+      if (!phone) {
+        showToast('请输入手机号', 'error');
+        return;
+      }
+      if (!/^1[3-9]\d{9}$/.test(phone)) {
+        showToast('请输入正确的手机号', 'error');
+        return;
+      }
+      sendBtn.disabled = true;
+      sendBtn.textContent = '发送中...';
+      fetch(API_BASE + '/api/v1/auth/send-code?phone=' + encodeURIComponent(phone), {
+        method: 'POST'
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && (data.success || data.code === 200)) {
+            showToast('验证码已发送', 'success');
+            startCountdown();
+          } else {
+            showToast((data && data.msg) ? data.msg : '发送失败', 'error');
+            sendBtn.disabled = false;
+            sendBtn.textContent = '发送验证码';
+          }
+        })
+        .catch(function () {
+          showToast('网络异常，请重试', 'error');
+          sendBtn.disabled = false;
+          sendBtn.textContent = '发送验证码';
+        });
+    });
+
+    // ===== 注册提交 =====
+    var registerForm = document.getElementById('registerForm');
+    var registerBtn = document.getElementById('registerBtn');
+
+    registerForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+
+      var phone = document.getElementById('phone').value.trim();
+      var verifyCode = document.getElementById('verifyCode').value.trim();
+      var password = document.getElementById('password').value;
+      var realName = document.getElementById('realName').value.trim();
+      var orgName = document.getElementById('orgName').value.trim();
+
+      if (!phone) { showToast('请输入手机号', 'error'); return; }
+      if (!/^1[3-9]\d{9}$/.test(phone)) { showToast('手机号格式不正确', 'error'); return; }
+      if (!verifyCode) { showToast('请输入验证码', 'error'); return; }
+      if (!password) { showToast('请设置密码', 'error'); return; }
+      if (password.length < 6 || password.length > 20) {
+        showToast('密码长度需6-20位', 'error'); return;
+      }
+      if (!realName) { showToast('请输入真实姓名', 'error'); return; }
+      if (!orgName) { showToast('请输入组织名称', 'error'); return; }
+
+      var payload = {
+        phone: phone,
+        verifyCode: verifyCode,
+        password: password,
+        realName: realName,
+        orgName: orgName
+      };
+      // 携带 OAuth 授权码（占位阶段直接透传，后端换取 openid/userId 后回填）
+      if (oauthChannel === 'alipay') {
+        payload.alipayUserId = oauthCode;
+      } else if (oauthChannel === 'wechat') {
+        payload.wechatOpenid = oauthCode;
+      }
+
+      registerBtn.disabled = true;
+      registerBtn.textContent = '注册中...';
+
+      fetch(API_BASE + '/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) { return res.json(); })
+        .then(function (data) {
+          if (data && (data.success || data.code === 200) && data.data) {
+            onRegisterSuccess(data.data);
+          } else {
+            registerBtn.disabled = false;
+            registerBtn.textContent = '注 册';
+            showToast((data && data.msg) ? data.msg : '注册失败', 'error');
+          }
+        })
+        .catch(function () {
+          registerBtn.disabled = false;
+          registerBtn.textContent = '注 册';
+          showToast('网络异常，请重试', 'error');
+        });
+    });
+
+    // ===== 注册成功处理 =====
+    function onRegisterSuccess(userInfo) {
+      // 缓存 token 供应用读取
+      if (userInfo.token) {
+        try {
+          localStorage.setItem('zrws_token', userInfo.token);
+          localStorage.setItem('zrws_user_info', JSON.stringify(userInfo));
+        } catch (e) {}
+      }
+      document.getElementById('successOverlay').classList.add('show');
+      showToast('注册成功', 'success');
+
+      setTimeout(function () {
+        // 移动端跳 H5 应用，其余跳 PC 登录页
+        var target = isMobile() ? H5_APP_URL : PC_LOGIN_URL;
+        window.location.href = target;
+      }, 1800);
+    }
+  </script>
+</body>
+</html>

@@ -41,6 +41,11 @@
         <span>演示账号: admin / admin</span>
       </div>
 
+      <div class="register-entry">
+        <span class="reg-label">还没有账号？</span>
+        <a class="reg-link" @click="goToRegister">扫码注册</a>
+      </div>
+
       <div class="app-download">
         <div class="qr-code-box">
           <img :src="qrCodeUrl" alt="下载APP" class="qr-code" />
@@ -79,6 +84,7 @@ const loading = ref(false);
 
 const downloadPageUrl = window.location.origin + '/app-download.html';
 const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(downloadPageUrl);
+const registerUrl = window.location.origin + '/register.html';
 
 const downloadAndroid = () => {
   window.open('/apk/zrws.apk', '_blank');
@@ -86,6 +92,10 @@ const downloadAndroid = () => {
 
 const goToH5 = () => {
   window.open('/h5/', '_blank');
+};
+
+const goToRegister = () => {
+  window.open(registerUrl, '_blank');
 };
 
 const getParticleStyle = (n) => {
@@ -109,20 +119,52 @@ const handleLogin = async () => {
     ElMessage.warning('请输入用户名和密码');
     return;
   }
-  
+
   try {
     loading.value = true;
-    const res = await loginApi.login(username.value, password.value);
-    
-    if (res && res.data) {
-      const { token, user } = res.data;
+    // 调用真实后端API
+    const res = await fetch('/approval/api/v1/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: username.value, password: password.value })
+    });
+    const result = await res.json();
+
+    if (result.success && result.data) {
+      const { token, userId, username: uname, realName, orgId, orgName, tenantId, subscriptionLevel } = result.data;
       localStorage.setItem('token', token);
-      localStorage.setItem('currentUser', JSON.stringify(user));
+      localStorage.setItem('currentUser', JSON.stringify({
+        id: userId,
+        username: uname,
+        name: realName || uname,
+        orgId,
+        orgName,
+        tenantId,
+        subscriptionLevel,
+        role: role.value
+      }));
       ElMessage.success('登录成功');
       router.push('/app/dashboard');
+    } else {
+      // 后端返回失败，降级到演示模式
+      if (username.value === 'admin' && password.value === 'admin') {
+        const mockUser = {
+          id: 'U001',
+          username: 'admin',
+          name: '技术管理员',
+          role: 'admin',
+          dept: '技术部'
+        };
+        localStorage.setItem('token', 'mock-token-' + Date.now());
+        localStorage.setItem('currentUser', JSON.stringify(mockUser));
+        ElMessage.success('演示模式登录成功');
+        router.push('/app/dashboard');
+      } else {
+        ElMessage.error(result.msg || '用户名或密码错误');
+      }
     }
   } catch (e) {
-    console.warn('登录失败，使用本地模式:', e.message);
+    console.warn('后端连接失败，使用演示模式:', e.message);
     // 降级到本地登录（演示模式）
     if (username.value === 'admin' && password.value === 'admin') {
       const mockUser = {
@@ -137,7 +179,7 @@ const handleLogin = async () => {
       ElMessage.success('演示模式登录成功');
       router.push('/app/dashboard');
     } else {
-      ElMessage.error('用户名或密码错误');
+      ElMessage.error('登录失败，请检查网络连接');
     }
   } finally {
     loading.value = false;
@@ -411,6 +453,29 @@ onMounted(() => {
   text-align: center;
   font-size: 11px;
   color: var(--signal-dim);
+}
+
+.register-entry {
+  text-align: center;
+  margin-top: var(--s-2);
+  font-size: 13px;
+}
+
+.reg-label {
+  color: var(--signal-dim);
+}
+
+.reg-link {
+  color: #C9A96E;
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.reg-link:hover {
+  color: #A88B4F;
+  text-decoration: underline;
 }
 
 .app-download {

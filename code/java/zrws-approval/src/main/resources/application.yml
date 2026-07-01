@@ -156,3 +156,25 @@ zrws:
     verbose: true
     # 同步失败是否中断启动
     fail-on-sync-error: false
+
+# 支付宝支付配置
+alipay:
+  app-id: ${ALIPAY_APP_ID:your-alipay-app-id}
+  private-key: ${ALIPAY_PRIVATE_KEY:your-alipay-private-key}
+  alipay-public-key: ${ALIPAY_PUBLIC_KEY:your-alipay-public-key}
+  server-url: https://openapi.alipay.com/gateway.do
+  charset: UTF-8
+  sign-type: RSA2
+  format: JSON
+  notify-url: https://www.zrws.cloud/approval/api/v1/payment/alipay/notify
+
+# OAuth 配置（支付宝/微信网页授权）
+zrws:
+  oauth:
+    alipay:
+      app-id: ${ALIPAY_APP_ID:your-alipay-app-id}
+      redirect-uri: https://www.zrws.cloud/approval/api/v1/oauth/alipay/callback
+    wechat:
+      app-id: ${WECHAT_APP_ID:your-wechat-app-id}
+      app-secret: ${WECHAT_APP_SECRET:your-wechat-app-secret}
+      redirect-uri: https://www.zrws.cloud/approval/api/v1/oauth/wechat/callback
