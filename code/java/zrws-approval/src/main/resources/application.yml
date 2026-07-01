@@ -2,7 +2,7 @@ spring:
   application:
     name: zrws-approval
 
-  # Spring AI 1.0 配置
+  # Spring AI 2.0 GA 配置
   ai:
     openai:
       api-key: ${OPENAI_API_KEY:your-api-key-here}

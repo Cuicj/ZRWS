@@ -2,76 +2,78 @@
   <div class="page-container">
     <div class="page-head">
       <div>
-        <h1 class="page-title display">角色管理</h1>
-        <div class="page-meta mono">ROLE MANAGEMENT · {{ roles.length }} 个角色</div>
+        <h1 class="page-title display">组织管理</h1>
+        <div class="page-meta mono">ORGANIZATION MANAGEMENT · {{ orgs.length }} 个组织</div>
       </div>
-      <button class="btn-primary" @click="openCreate">+ 添加角色</button>
     </div>
 
     <div class="stat-row">
-      <StatCard label="角色总数" :value="roles.length" icon="◆" variant="accent" />
-      <StatCard label="启用角色" :value="enabledCount" icon="✓" variant="ok" />
-      <StatCard label="系统角色" :value="systemCount" icon="◉" variant="warn" />
-      <StatCard label="自定义角色" :value="customCount" icon="⚿" variant="accent" />
+      <StatCard label="组织总数" :value="orgs.length" icon="◎" variant="accent" />
+      <StatCard label="启用组织" :value="enabledCount" icon="✓" variant="ok" />
+      <StatCard label="企业版" :value="enterpriseCount" icon="◉" variant="warn" />
+      <StatCard label="个人版" :value="personalCount" icon="○" variant="accent" />
     </div>
 
-    <Panel title="角色列表">
+    <Panel title="组织列表">
       <div v-if="loading" class="loading-tip">加载中...</div>
-      <div v-else-if="!roles.length" class="loading-tip">暂无角色数据</div>
+      <div v-else-if="!orgs.length" class="loading-tip">暂无组织数据</div>
       <table v-else>
-        <thead><tr><th>ID</th><th>角色名称</th><th>角色编码</th><th>类型</th><th>数据范围</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+        <thead><tr><th>ID</th><th>组织名称</th><th>类型</th><th>订阅级别</th><th>最大成员数</th><th>到期时间</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
         <tbody>
-          <tr v-for="r in roles" :key="r.id">
-            <td class="mono">{{ r.id }}</td>
-            <td>{{ r.roleName }}</td>
-            <td class="mono">{{ r.roleCode || '-' }}</td>
-            <td><span class="role-badge" :class="r.roleType === 'SYSTEM' ? 'role-admin' : 'role-user'">{{ r.roleType === 'SYSTEM' ? '系统' : '自定义' }}</span></td>
-            <td class="mono">{{ r.dataScope || '-' }}</td>
-            <td><span class="status-badge" :class="r.status === 'ACTIVE' ? 'status-ok' : 'status-dim'">{{ r.status === 'ACTIVE' ? '启用' : '禁用' }}</span></td>
-            <td class="mono">{{ formatTime(r.createdTime) }}</td>
+          <tr v-for="o in orgs" :key="o.id">
+            <td class="mono">{{ o.id }}</td>
+            <td>{{ o.orgName }}</td>
+            <td><span class="role-badge" :class="o.orgType === 'ENTERPRISE' ? 'role-admin' : 'role-user'">{{ o.orgType === 'ENTERPRISE' ? '企业' : '个人' }}</span></td>
+            <td class="mono">{{ o.subscriptionLevel || '-' }}</td>
+            <td class="mono">{{ o.maxMembers === null || o.maxMembers === undefined ? '不限' : o.maxMembers }}</td>
+            <td class="mono">{{ formatTime(o.subscriptionExpireTime) }}</td>
+            <td><span class="status-badge" :class="o.status === 'ACTIVE' ? 'status-ok' : 'status-err'">{{ o.status === 'ACTIVE' ? '正常' : '禁用' }}</span></td>
+            <td class="mono">{{ formatTime(o.createdTime) }}</td>
             <td>
-              <button class="btn-ghost btn-sm" @click="openEdit(r)">编辑</button>
-              <button class="btn-ghost btn-sm btn-danger" @click="handleDelete(r)" style="margin-left:4px" :disabled="r.roleType === 'SYSTEM'">删除</button>
+              <button class="btn-ghost btn-sm" @click="openEdit(o)">编辑</button>
             </td>
           </tr>
         </tbody>
       </table>
     </Panel>
 
-    <!-- 新建/编辑角色对话框 -->
+    <!-- 编辑组织对话框 -->
     <div v-if="dialogVisible" class="modal-mask" @click.self="dialogVisible = false">
       <div class="modal-card">
         <div class="modal-head">
-          <h3>{{ editMode ? '编辑角色' : '新建角色' }}</h3>
+          <h3>编辑组织 - {{ form.orgName }}</h3>
           <button class="modal-close" @click="dialogVisible = false">×</button>
         </div>
         <div class="modal-body">
           <div class="form-row">
-            <label>角色名称<span class="req">*</span></label>
-            <input v-model="form.roleName" placeholder="如：审批员" />
+            <label>组织名称<span class="req">*</span></label>
+            <input v-model="form.orgName" placeholder="组织名称" />
           </div>
           <div class="form-row">
-            <label>角色编码<span class="req">*</span></label>
-            <input v-model="form.roleCode" placeholder="如：approver" />
-          </div>
-          <div class="form-row">
-            <label>数据范围</label>
-            <select v-model="form.dataScope">
-              <option value="ALL">全部数据</option>
-              <option value="DEPT">本部门数据</option>
-              <option value="SELF">仅本人数据</option>
+            <label>组织类型</label>
+            <select v-model="form.orgType">
+              <option value="PERSONAL">个人</option>
+              <option value="ENTERPRISE">企业</option>
             </select>
+          </div>
+          <div class="form-row">
+            <label>订阅级别</label>
+            <select v-model="form.subscriptionLevel">
+              <option value="FREE">免费版</option>
+              <option value="PRO">专业版</option>
+              <option value="ENTERPRISE">企业版</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <label>最大成员数</label>
+            <input v-model.number="form.maxMembers" type="number" placeholder="留空表示不限" />
           </div>
           <div class="form-row">
             <label>状态</label>
             <select v-model="form.status">
-              <option value="ACTIVE">启用</option>
+              <option value="ACTIVE">正常</option>
               <option value="DISABLED">禁用</option>
             </select>
-          </div>
-          <div class="form-row">
-            <label>权限配置（JSON）</label>
-            <textarea v-model="form.permissions" rows="4" placeholder='如：["user:manage","role:manage"]' />
           </div>
         </div>
         <div class="modal-foot">
@@ -87,82 +89,67 @@
 import { ref, computed, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
-import { ElMessage, ElMessageBox } from 'element-plus';
-import { listRoles, createRole, updateRole, deleteRole } from '@/api/management';
+import { ElMessage } from 'element-plus';
+import { listOrgs, updateOrg } from '@/api/management';
 
-const roles = ref([]);
+const orgs = ref([]);
 const loading = ref(false);
 const dialogVisible = ref(false);
-const editMode = ref(false);
 const submitting = ref(false);
-const form = ref({ roleName: '', roleCode: '', dataScope: 'ALL', status: 'ACTIVE', permissions: '' });
+const form = ref({ orgName: '', orgType: 'ENTERPRISE', subscriptionLevel: 'FREE', maxMembers: null, status: 'ACTIVE' });
 const editingId = ref(null);
 
-const enabledCount = computed(() => roles.value.filter(r => r.status === 'ACTIVE').length);
-const systemCount = computed(() => roles.value.filter(r => r.roleType === 'SYSTEM').length);
-const customCount = computed(() => roles.value.filter(r => r.roleType !== 'SYSTEM').length);
+const enabledCount = computed(() => orgs.value.filter(o => o.status === 'ACTIVE').length);
+const enterpriseCount = computed(() => orgs.value.filter(o => o.orgType === 'ENTERPRISE').length);
+const personalCount = computed(() => orgs.value.filter(o => o.orgType === 'PERSONAL').length);
 
 function formatTime(t) {
   if (!t) return '-';
   return String(t).replace('T', ' ').substring(0, 16);
 }
 
-async function loadRoles() {
+async function loadOrgs() {
   loading.value = true;
   try {
-    const res = await listRoles();
-    roles.value = res.list || [];
+    const res = await listOrgs();
+    orgs.value = res.list || [];
   } catch (e) {
-    ElMessage.error('加载角色列表失败');
-    roles.value = [];
+    ElMessage.error('加载组织列表失败');
+    orgs.value = [];
   } finally {
     loading.value = false;
   }
 }
 
-function openCreate() {
-  editMode.value = false;
-  form.value = { roleName: '', roleCode: '', dataScope: 'ALL', status: 'ACTIVE', permissions: '' };
-  editingId.value = null;
-  dialogVisible.value = true;
-}
-
-function openEdit(r) {
-  editMode.value = true;
-  editingId.value = r.id;
+function openEdit(o) {
+  editingId.value = o.id;
   form.value = {
-    roleName: r.roleName || '',
-    roleCode: r.roleCode || '',
-    dataScope: r.dataScope || 'ALL',
-    status: r.status || 'ACTIVE',
-    permissions: r.permissions || ''
+    orgName: o.orgName || '',
+    orgType: o.orgType || 'ENTERPRISE',
+    subscriptionLevel: o.subscriptionLevel || 'FREE',
+    maxMembers: o.maxMembers,
+    status: o.status || 'ACTIVE'
   };
   dialogVisible.value = true;
 }
 
 async function handleSubmit() {
-  if (!form.value.roleName || !form.value.roleCode) {
-    ElMessage.warning('请填写必填项');
+  if (!form.value.orgName) {
+    ElMessage.warning('请填写组织名称');
     return;
   }
   submitting.value = true;
   try {
-    const payload = {
-      roleName: form.value.roleName,
-      roleCode: form.value.roleCode,
-      dataScope: form.value.dataScope,
-      status: form.value.status,
-      permissions: form.value.permissions || null
-    };
-    if (editMode.value) {
-      await updateRole(editingId.value, payload);
-      ElMessage.success('角色更新成功');
-    } else {
-      await createRole(payload);
-      ElMessage.success('角色创建成功');
-    }
+    await updateOrg(editingId.value, {
+      orgName: form.value.orgName,
+      orgType: form.value.orgType,
+      subscriptionLevel: form.value.subscriptionLevel,
+      maxMembers: form.value.maxMembers === '' ? null : form.value.maxMembers,
+      status: form.value.status
+    });
+    ElMessage.success('组织更新成功');
     dialogVisible.value = false;
-    loadRoles();
+    loadOrgs();
   } catch (e) {
     ElMessage.error(e.response?.data?.message || '操作失败');
   } finally {
@@ -170,19 +157,8 @@ async function handleSubmit() {
   }
 }
 
-async function handleDelete(r) {
-  try {
-    await ElMessageBox.confirm(`确定删除角色 "${r.roleName}" 吗？`, '删除确认', { type: 'warning' });
-    await deleteRole(r.id);
-    ElMessage.success('删除成功');
-    loadRoles();
-  } catch (e) {
-    if (e !== 'cancel') ElMessage.error('删除失败');
-  }
-}
-
 onMounted(() => {
-  loadRoles();
+  loadOrgs();
 });
 </script>
 
@@ -246,14 +222,6 @@ onMounted(() => {
   color: #C9A86C;
   background: rgba(201, 168, 108, 0.08);
 }
-.btn-ghost:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.btn-ghost.btn-danger:hover {
-  color: #C47A6E;
-  background: rgba(196, 122, 110, 0.1);
-}
 .btn-sm {
   padding: 6px 12px;
   font-size: 12px;
@@ -296,9 +264,9 @@ onMounted(() => {
   background: rgba(106, 153, 106, 0.15);
   color: #6A996A;
 }
-.status-dim {
-  background: rgba(139, 115, 85, 0.12);
-  color: #8B7355;
+.status-err {
+  background: rgba(196, 122, 110, 0.15);
+  color: #C47A6E;
 }
 table {
   width: 100%;
@@ -411,7 +379,7 @@ tbody tr:last-child td { border-bottom: none; }
   color: #C47A6E;
   margin-left: 2px;
 }
-.form-row input, .form-row select, .form-row textarea {
+.form-row input, .form-row select {
   width: 100%;
   padding: 9px 14px;
   font-size: 14px;
@@ -422,14 +390,8 @@ tbody tr:last-child td { border-bottom: none; }
   outline: none;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   box-sizing: border-box;
-  font-family: inherit;
 }
-.form-row textarea {
-  font-family: 'SF Mono', 'Monaco', monospace;
-  font-size: 13px;
-  resize: vertical;
-}
-.form-row input:focus, .form-row select:focus, .form-row textarea:focus {
+.form-row input:focus, .form-row select:focus {
   border-color: #C9A86C;
   box-shadow: 0 2px 12px rgba(201, 168, 108, 0.25);
   background: #FEFBF6;

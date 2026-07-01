@@ -725,9 +725,6 @@ const sendRequest = async () => {
       params,
       data: bodyData,
       headers
-    }).catch(err => {
-      console.warn('API请求失败，使用Mock数据:', err.message)
-      return generateMockResponse(currentApi.value, requestData.url)
     })
 
     responseData.value = res.data || res
@@ -747,70 +744,6 @@ const sendRequest = async () => {
   }
 }
 
-const generateMockResponse = (api, url) => {
-  if (api?.responseExample) {
-    return { data: api.responseExample, code: api.responseExample.code || 200 }
-  }
-
-  if (url.includes('geo-standards') && !url.includes('ai')) {
-    return {
-      data: {
-        code: 200,
-        message: 'success',
-        data: {
-          total: 13,
-          page: 1,
-          pageSize: 10,
-          list: [
-            { standardId: 1, standardCode: 'CS-001', standardName: '红壤', category: 'SOIL_CHINA', subcategory: '铁铝土纲' },
-            { standardId: 2, standardCode: 'CS-002', standardName: '黄壤', category: 'SOIL_CHINA', subcategory: '铁铝土纲' },
-            { standardId: 3, standardCode: 'CS-003', standardName: '褐土', category: 'SOIL_CHINA', subcategory: '半淋溶土纲' }
-          ]
-        }
-      },
-      code: 200
-    }
-  }
-
-  if (url.includes('ai/classify')) {
-    return {
-      data: {
-        code: 200,
-        message: 'success',
-        data: {
-          matches: [
-            { standardId: 3, standardName: '褐土', confidence: 92, category: '半淋溶土纲', ph: '6.5-7.5' },
-            { standardId: 5, standardName: '潮土', confidence: 76, category: '半水成土纲', ph: '7.0-8.5' },
-            { standardId: 6, standardName: '棕壤', confidence: 65, category: '淋溶土纲', ph: '5.5-6.5' }
-          ],
-          analysisTime: 0.23,
-          modelVersion: 'v1.2.0'
-        }
-      },
-      code: 200
-    }
-  }
-
-  if (url.includes('external-data/sources')) {
-    return {
-      data: {
-        code: 200,
-        message: 'success',
-        data: [
-          { code: 'soil_lab_api', name: '土壤检测API平台', status: 'online', description: '第三方土壤检测数据接口' },
-          { code: 'agri_data_platform', name: '农业大数据平台', status: 'online', description: '省级农业数据共享平台' },
-          { code: 'geo_monitor_system', name: '地质监测系统', status: 'testing', description: '地质环境监测数据接入' }
-        ]
-      },
-      code: 200
-    }
-  }
-
-  return {
-    data: { code: 200, message: 'success', data: null },
-    code: 200
-  }
-}
 </script>
 
 <style scoped>

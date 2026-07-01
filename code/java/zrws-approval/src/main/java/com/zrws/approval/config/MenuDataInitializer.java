@@ -63,10 +63,11 @@ public class MenuDataInitializer implements ApplicationRunner {
                     createMenu(0L, "设备管理", "device", "⊞", "系统", 1),
                     createMenu(0L, "用户管理", "user-manage", "◉", "系统", 2),
                     createMenu(0L, "角色管理", "role-manage", "◆", "系统", 3),
-                    createMenu(0L, "系统配置", "sys-config", "⚙", "系统", 4),
-                    createMenu(0L, "公告管理", "announcement", "✉", "系统", 5),
-                    createMenu(0L, "报表中心", "report-center", "📊", "系统", 6),
-                    createMenu(0L, "对外接口", "open-api", "🔌", "系统", 7)
+                    createMenu(0L, "组织管理", "org-manage", "◎", "系统", 4),
+                    createMenu(0L, "系统配置", "sys-config", "⚙", "系统", 5),
+                    createMenu(0L, "公告管理", "announcement", "✉", "系统", 6),
+                    createMenu(0L, "报表中心", "report-center", "📊", "系统", 7),
+                    createMenu(0L, "对外接口", "open-api", "🔌", "系统", 8)
             );
 
             int addedCount = 0;

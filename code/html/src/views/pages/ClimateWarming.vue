@@ -137,8 +137,6 @@ const loadData = async () => {
     
     if (trendRes.data && trendRes.data.length > 0) {
       trendData.value = trendRes.data;
-    } else {
-      trendData.value = generateMockTrend();
     }
     
     if (riskRes.data && riskRes.data.length > 0) {
@@ -156,14 +154,6 @@ const loadData = async () => {
   } finally {
     loading.value = false;
   }
-};
-
-const generateMockTrend = () => {
-  const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
-  return months.map(m => ({
-    month: m,
-    anomaly: +(0.2 + Math.random() * 0.8).toFixed(2)
-  }));
 };
 
 onMounted(() => {

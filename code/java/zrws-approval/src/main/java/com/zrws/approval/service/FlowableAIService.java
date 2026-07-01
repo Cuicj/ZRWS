@@ -5,14 +5,9 @@ import com.alibaba.fastjson2.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.flowable.bpmn.converter.BpmnXMLConverter;
 import org.flowable.bpmn.model.*;
+import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.util.*;
@@ -32,19 +27,9 @@ public class FlowableAIService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Value("${spring.ai.openai.api-key:}")
-    private String apiKey;
+    @Autowired
+    private ChatModel chatModel;
 
-    @Value("${spring.ai.openai.base-url:https://api.openai.com}")
-    private String baseUrl;
-
-    @Value("${spring.ai.openai.chat.model:gpt-3.5-turbo}")
-    private String chatModel;
-
-    @Value("${spring.ai.openai.chat.options.temperature:0.7}")
-    private Double temperature;
-
-    private final RestTemplate restTemplate = new RestTemplate();
     private final BpmnXMLConverter bpmnXMLConverter = new BpmnXMLConverter();
 
     // 存储对话会话
@@ -257,47 +242,7 @@ public class FlowableAIService {
 
     @SuppressWarnings("unchecked")
     private String callOpenAI(String prompt) {
-        if (apiKey == null || apiKey.isEmpty()) {
-            throw new RuntimeException("OpenAI API Key未配置");
-        }
-
-        String url = baseUrl + "/v1/chat/completions";
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-        headers.setBearerAuth(apiKey);
-
-        Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", chatModel);
-        requestBody.put("temperature", temperature);
-
-        List<Map<String, String>> messages = new ArrayList<>();
-        messages.add(Collections.singletonMap("role", "user"));
-        messages.get(0).put("content", prompt);
-        requestBody.put("messages", messages);
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
-        ResponseEntity<String> responseEntity = restTemplate.postForEntity(url, request, String.class);
-        String responseBody = responseEntity.getBody();
-
-        if (responseBody == null) {
-            throw new RuntimeException("OpenAI API返回为空");
-        }
-
-        Map<String, Object> responseMap;
-        try {
-            responseMap = objectMapper.readValue(responseBody, Map.class);
-        } catch (Exception e) {
-            throw new RuntimeException("解析OpenAI响应失败: " + responseBody, e);
-        }
-
-        List<Map<String, Object>> choices = (List<Map<String, Object>>) responseMap.get("choices");
-        if (choices == null || choices.isEmpty()) {
-            throw new RuntimeException("OpenAI API返回choices为空");
-        }
-
-        Map<String, Object> message = (Map<String, Object>) choices.get(0).get("message");
-        return (String) message.get("content");
+        return chatModel.call(prompt);
     }
 
     // ============================================================

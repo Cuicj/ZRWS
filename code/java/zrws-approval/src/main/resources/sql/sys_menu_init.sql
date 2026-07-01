@@ -57,5 +57,6 @@ INSERT INTO zrws_sys_menu (parent_id, menu_name, menu_path, menu_icon, menu_type
 (0, '设备管理', 'device', '⊞', 'MENU', '系统', 1, 1),
 (0, '用户管理', 'user-manage', '◉', 'MENU', '系统', 2, 1),
 (0, '角色管理', 'role-manage', '◆', 'MENU', '系统', 3, 1),
-(0, '系统配置', 'sys-config', '⚙', 'MENU', '系统', 4, 1),
-(0, '公告管理', 'announcement', '✉', 'MENU', '系统', 5, 1);
+(0, '组织管理', 'org-manage', '◎', 'MENU', '系统', 4, 1),
+(0, '系统配置', 'sys-config', '⚙', 'MENU', '系统', 5, 1),
+(0, '公告管理', 'announcement', '✉', 'MENU', '系统', 6, 1);

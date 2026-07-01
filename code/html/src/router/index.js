@@ -218,6 +218,14 @@ const routes = [
         meta: { group: '系统', title: '角色管理', icon: '◆' }
       },
 
+      // 组织管理
+      {
+        path: 'org-manage',
+        name: 'OrgManage',
+        component: () => import('@/views/pages/OrgManage.vue'),
+        meta: { group: '系统', title: '组织管理', icon: '◎' }
+      },
+
       // 系统配置
       {
         path: 'sys-config',

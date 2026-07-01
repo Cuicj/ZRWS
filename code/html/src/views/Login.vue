@@ -37,10 +37,6 @@
         </el-button>
       </el-form>
 
-      <div class="login-hint mono">
-        <span>演示账号: admin / admin</span>
-      </div>
-
       <div class="register-entry">
         <span class="reg-label">还没有账号？</span>
         <a class="reg-link" @click="goToRegister">扫码注册</a>
@@ -77,8 +73,8 @@ import { ElMessage } from 'element-plus';
 
 const router = useRouter();
 const appVersion = __APP_VERSION__;
-const username = ref('admin');
-const password = ref('admin');
+const username = ref('');
+const password = ref('');
 const role = ref('admin');
 const loading = ref(false);
 
@@ -146,41 +142,11 @@ const handleLogin = async () => {
       ElMessage.success('登录成功');
       router.push('/app/dashboard');
     } else {
-      // 后端返回失败，降级到演示模式
-      if (username.value === 'admin' && password.value === 'admin') {
-        const mockUser = {
-          id: 'U001',
-          username: 'admin',
-          name: '技术管理员',
-          role: 'admin',
-          dept: '技术部'
-        };
-        localStorage.setItem('token', 'mock-token-' + Date.now());
-        localStorage.setItem('currentUser', JSON.stringify(mockUser));
-        ElMessage.success('演示模式登录成功');
-        router.push('/app/dashboard');
-      } else {
-        ElMessage.error(result.msg || '用户名或密码错误');
-      }
+      ElMessage.error(result.msg || '用户名或密码错误');
     }
   } catch (e) {
-    console.warn('后端连接失败，使用演示模式:', e.message);
-    // 降级到本地登录（演示模式）
-    if (username.value === 'admin' && password.value === 'admin') {
-      const mockUser = {
-        id: 'U001',
-        username: 'admin',
-        name: '技术管理员',
-        role: 'admin',
-        dept: '技术部'
-      };
-      localStorage.setItem('token', 'mock-token-' + Date.now());
-      localStorage.setItem('currentUser', JSON.stringify(mockUser));
-      ElMessage.success('演示模式登录成功');
-      router.push('/app/dashboard');
-    } else {
-      ElMessage.error('登录失败，请检查网络连接');
-    }
+    console.error('登录失败:', e.message);
+    ElMessage.error('登录失败，请检查网络连接');
   } finally {
     loading.value = false;
   }

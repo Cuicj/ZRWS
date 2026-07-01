@@ -689,10 +689,7 @@ const loadSamples = async (analysisId) => {
       throw new Error('无样品数据');
     }
   } catch (e) {
-    rockSamples.value = mockSamples.filter(s => s.analysisId === analysisId);
-    if (rockSamples.value.length > 0) {
-      selectedSample.value = rockSamples.value[0];
-    }
+    console.error('加载样品数据失败:', e.message);
   }
 };
 
@@ -704,45 +701,6 @@ const getLayerSamples = (layer) => {
 };
 
 const openStandardDetail = (std) => { detailStandard.value = std; };
-
-// ===== Mock数据 =====
-const mockSamples = [
-  { sampleId: 1, sampleCode: 'RS-2026-0617-001', analysisId: 1, analysisCode: 'RSA-2026-0617-001', missionCode: 'ZRS-2026-0617-001', sampleName: 'ZK1-01', sampleType: 'ROCK', location: '望城区乔口镇ZK1号孔', latitude: 28.45672, longitude: 112.83521, elevation: 35.2, depth: 5.0, depthUnit: 'm', weight: 1.2, collector: '王工', collectTime: '2026-06-17T09:30:00', lithologyEstimate: '粉质黏土', color: '黄褐色', texture: '可塑', structure: '块状', weatheringDegree: 'RESIDUAL_SOIL', chemicalData: '{"SiO2":58.5,"Al2O3":18.2,"Fe2O3":6.8,"CaO":1.2,"MgO":1.5,"K2O":2.3,"Na2O":0.8,"有机质":3.5}', mineralData: '{"石英":25,"长石":15,"黏土矿物":45,"云母":8,"铁氧化物":5,"有机质":2}', traceElements: '{"Cu":25,"Pb":18,"Zn":32,"Cr":65,"Ni":28,"As":8,"Hg":0.05,"Se":0.3}', physicalData: '{"含水率":"32.5%","密度":"1.85 g/cm³","孔隙比":"0.85","液限":"38","塑限":"22","塑性指数":"16"}', analysisMethod: 'XRF', analysisInstrument: 'X射线荧光光谱仪', analyst: '李工', analysisTime: '2026-06-17T14:00:00', aiIdentification: '水稻土/粉质黏土', aiConfidence: 92.5, aiMatchedStandards: '["SC-001","SC-007"]', status: 'COMPLETED' },
-  { sampleId: 2, sampleCode: 'RS-2026-0617-002', analysisId: 1, analysisCode: 'RSA-2026-0617-001', missionCode: 'ZRS-2026-0617-001', sampleName: 'ZK1-02', sampleType: 'ROCK', location: '望城区乔口镇ZK1号孔', latitude: 28.45672, longitude: 112.83521, elevation: 32.2, depth: 12.5, depthUnit: 'm', weight: 2.5, collector: '王工', collectTime: '2026-06-17T10:00:00', lithologyEstimate: '砂砾石层', color: '灰黄色', texture: '中粗砂', structure: '松散', weatheringDegree: 'FRESH', chemicalData: '{"SiO2":68.5,"Al2O3":10.2,"Fe2O3":3.8,"CaO":2.5,"MgO":1.2,"K2O":2.0,"Na2O":1.8}', mineralData: '{"石英":55,"长石":20,"岩屑":10,"黏土矿物":8,"重矿物":7}', traceElements: '{"Cu":15,"Pb":10,"Zn":20,"Cr":45,"Ni":15}', physicalData: '{"含水率":"12.5%","密度":"2.25 g/cm³","孔隙度":"32%","渗透系数":"0.005 cm/s"}', analysisMethod: 'ICP', analysisInstrument: 'ICP-OES光谱仪', analyst: '张工', analysisTime: '2026-06-17T15:00:00', aiIdentification: '冲洪积砂砾石', aiConfidence: 88.3, aiMatchedStandards: '["SC-007"]', status: 'COMPLETED' },
-  { sampleId: 3, sampleCode: 'RS-2026-0617-003', analysisId: 1, analysisCode: 'RSA-2026-0617-001', missionCode: 'ZRS-2026-0617-001', sampleName: 'ZK1-03', sampleType: 'ROCK', location: '望城区乔口镇ZK1号孔', latitude: 28.45672, longitude: 112.83521, elevation: 28.5, depth: 22.0, depthUnit: 'm', weight: 3.8, collector: '王工', collectTime: '2026-06-17T10:30:00', lithologyEstimate: '强风化泥岩', color: '褐红色', texture: '泥质', structure: '碎块状', weatheringDegree: 'HIGHLY_WEATHERED', chemicalData: '{"SiO2":52.0,"Al2O3":20.5,"Fe2O3":9.5,"CaO":1.0,"MgO":2.0,"K2O":3.0,"Na2O":0.8}', mineralData: '{"黏土矿物":40,"石英":20,"长石":10,"铁氧化物":15,"绿泥石":10,"其他":5}', traceElements: '{"Cu":22,"Pb":15,"Zn":28,"Cr":55,"Ni":22,"V":65}', physicalData: '{"含水率":"15.0%","密度":"2.35 g/cm³","孔隙度":"25%","抗压强度":"8 MPa"}', analysisMethod: 'XRD', analysisInstrument: 'X射线衍射仪', analyst: '李工', analysisTime: '2026-06-17T16:00:00', aiIdentification: '强风化泥岩/红层', aiConfidence: 90.8, aiMatchedStandards: '["ROCK-SE-003"]', status: 'COMPLETED' },
-  { sampleId: 4, sampleCode: 'RS-2026-0617-004', analysisId: 1, analysisCode: 'RSA-2026-0617-001', missionCode: 'ZRS-2026-0617-001', sampleName: 'ZK1-04', sampleType: 'ROCK', location: '望城区乔口镇ZK1号孔', latitude: 28.45672, longitude: 112.83521, elevation: 18.2, depth: 40.0, depthUnit: 'm', weight: 5.2, collector: '王工', collectTime: '2026-06-17T11:00:00', lithologyEstimate: '中风化泥岩', color: '深灰色', texture: '泥质', structure: '中厚层状', weatheringDegree: 'MODERATELY_WEATHERED', chemicalData: '{"SiO2":48.5,"Al2O3":22.8,"Fe2O3":7.2,"CaO":0.8,"MgO":2.5,"K2O":3.5,"Na2O":0.5,"有机碳":0.3}', mineralData: '{"伊利石":35,"蒙脱石":15,"石英":20,"长石":8,"黄铁矿":3,"有机质":5,"其他":14}', traceElements: '{"Cu":18,"Pb":12,"Zn":22,"Cr":60,"Ni":25,"V":80,"U":2.5}', physicalData: '{"含水率":"2.5%","密度":"2.65 g/cm³","孔隙度":"8%","抗压强度":"12 MPa","弹性模量":"1500 MPa"}', analysisMethod: 'COMPREHENSIVE', analysisInstrument: 'XRF+XRD+ICP', analyst: '张总工', analysisTime: '2026-06-17T17:00:00', aiIdentification: '泥岩/碎屑沉积岩', aiConfidence: 95.2, aiMatchedStandards: '["ROCK-SE-003"]', status: 'COMPLETED' },
-  { sampleId: 5, sampleCode: 'RS-2026-0617-005', analysisId: 1, analysisCode: 'RSA-2026-0617-001', missionCode: 'ZRS-2026-0617-001', sampleName: 'ZK1-05', sampleType: 'ROCK', location: '望城区乔口镇ZK1号孔', latitude: 28.45672, longitude: 112.83521, elevation: 5.5, depth: 65.0, depthUnit: 'm', weight: 4.8, collector: '王工', collectTime: '2026-06-17T11:30:00', lithologyEstimate: '微风化石灰岩', color: '浅灰色', texture: '微晶', structure: '块状', weatheringDegree: 'SLIGHTLY_WEATHERED', chemicalData: '{"CaO":54.5,"MgO":1.8,"SiO2":2.5,"Al2O3":0.8,"Fe2O3":0.3,"烧失量":42.0}', mineralData: '{"方解石":92,"白云石":4,"石英":2,"黏土矿物":1,"有机质":1}', traceElements: '{"Sr":800,"Mn":80,"Fe":500,"Mg":3000}', physicalData: '{"密度":"2.70 g/cm³","孔隙度":"1.5%","抗压强度":"65 MPa","弹性模量":"45000 MPa","泊松比":"0.24"}', analysisMethod: 'CHEMICAL', analysisInstrument: '化学分析+XRD', analyst: '李工', analysisTime: '2026-06-17T18:00:00', aiIdentification: '石灰岩/碳酸盐岩', aiConfidence: 96.8, aiMatchedStandards: '["ROCK-SE-001","ROCK-ME-002"]', status: 'COMPLETED' }
-];
-
-const mockStandards = [
-  { standardId: 1, standardCode: 'SC-001', standardName: '水稻土', category: 'SOIL_CHINA', subcategory: '人为土', classificationSystem: 'CST', colorDescription: '灰棕色-蓝灰色', textureDescription: '壤质-黏质', structureDescription: '团粒-棱柱状', distribution: '秦岭-淮河以南广大地区', formationEnvironment: '人工水耕熟化', densityMin: 1.1, densityMax: 1.4, hardnessMin: 2.0, hardnessMax: 4.0, porosityMin: 45, porosityMax: 58, permeabilityMin: 1e-7, permeabilityMax: 1e-5, chemicalComposition: '{"SiO2":58.5,"Al2O3":18.2,"Fe2O3":6.8,"CaO":1.2,"MgO":1.5,"K2O":2.3,"Na2O":0.8,"有机质":3.5}', mineralComposition: '{"黏土矿物":45,"石英":25,"长石":15,"云母":8,"铁氧化物":5,"其他":2}' },
-  { standardId: 2, standardCode: 'SC-002', standardName: '红壤', category: 'SOIL_CHINA', subcategory: '铁铝土', classificationSystem: 'CST', colorDescription: '红色-棕红色', textureDescription: '黏重', structureDescription: '块状-核状', distribution: '长江以南红壤丘陵区', formationEnvironment: '脱硅富铝化', densityMin: 1.2, densityMax: 1.5, hardnessMin: 3.0, hardnessMax: 5.0, porosityMin: 40, porosityMax: 52, permeabilityMin: 1e-8, permeabilityMax: 1e-6, chemicalComposition: '{"SiO2":52.3,"Al2O3":22.5,"Fe2O3":10.8,"CaO":0.3,"MgO":0.5,"K2O":1.8,"Na2O":0.3,"有机质":1.5}', mineralComposition: '{"高岭石":40,"石英":25,"赤铁矿":15,"三水铝石":8,"伊利石":7,"其他":5}' },
-  { standardId: 3, standardCode: 'SC-003', standardName: '黄棕壤', category: 'SOIL_CHINA', subcategory: '淋溶土', classificationSystem: 'CST', colorDescription: '黄棕色-棕黄色', textureDescription: '黏壤质', structureDescription: '棱柱状-块状', distribution: '长江中下游北亚热带', formationEnvironment: '弱富铝化黏化', densityMin: 1.2, densityMax: 1.45, hardnessMin: 2.5, hardnessMax: 4.5, porosityMin: 42, porosityMax: 55, permeabilityMin: 1e-7, permeabilityMax: 1e-5, chemicalComposition: '{"SiO2":55.8,"Al2O3":20.3,"Fe2O3":8.2,"CaO":0.8,"MgO":1.2,"K2O":2.1,"Na2O":0.6,"有机质":2.5}', mineralComposition: '{"伊利石":35,"高岭石":20,"石英":25,"绿泥石":8,"蛭石":7,"其他":5}' },
-  { standardId: 4, standardCode: 'SC-004', standardName: '黄壤', category: 'SOIL_CHINA', subcategory: '铁铝土', classificationSystem: 'CST', colorDescription: '黄色-蜡黄色', textureDescription: '黏重', structureDescription: '核状-块状', distribution: '云贵高原、华南山地', formationEnvironment: '富铝化黄化', densityMin: 1.15, densityMax: 1.45, hardnessMin: 2.0, hardnessMax: 4.0, porosityMin: 42, porosityMax: 54, permeabilityMin: 1e-7, permeabilityMax: 1e-6, chemicalComposition: '{"SiO2":50.2,"Al2O3":24.5,"Fe2O3":9.2,"CaO":0.2,"MgO":0.4,"K2O":1.5,"Na2O":0.2,"有机质":2.0}', mineralComposition: '{"蛭石":30,"高岭石":25,"石英":20,"针铁矿":12,"伊利石":8,"其他":5}' },
-  { standardId: 5, standardCode: 'SC-005', standardName: '紫色土', category: 'SOIL_CHINA', subcategory: '初育土', classificationSystem: 'CST', colorDescription: '紫色-紫棕色', textureDescription: '壤质-黏壤质', structureDescription: '粒状-小块状', distribution: '四川盆地、云贵川', formationEnvironment: '紫色岩风化', densityMin: 1.2, densityMax: 1.4, hardnessMin: 2.0, hardnessMax: 4.5, porosityMin: 45, porosityMax: 55, permeabilityMin: 1e-6, permeabilityMax: 1e-4, chemicalComposition: '{"SiO2":58.2,"Al2O3":15.6,"Fe2O3":5.8,"CaO":3.5,"MgO":2.2,"K2O":2.8,"Na2O":1.0,"有机质":1.2}', mineralComposition: '{"长石":30,"石英":25,"云母":15,"方解石":12,"蒙脱石":8,"其他":10}' },
-  { standardId: 6, standardCode: 'SC-006', standardName: '石灰土', category: 'SOIL_CHINA', subcategory: '初育土', classificationSystem: 'CST', colorDescription: '棕色-红棕色', textureDescription: '黏壤质', structureDescription: '粒状-团粒状', distribution: '贵州、广西、云南', formationEnvironment: '碳酸盐岩风化', densityMin: 1.15, densityMax: 1.35, hardnessMin: 2.5, hardnessMax: 4.5, porosityMin: 48, porosityMax: 58, permeabilityMin: 1e-6, permeabilityMax: 1e-4, chemicalComposition: '{"SiO2":48.5,"Al2O3":16.8,"Fe2O3":6.5,"CaO":8.5,"MgO":2.5,"K2O":1.8,"Na2O":0.5,"有机质":2.2}', mineralComposition: '{"方解石":35,"石英":20,"蒙脱石":15,"伊利石":10,"高岭石":8,"其他":12}' },
-  { standardId: 7, standardCode: 'SC-007', standardName: '潮土', category: 'SOIL_CHINA', subcategory: '半水成土', classificationSystem: 'CST', colorDescription: '灰黄色-棕色', textureDescription: '砂壤-壤质', structureDescription: '层状-碎块状', distribution: '黄淮海平原、长江中下游', formationEnvironment: '河流冲积', densityMin: 1.2, densityMax: 1.45, hardnessMin: 3.0, hardnessMax: 5.0, porosityMin: 45, porosityMax: 55, permeabilityMin: 1e-5, permeabilityMax: 1e-3, chemicalComposition: '{"SiO2":60.2,"Al2O3":15.8,"Fe2O3":5.5,"CaO":2.5,"MgO":1.8,"K2O":2.2,"Na2O":1.2,"有机质":1.8}', mineralComposition: '{"石英":30,"长石":20,"蒙脱石":15,"伊利石":12,"方解石":8,"其他":15}' },
-  { standardId: 8, standardCode: 'SC-008', standardName: '菜园土', category: 'SOIL_CHINA', subcategory: '人为土', classificationSystem: 'CST', colorDescription: '暗棕-黑褐色', textureDescription: '壤质', structureDescription: '团粒状', distribution: '城郊区、蔬菜基地', formationEnvironment: '人工旱耕熟化', densityMin: 1.05, densityMax: 1.3, hardnessMin: 2.0, hardnessMax: 3.5, porosityMin: 50, porosityMax: 60, permeabilityMin: 1e-5, permeabilityMax: 1e-3, chemicalComposition: '{"SiO2":56.8,"Al2O3":17.5,"Fe2O3":6.2,"CaO":2.0,"MgO":1.6,"K2O":2.5,"Na2O":0.9,"有机质":3.8}', mineralComposition: '{"腐殖质":20,"黏土矿物":35,"石英":20,"长石":10,"磷灰石":5,"其他":10}' },
-  { standardId: 20, standardCode: 'ROCK-IG-001', standardName: '花岗岩', category: 'ROCK_IGNEOUS', classificationSystem: 'GB_T_17412', colorDescription: '肉红色-灰白色', textureDescription: '粗粒结构', structureDescription: '块状构造', distribution: '中国东南部、华南', formationEnvironment: '酸性岩浆结晶分异', densityMin: 2.60, densityMax: 2.75, hardnessMin: 6.0, hardnessMax: 6.5, porosityMin: 0.5, porosityMax: 1.5, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"SiO2":72.0,"Al2O3":14.0,"Fe2O3":2.5,"CaO":1.5,"MgO":0.8,"K2O":4.5,"Na2O":3.5}', mineralComposition: '{"石英":30,"正长石":40,"斜长石":15,"黑云母":8,"角闪石":5,"其他":2}', mechanicalProperties: '{"抗压强度":"100 MPa","抗拉强度":"5 MPa","弹性模量":"50 GPa","泊松比":"0.25"}', typicalElements: 'Si、K' },
-  { standardId: 21, standardCode: 'ROCK-IG-002', standardName: '玄武岩', category: 'ROCK_IGNEOUS', classificationSystem: 'GB_T_17412', colorDescription: '灰黑色-深灰色', textureDescription: '致密隐晶', structureDescription: '块状-气孔', distribution: '中国西南部、东北', formationEnvironment: '基性岩浆喷出冷凝', densityMin: 2.80, densityMax: 3.10, hardnessMin: 5.0, hardnessMax: 6.0, porosityMin: 0.5, porosityMax: 2.0, permeabilityMin: 1e-10, permeabilityMax: 1e-8, chemicalComposition: '{"SiO2":48.0,"Al2O3":16.0,"Fe2O3":12.0,"CaO":10.0,"MgO":8.0,"K2O":1.0,"Na2O":3.0}', mineralComposition: '{"斜长石":55,"辉石":25,"橄榄石":10,"磁铁矿":5,"玻璃质":5}', mechanicalProperties: '{"抗压强度":"150 MPa","抗拉强度":"8 MPa","弹性模量":"70 GPa","泊松比":"0.28"}', typicalElements: 'Fe、Mg、Ca' },
-  { standardId: 22, standardCode: 'ROCK-IG-003', standardName: '闪长岩', category: 'ROCK_IGNEOUS', classificationSystem: 'GB_T_17412', colorDescription: '灰色-深灰色', textureDescription: '中粒结构', structureDescription: '块状构造', distribution: '华北、长江中下游', formationEnvironment: '中性岩浆侵入', densityMin: 2.70, densityMax: 2.90, hardnessMin: 5.5, hardnessMax: 6.0, porosityMin: 0.5, porosityMax: 1.5, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"SiO2":58.0,"Al2O3":17.0,"Fe2O3":7.5,"CaO":6.5,"MgO":3.5,"K2O":2.5,"Na2O":4.5}', mineralComposition: '{"斜长石":50,"角闪石":25,"黑云母":10,"石英":5,"辉石":5,"其他":5}', mechanicalProperties: '{"抗压强度":"120 MPa","抗拉强度":"6 MPa","弹性模量":"60 GPa","泊松比":"0.26"}', typicalElements: 'Al、Ca、Fe' },
-  { standardId: 23, standardCode: 'ROCK-SE-001', standardName: '石灰岩', category: 'ROCK_SEDIMENTARY', classificationSystem: 'GB_T_17412', colorDescription: '灰色-深灰色', textureDescription: '微晶-鲕粒', structureDescription: '层理-块状', distribution: '分布广泛', formationEnvironment: '海相/湖相化学沉积', densityMin: 2.50, densityMax: 2.80, hardnessMin: 3.0, hardnessMax: 4.0, porosityMin: 1.0, porosityMax: 5.0, permeabilityMin: 1e-8, permeabilityMax: 1e-5, chemicalComposition: '{"CaO":55.0,"MgO":2.0,"SiO2":8.0,"Al2O3":2.5,"Fe2O3":1.0,"烧失量":41.0}', mineralComposition: '{"方解石":85,"白云石":8,"石英":5,"黏土矿物":2}', mechanicalProperties: '{"抗压强度":"80 MPa","抗拉强度":"4 MPa","弹性模量":"45 GPa","泊松比":"0.24"}', typicalElements: 'Ca、Mg' },
-  { standardId: 24, standardCode: 'ROCK-SE-002', standardName: '砂岩', category: 'ROCK_SEDIMENTARY', classificationSystem: 'GB_T_17412', colorDescription: '灰黄色-灰白色', textureDescription: '砂粒结构', structureDescription: '层理构造', distribution: '分布广泛', formationEnvironment: '机械搬运沉积', densityMin: 2.20, densityMax: 2.65, hardnessMin: 2.0, hardnessMax: 3.5, porosityMin: 5.0, porosityMax: 25.0, permeabilityMin: 1e-5, permeabilityMax: 1e-2, chemicalComposition: '{"SiO2":78.0,"Al2O3":8.0,"Fe2O3":2.5,"CaO":3.0,"MgO":1.0,"K2O":2.0,"Na2O":1.5}', mineralComposition: '{"石英":65,"长石":15,"岩屑":10,"胶结物":10}', mechanicalProperties: '{"抗压强度":"60 MPa","抗拉强度":"3 MPa","弹性模量":"30 GPa","泊松比":"0.20"}', typicalElements: 'Si' },
-  { standardId: 25, standardCode: 'ROCK-SE-003', standardName: '页岩', category: 'ROCK_SEDIMENTARY', classificationSystem: 'GB_T_17412', colorDescription: '黑色-灰绿色', textureDescription: '泥质结构', structureDescription: '页理构造', distribution: '分布广泛', formationEnvironment: '细粒悬浮物沉积', densityMin: 2.40, densityMax: 2.70, hardnessMin: 2.5, hardnessMax: 3.5, porosityMin: 5.0, porosityMax: 20.0, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"SiO2":58.0,"Al2O3":16.0,"Fe2O3":5.5,"CaO":3.0,"MgO":2.5,"K2O":3.5,"Na2O":1.0,"有机质":1.5}', mineralComposition: '{"黏土矿物":55,"石英":20,"长石":10,"有机质":8,"其他":7}', mechanicalProperties: '{"抗压强度":"40 MPa","抗拉强度":"2 MPa","弹性模量":"20 GPa","泊松比":"0.18"}', typicalElements: 'Al、K' },
-  { standardId: 26, standardCode: 'ROCK-SE-004', standardName: '白云岩', category: 'ROCK_SEDIMENTARY', classificationSystem: 'GB_T_17412', colorDescription: '灰白色-深灰色', textureDescription: '晶粒结构', structureDescription: '层理构造', distribution: '华北、华南', formationEnvironment: '白云岩化作用', densityMin: 2.70, densityMax: 2.90, hardnessMin: 3.5, hardnessMax: 4.5, porosityMin: 0.5, porosityMax: 2.0, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"MgO":22.0,"CaO":30.0,"SiO2":3.0,"Fe2O3":0.5,"烧失量":44.0}', mineralComposition: '{"白云石":90,"方解石":5,"石英":3,"黏土矿物":2}', mechanicalProperties: '{"抗压强度":"100 MPa","抗拉强度":"5 MPa","弹性模量":"55 GPa","泊松比":"0.25"}', typicalElements: 'Mg、Ca' },
-  { standardId: 30, standardCode: 'ROCK-ME-001', standardName: '片麻岩', category: 'ROCK_METAMORPHIC', classificationSystem: 'GB_T_17412', colorDescription: '灰白色-浅灰色', textureDescription: '粒状鳞片', structureDescription: '片麻状构造', distribution: '秦岭-大别山、华北', formationEnvironment: '区域变质作用', densityMin: 2.60, densityMax: 2.80, hardnessMin: 5.5, hardnessMax: 6.5, porosityMin: 0.5, porosityMax: 1.5, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"SiO2":68.0,"Al2O3":15.5,"Fe2O3":5.0,"CaO":2.5,"MgO":2.0,"K2O":3.5,"Na2O":3.5}', mineralComposition: '{"石英":30,"长石":40,"黑云母":12,"角闪石":10,"其他":8}', mechanicalProperties: '{"抗压强度":"120 MPa","抗拉强度":"6 MPa","弹性模量":"55 GPa","泊松比":"0.25"}', typicalElements: 'Si、Al' },
-  { standardId: 31, standardCode: 'ROCK-ME-002', standardName: '大理岩', category: 'ROCK_METAMORPHIC', classificationSystem: 'GB_T_17412', colorDescription: '白色-杂色', textureDescription: '粒状变晶', structureDescription: '块状-条带', distribution: '云南、四川、湖北', formationEnvironment: '碳酸盐岩变质', densityMin: 2.60, densityMax: 2.85, hardnessMin: 3.0, hardnessMax: 4.0, porosityMin: 0.5, porosityMax: 2.0, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"CaO":53.0,"MgO":3.0,"SiO2":3.5,"Al2O3":1.0,"Fe2O3":0.5,"烧失量":42.0}', mineralComposition: '{"方解石":75,"白云石":20,"石英":3,"其他":2}', mechanicalProperties: '{"抗压强度":"90 MPa","抗拉强度":"4.5 MPa","弹性模量":"50 GPa","泊松比":"0.24"}', typicalElements: 'Ca' },
-  { standardId: 32, standardCode: 'ROCK-ME-003', standardName: '板岩', category: 'ROCK_METAMORPHIC', classificationSystem: 'GB_T_17412', colorDescription: '深灰色-黑色', textureDescription: '隐晶质', structureDescription: '板状劈理', distribution: '板溪群、南华系', formationEnvironment: '页岩低级变质', densityMin: 2.50, densityMax: 2.80, hardnessMin: 4.0, hardnessMax: 5.0, porosityMin: 1.0, porosityMax: 5.0, permeabilityMin: 1e-9, permeabilityMax: 1e-7, chemicalComposition: '{"SiO2":62.0,"Al2O3":18.0,"Fe2O3":7.0,"CaO":1.0,"MgO":2.5,"K2O":3.5,"Na2O":1.0,"有机质":1.5}', mineralComposition: '{"黏土矿物":45,"石英":25,"绿泥石":10,"绢云母":10,"其他":10}', mechanicalProperties: '{"抗压强度":"60 MPa","抗拉强度":"3 MPa","弹性模量":"30 GPa","泊松比":"0.20"}', typicalElements: 'Al、Si' },
-  { standardId: 33, standardCode: 'ROCK-ME-005', standardName: '石英岩', category: 'ROCK_METAMORPHIC', classificationSystem: 'GB_T_17412', colorDescription: '白色-灰白色', textureDescription: '粒状变晶', structureDescription: '块状构造', distribution: '华北、西北', formationEnvironment: '砂岩变质重结晶', densityMin: 2.60, densityMax: 2.70, hardnessMin: 6.5, hardnessMax: 7.5, porosityMin: 0.2, porosityMax: 1.0, permeabilityMin: 1e-10, permeabilityMax: 1e-8, chemicalComposition: '{"SiO2":95.0,"Al2O3":2.0,"Fe2O3":0.8,"CaO":0.3}', mineralComposition: '{"石英":95,"长石":2,"磁铁矿":1,"其他":2}', mechanicalProperties: '{"抗压强度":"200 MPa","抗拉强度":"12 MPa","弹性模量":"90 GPa","泊松比":"0.22"}', typicalElements: 'Si' },
-  { standardId: 40, standardCode: 'WRB-001', standardName: '高活性淋溶土', category: 'SOIL_WRB', subcategory: 'Luvisols', classificationSystem: 'WRB', distribution: '温带湿润地区', densityMin: 1.2, densityMax: 1.5, hardnessMin: 3, hardnessMax: 5, porosityMin: 40, porosityMax: 55, permeabilityMin: 1e-7, permeabilityMax: 1e-5, chemicalComposition: '{"SiO2":55.0,"Al2O3":21.0,"Fe2O3":7.5,"CaO":1.0,"MgO":1.3,"K2O":2.0,"有机质":2.0}', mineralComposition: '{"蒙脱石-伊利石":50,"石英":25,"长石":15,"其他":10}' },
-  { standardId: 41, standardCode: 'WRB-002', standardName: '低活性强酸土', category: 'SOIL_WRB', subcategory: 'Acrisols', classificationSystem: 'WRB', distribution: '热带亚热带湿润地区', densityMin: 1.1, densityMax: 1.4, hardnessMin: 2, hardnessMax: 4, porosityMin: 45, porosityMax: 58, permeabilityMin: 1e-8, permeabilityMax: 1e-6, chemicalComposition: '{"SiO2":50.0,"Al2O3":25.0,"Fe2O3":11.0,"CaO":0.2,"MgO":0.3,"K2O":1.5,"有机质":1.5}', mineralComposition: '{"高岭石":45,"石英":25,"铁氧化物":20,"其他":10}' },
-  { standardId: 42, standardCode: 'WRB-003', standardName: '铁铝土', category: 'SOIL_WRB', subcategory: 'Ferralsols', classificationSystem: 'WRB', distribution: '热带湿热地区', densityMin: 1.0, densityMax: 1.3, hardnessMin: 2, hardnessMax: 3, porosityMin: 50, porosityMax: 65, permeabilityMin: 1e-7, permeabilityMax: 1e-5, chemicalComposition: '{"SiO2":42.0,"Al2O3":30.0,"Fe2O3":18.0,"CaO":0.1,"MgO":0.2,"K2O":0.5,"有机质":1.0}', mineralComposition: '{"高岭石":35,"三水铝石":25,"赤铁矿":25,"石英":10,"其他":5}' },
-  { standardId: 43, standardCode: 'WRB-004', standardName: '钙积土', category: 'SOIL_WRB', subcategory: 'Calcisols', classificationSystem: 'WRB', distribution: '干旱半干旱地区', densityMin: 1.3, densityMax: 1.6, hardnessMin: 3, hardnessMax: 5, porosityMin: 35, porosityMax: 48, permeabilityMin: 1e-8, permeabilityMax: 1e-6, chemicalComposition: '{"SiO2":50.0,"Al2O3":12.0,"Fe2O3":4.5,"CaO":15.0,"MgO":3.0,"K2O":1.8,"有机质":0.8}', mineralComposition: '{"方解石":40,"石英":20,"黏土矿物":15,"长石":10,"其他":15}' },
-  { standardId: 44, standardCode: 'WRB-005', standardName: '潜育土', category: 'SOIL_WRB', subcategory: 'Gleysols', classificationSystem: 'WRB', distribution: '地下水位高的低洼地区', densityMin: 1.0, densityMax: 1.4, hardnessMin: 1, hardnessMax: 3, porosityMin: 50, porosityMax: 70, permeabilityMin: 1e-9, permeabilityMax: 1e-6, chemicalComposition: '{"SiO2":52.0,"Al2O3":18.0,"Fe2O3":5.0,"CaO":1.5,"MgO":1.8,"K2O":2.0,"有机质":4.0}', mineralComposition: '{"黏土矿物":40,"石英":25,"硫化物":5,"有机质":20,"其他":10}' },
-  { standardId: 45, standardCode: 'WRB-006', standardName: '有机土', category: 'SOIL_WRB', subcategory: 'Histosols', classificationSystem: 'WRB', distribution: '泥炭沼泽地区', densityMin: 0.3, densityMax: 0.8, hardnessMin: 1, hardnessMax: 2, porosityMin: 70, porosityMax: 90, permeabilityMin: 1e-6, permeabilityMax: 1e-3, chemicalComposition: '{"SiO2":15.0,"Al2O3":3.0,"Fe2O3":1.0,"有机质":65.0}', mineralComposition: '{"腐殖质":70,"植物残体":20,"矿物质":10}' },
-  { standardId: 46, standardCode: 'WRB-007', standardName: '雏形土', category: 'SOIL_WRB', subcategory: 'Cambisols', classificationSystem: 'WRB', distribution: '温带到热带广泛分布', densityMin: 1.1, densityMax: 1.5, hardnessMin: 2, hardnessMax: 4, porosityMin: 42, porosityMax: 58, permeabilityMin: 1e-7, permeabilityMax: 1e-5, chemicalComposition: '{"SiO2":58.0,"Al2O3":16.0,"Fe2O3":6.0,"CaO":2.0,"MgO":2.5,"K2O":2.8,"有机质":1.5}', mineralComposition: '{"原生矿物":45,"黏土矿物":25,"石英":20,"其他":10}' },
-  { standardId: 47, standardCode: 'WRB-008', standardName: '黏绨土', category: 'SOIL_WRB', subcategory: 'Nitisols', classificationSystem: 'WRB', distribution: '热带火山岩地区', densityMin: 0.9, densityMax: 1.2, hardnessMin: 1, hardnessMax: 3, porosityMin: 55, porosityMax: 75, permeabilityMin: 1e-6, permeabilityMax: 1e-4, chemicalComposition: '{"SiO2":45.0,"Al2O3":28.0,"Fe2O3":15.0,"CaO":0.3,"MgO":0.5,"K2O":1.2,"有机质":1.2}', mineralComposition: '{"高岭石-氧化铁":60,"石英":15,"其他":25}' }
-];
 
 onMounted(async () => {
   try {
@@ -758,8 +716,7 @@ onMounted(async () => {
       throw new Error('无数据');
     }
   } catch (e) {
-    console.warn('API加载失败，使用Mock数据', e);
-    loadMockData();
+    console.error('API加载失败:', e);
   }
 
   try {
@@ -770,88 +727,10 @@ onMounted(async () => {
       throw new Error('无标准数据');
     }
   } catch (e) {
-    console.warn('标准数据API加载失败，使用Mock数据', e);
-    standardList.value = mockStandards;
+    console.error('标准数据API加载失败:', e);
   }
 });
 
-const loadMockData = () => {
-  analysisList.value = [
-    {
-      analysisId: 1,
-      analysisCode: 'RSA-2026-0617-001',
-      projectName: '乔口镇综合地质勘察',
-      location: '望城区乔口镇盘龙岭村',
-      analysisType: '综合分析',
-      dataSource: '钻孔+地质雷达',
-      boreholeCount: 6,
-      maxDepth: 80,
-      stratumCount: 5,
-      aiAlgorithm: 'DEEP_LEARNING',
-      aiConfidence: 94.8,
-      aiSummary: 'AI分析结果显示：该区域岩层结构较为稳定，从上到下依次为第四系覆盖层、强风化泥岩、中风化泥岩、微风化石灰岩。岩层倾角约15°，整体为单斜构造。50米以下为硬质石灰岩，承载力较高。取样法分析与物探结果吻合度94.2%。',
-      aiDetail: JSON.stringify({ boreholeCount: 6, avgRQD: '78.5%', rockQuality: '良好', bearingCapacity: '60MPa', seismicLevel: 'VIII度', sampleCount: 5, matchRate: '94.2%' }),
-      stratumData: JSON.stringify([
-        { depth: '0-3m', lithology: '粉质黏土', thickness: 3.0 },
-        { depth: '3-8m', lithology: '砂砾石层', thickness: 5.0 },
-        { depth: '8-25m', lithology: '强风化泥岩', thickness: 17.0 },
-        { depth: '25-50m', lithology: '中风化泥岩', thickness: 25.0 },
-        { depth: '50-80m', lithology: '微风化石灰岩', thickness: 30.0 }
-      ]),
-      lithologyData: JSON.stringify([
-        { name: '粉质黏土层', depth: '0-3m', type: 'Q4al+pl', strength: '120kPa', permeability: '低渗透', thickness: 3.0 },
-        { name: '砂砾石层', depth: '3-8m', type: 'Q2al', strength: '280kPa', permeability: '中渗透', thickness: 5.0 },
-        { name: '强风化泥岩', depth: '8-25m', type: 'E2s', strength: '350kPa', permeability: '低渗透', thickness: 17.0 },
-        { name: '中风化泥岩', depth: '25-50m', type: 'E2s', strength: '12MPa', permeability: '微渗透', thickness: 25.0 },
-        { name: '微风化石灰岩', depth: '50-80m', type: 'C1d', strength: '60MPa', permeability: '微渗透', thickness: 30.0 }
-      ]),
-      structureData: JSON.stringify({ structure: '单斜构造', dip: '15°', dipDirection: '135°', fractures: 2 }),
-      riskLevel: 'LOW',
-      suggestion: '建议在石灰岩地层进行基础施工时注意岩溶发育情况，施工前应进行详细勘察',
-      analyst: '张总工',
-      analysisTime: '2026-06-17T16:00:00'
-    },
-    {
-      analysisId: 2,
-      analysisCode: 'RSA-2026-0616-001',
-      projectName: '莲花镇地质雷达探测',
-      location: '岳麓区莲花镇',
-      analysisType: '地质雷达',
-      dataSource: '地质雷达',
-      maxDepth: 30,
-      stratumCount: 4,
-      aiAlgorithm: 'CNN',
-      aiConfidence: 87.3,
-      aiSummary: '地质雷达探测结果显示：该区域存在一条小型正断层（F1），位于地表下15-20米处，断距约2米。岩层整体为砂岩地层，风化程度随深度增加而降低。建议对断层附近区域进行重点监测。',
-      aiDetail: JSON.stringify({ gprFrequency: '500MHz', penetrationDepth: '30m', resolution: '0.5m' }),
-      stratumData: JSON.stringify([
-        { depth: '0-2m', lithology: '耕植土', thickness: 2.0 },
-        { depth: '2-10m', lithology: '粉质黏土', thickness: 8.0 },
-        { depth: '10-20m', lithology: '强风化砂岩', thickness: 10.0 },
-        { depth: '20-30m', lithology: '中风化砂岩', thickness: 10.0 }
-      ]),
-      lithologyData: JSON.stringify([
-        { name: '耕植土层', depth: '0-2m', thickness: 2.0 },
-        { name: '粉质黏土层', depth: '2-10m', thickness: 8.0 },
-        { name: '强风化砂岩层', depth: '10-20m', thickness: 10.0 },
-        { name: '中风化砂岩层', depth: '20-30m', thickness: 10.0 }
-      ]),
-      structureData: JSON.stringify({ structure: '层状结构', dip: '10°', dipDirection: '210°' }),
-      riskLevel: 'MEDIUM',
-      suggestion: '建议对F1断层附近区域进行加密监测，防止不均匀沉降',
-      analyst: '李工',
-      analysisTime: '2026-06-16T14:00:00'
-    }
-  ];
-
-  standardList.value = mockStandards;
-  
-  if (analysisList.value.length > 0) {
-    selectedAnalysis.value = analysisList.value[0].analysisId;
-    currentAnalysis.value = analysisList.value[0];
-    loadSamples(1);
-  }
-};
 </script>
 
 <style scoped>

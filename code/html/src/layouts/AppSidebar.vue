@@ -136,6 +136,7 @@ const defaultMenus = [
       { path: 'device', name: '设备管理', icon: '⊞' },
       { path: 'user-manage', name: '用户管理', icon: '◉' },
       { path: 'role-manage', name: '角色管理', icon: '◆' },
+      { path: 'org-manage', name: '组织管理', icon: '◎' },
       { path: 'sys-config', name: '系统配置', icon: '⚙' },
       { path: 'announcement', name: '公告管理', icon: '✉' },
       { path: 'open-api', name: '对外接口', icon: '🔌' },

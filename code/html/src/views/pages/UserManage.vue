@@ -3,80 +3,259 @@
     <div class="page-head">
       <div>
         <h1 class="page-title display">用户管理</h1>
-        <div class="page-meta mono">USER MANAGEMENT · {{ users.length }} 位用户</div>
+        <div class="page-meta mono">USER MANAGEMENT · {{ total }} 位用户</div>
       </div>
-      <button class="btn btn-primary btn-sm">+ 添加用户</button>
+      <button class="btn-primary" @click="openCreate">+ 添加用户</button>
     </div>
 
     <div class="stat-row">
-      <StatCard label="总用户数" :value="users.length" icon="◉" variant="accent" />
-      <StatCard label="在线用户" :value="onlineCount" icon="●" variant="ok" />
+      <StatCard label="总用户数" :value="total" icon="◉" variant="accent" />
+      <StatCard label="启用用户" :value="activeCount" icon="●" variant="ok" />
       <StatCard label="禁用用户" :value="disabledCount" icon="○" variant="danger" />
-      <StatCard label="今日新增" :value="todayNew" icon="↗" variant="warn" />
+      <StatCard label="当前页" :value="users.length" icon="↗" variant="warn" />
     </div>
 
     <Panel title="用户列表">
       <div class="toolbar">
-        <el-input v-model="searchKeyword" placeholder="搜索用户名/手机号" size="small" style="width:240px" clearable />
-        <el-select v-model="roleFilter" placeholder="角色筛选" size="small" clearable style="width:140px">
-          <el-option label="管理员" value="admin" />
-          <el-option label="普通用户" value="user" />
-          <el-option label="审批员" value="approver" />
-        </el-select>
+        <el-input v-model="searchKeyword" placeholder="搜索用户名/姓名/手机号" size="small" style="width:260px" clearable @keyup.enter="loadUsers" @clear="loadUsers" />
+        <button class="btn-outline btn-sm" @click="loadUsers">搜索</button>
+        <button class="btn-ghost btn-sm" @click="resetSearch">重置</button>
       </div>
-      <table>
-        <thead><tr><th>用户ID</th><th>用户名</th><th>姓名</th><th>角色</th><th>部门</th><th>手机号</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
+      <div v-if="loading" class="loading-tip">加载中...</div>
+      <div v-else-if="!users.length" class="loading-tip">暂无用户数据</div>
+      <table v-else>
+        <thead><tr><th>ID</th><th>用户名</th><th>姓名</th><th>手机号</th><th>邮箱</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>
         <tbody>
-          <tr v-for="u in filteredUsers" :key="u.id">
+          <tr v-for="u in users" :key="u.id">
             <td class="mono">{{ u.id }}</td>
             <td>{{ u.username }}</td>
-            <td>{{ u.name }}</td>
-            <td><span class="role-badge" :class="u.roleClass">{{ u.roleText }}</span></td>
-            <td>{{ u.dept }}</td>
-            <td class="mono">{{ u.phone }}</td>
-            <td><span class="status-badge" :class="u.statusClass">{{ u.statusText }}</span></td>
-            <td class="mono">{{ u.createTime }}</td>
+            <td>{{ u.realName || '-' }}</td>
+            <td class="mono">{{ u.phone || '-' }}</td>
+            <td class="mono">{{ u.email || '-' }}</td>
+            <td><span class="status-badge" :class="u.status === 'ACTIVE' ? 'status-ok' : 'status-err'">{{ u.status === 'ACTIVE' ? '正常' : '禁用' }}</span></td>
+            <td class="mono">{{ formatTime(u.createdTime) }}</td>
             <td>
-              <button class="btn btn-ghost btn-sm">编辑</button>
-              <button class="btn btn-ghost btn-sm btn-danger" style="margin-left:4px">禁用</button>
+              <button class="btn-ghost btn-sm" @click="openEdit(u)">编辑</button>
+              <button class="btn-ghost btn-sm" @click="openReset(u)" style="margin-left:4px">重置密码</button>
+              <button class="btn-ghost btn-sm btn-danger" @click="handleDelete(u)" style="margin-left:4px">删除</button>
             </td>
           </tr>
         </tbody>
       </table>
+      <div class="pagination" v-if="total > size">
+        <button class="btn-ghost btn-sm" :disabled="page <= 1" @click="changePage(page - 1)">上一页</button>
+        <span class="page-info mono">第 {{ page }} / {{ totalPages }} 页</span>
+        <button class="btn-ghost btn-sm" :disabled="page >= totalPages" @click="changePage(page + 1)">下一页</button>
+      </div>
     </Panel>
+
+    <!-- 新建/编辑用户对话框 -->
+    <div v-if="dialogVisible" class="modal-mask" @click.self="dialogVisible = false">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>{{ editMode ? '编辑用户' : '新建用户' }}</h3>
+          <button class="modal-close" @click="dialogVisible = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>用户名<span class="req">*</span></label>
+            <input v-model="form.username" :disabled="editMode" placeholder="登录用户名" />
+          </div>
+          <div class="form-row" v-if="!editMode">
+            <label>密码<span class="req">*</span></label>
+            <input v-model="form.password" type="password" placeholder="登录密码" />
+          </div>
+          <div class="form-row">
+            <label>真实姓名</label>
+            <input v-model="form.realName" placeholder="真实姓名" />
+          </div>
+          <div class="form-row">
+            <label>手机号</label>
+            <input v-model="form.phone" placeholder="手机号" />
+          </div>
+          <div class="form-row">
+            <label>邮箱</label>
+            <input v-model="form.email" placeholder="邮箱" />
+          </div>
+          <div class="form-row" v-if="editMode">
+            <label>状态</label>
+            <select v-model="form.status">
+              <option value="ACTIVE">正常</option>
+              <option value="DISABLED">禁用</option>
+            </select>
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-ghost" @click="dialogVisible = false">取消</button>
+          <button class="btn-primary" :disabled="submitting" @click="handleSubmit">{{ submitting ? '提交中...' : '确定' }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重置密码对话框 -->
+    <div v-if="resetVisible" class="modal-mask" @click.self="resetVisible = false">
+      <div class="modal-card">
+        <div class="modal-head">
+          <h3>重置密码 - {{ resetUser.username }}</h3>
+          <button class="modal-close" @click="resetVisible = false">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="form-row">
+            <label>新密码<span class="req">*</span></label>
+            <input v-model="newPassword" type="password" placeholder="新密码" />
+          </div>
+        </div>
+        <div class="modal-foot">
+          <button class="btn-ghost" @click="resetVisible = false">取消</button>
+          <button class="btn-primary" :disabled="submitting" @click="handleReset">{{ submitting ? '提交中...' : '确定' }}</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { ElMessage, ElMessageBox } from 'element-plus';
+import { listUsers, createUser, updateUser, deleteUser, resetPassword } from '@/api/management';
 
+const users = ref([]);
+const total = ref(0);
+const page = ref(1);
+const size = ref(20);
 const searchKeyword = ref('');
-const roleFilter = ref('');
+const loading = ref(false);
 
-const users = ref([
-  { id: 'USR001', username: 'admin', name: '系统管理员', role: 'admin', roleText: '管理员', roleClass: 'role-admin', dept: '技术部', phone: '138****0001', status: 'active', statusText: '正常', statusClass: 'status-ok', createTime: '2026-01-01 09:00' },
-  { id: 'USR002', username: 'zhangsan', name: '张三', role: 'user', roleText: '普通用户', roleClass: 'role-user', dept: '采集组', phone: '138****0002', status: 'active', statusText: '正常', statusClass: 'status-ok', createTime: '2026-02-15 10:30' },
-  { id: 'USR003', username: 'lisi', name: '李四', role: 'user', roleText: '普通用户', roleClass: 'role-user', dept: '处理组', phone: '138****0003', status: 'active', statusText: '正常', statusClass: 'status-ok', createTime: '2026-03-01 14:20' },
-  { id: 'USR004', username: 'approver', name: '王审批', role: 'approver', roleText: '审批员', roleClass: 'role-approver', dept: '质量部', phone: '138****0004', status: 'active', statusText: '正常', statusClass: 'status-ok', createTime: '2026-01-10 11:00' },
-  { id: 'USR005', username: 'wangwu', name: '王五', role: 'user', roleText: '普通用户', roleClass: 'role-user', dept: '采集组', phone: '138****0005', status: 'disabled', statusText: '禁用', statusClass: 'status-err', createTime: '2026-04-20 16:45' }
-]);
+const dialogVisible = ref(false);
+const editMode = ref(false);
+const submitting = ref(false);
+const form = ref({ username: '', password: '', realName: '', phone: '', email: '', status: 'ACTIVE' });
+const editingId = ref(null);
 
-const onlineCount = computed(() => users.value.filter(u => u.status === 'active').length - 1);
-const disabledCount = computed(() => users.value.filter(u => u.status === 'disabled').length);
-const todayNew = ref(2);
+const resetVisible = ref(false);
+const resetUser = ref({});
+const newPassword = ref('');
 
-const filteredUsers = computed(() => {
-  let list = users.value;
-  if (searchKeyword.value) {
-    const kw = searchKeyword.value.toLowerCase();
-    list = list.filter(u => u.username.toLowerCase().includes(kw) || u.name.includes(kw) || u.phone.includes(kw));
+const totalPages = computed(() => Math.max(1, Math.ceil(total.value / size.value)));
+const activeCount = computed(() => users.value.filter(u => u.status === 'ACTIVE').length);
+const disabledCount = computed(() => users.value.filter(u => u.status === 'DISABLED').length);
+
+function formatTime(t) {
+  if (!t) return '-';
+  return String(t).replace('T', ' ').substring(0, 16);
+}
+
+async function loadUsers() {
+  loading.value = true;
+  try {
+    const res = await listUsers({ page: page.value, size: size.value, keyword: searchKeyword.value });
+    users.value = res.list || [];
+    total.value = res.total || 0;
+  } catch (e) {
+    ElMessage.error('加载用户列表失败');
+    users.value = [];
+  } finally {
+    loading.value = false;
   }
-  if (roleFilter.value) {
-    list = list.filter(u => u.role === roleFilter.value);
+}
+
+function resetSearch() {
+  searchKeyword.value = '';
+  page.value = 1;
+  loadUsers();
+}
+
+function changePage(p) {
+  page.value = p;
+  loadUsers();
+}
+
+function openCreate() {
+  editMode.value = false;
+  form.value = { username: '', password: '', realName: '', phone: '', email: '', status: 'ACTIVE' };
+  editingId.value = null;
+  dialogVisible.value = true;
+}
+
+function openEdit(u) {
+  editMode.value = true;
+  editingId.value = u.id;
+  form.value = { username: u.username, password: '', realName: u.realName || '', phone: u.phone || '', email: u.email || '', status: u.status };
+  dialogVisible.value = true;
+}
+
+async function handleSubmit() {
+  if (!form.value.username || (!editMode.value && !form.value.password)) {
+    ElMessage.warning('请填写必填项');
+    return;
   }
-  return list;
+  submitting.value = true;
+  try {
+    if (editMode.value) {
+      await updateUser(editingId.value, {
+        realName: form.value.realName,
+        phone: form.value.phone,
+        email: form.value.email,
+        status: form.value.status
+      });
+      ElMessage.success('用户更新成功');
+    } else {
+      await createUser({
+        username: form.value.username,
+        password: form.value.password,
+        realName: form.value.realName,
+        phone: form.value.phone,
+        email: form.value.email
+      });
+      ElMessage.success('用户创建成功');
+    }
+    dialogVisible.value = false;
+    loadUsers();
+  } catch (e) {
+    ElMessage.error(e.response?.data?.message || '操作失败');
+  } finally {
+    submitting.value = false;
+  }
+}
+
+async function handleDelete(u) {
+  try {
+    await ElMessageBox.confirm(`确定删除用户 "${u.username}" 吗？`, '删除确认', { type: 'warning' });
+    await deleteUser(u.id);
+    ElMessage.success('删除成功');
+    loadUsers();
+  } catch (e) {
+    if (e !== 'cancel') ElMessage.error('删除失败');
+  }
+}
+
+function openReset(u) {
+  resetUser.value = u;
+  newPassword.value = '';
+  resetVisible.value = true;
+}
+
+async function handleReset() {
+  if (!newPassword.value) {
+    ElMessage.warning('请输入新密码');
+    return;
+  }
+  submitting.value = true;
+  try {
+    await resetPassword(resetUser.value.id, { password: newPassword.value });
+    ElMessage.success('密码重置成功');
+    resetVisible.value = false;
+  } catch (e) {
+    ElMessage.error('重置失败');
+  } finally {
+    submitting.value = false;
+  }
+}
+
+onMounted(() => {
+  loadUsers();
 });
 </script>
 
@@ -106,6 +285,67 @@ const filteredUsers = computed(() => {
   margin-top: 6px;
   letter-spacing: 1px;
 }
+.btn-primary {
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #C9A86C 0%, #D4B87A 100%);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(201, 168, 108, 0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(201, 168, 108, 0.4);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-outline {
+  padding: 6px 14px;
+  font-size: 12px;
+  color: #5D4E37;
+  background: transparent;
+  border: 1px solid #E8E2D9;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-outline:hover {
+  border-color: #C9A86C;
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.06);
+}
+.btn-ghost {
+  padding: 6px 14px;
+  font-size: 12px;
+  color: #8B7355;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.btn-ghost:hover:not(:disabled) {
+  color: #C9A86C;
+  background: rgba(201, 168, 108, 0.08);
+}
+.btn-ghost:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn-ghost.btn-danger:hover {
+  color: #C47A6E;
+  background: rgba(196, 122, 110, 0.1);
+}
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
 .stat-row {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -116,25 +356,13 @@ const filteredUsers = computed(() => {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  align-items: center;
 }
-.role-badge {
-  padding: 4px 12px;
-  border-radius: 10px;
-  font-size: 12px;
-  font-weight: 500;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.role-admin {
-  background: rgba(201, 168, 108, 0.18);
-  color: #C9A86C;
-}
-.role-user {
-  background: rgba(139, 115, 85, 0.12);
+.loading-tip {
+  padding: 40px 0;
+  text-align: center;
   color: #8B7355;
-}
-.role-approver {
-  background: rgba(106, 153, 106, 0.18);
-  color: #6A996A;
+  font-size: 14px;
 }
 .status-badge {
   padding: 4px 12px;
@@ -151,10 +379,6 @@ const filteredUsers = computed(() => {
   background: rgba(196, 122, 110, 0.15);
   color: #C47A6E;
 }
-.status-dim {
-  background: rgba(139, 115, 85, 0.12);
-  color: #8B7355;
-}
 table {
   width: 100%;
   border-collapse: separate;
@@ -169,12 +393,8 @@ thead th {
   background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
   border-bottom: 1px solid #E8E2D9;
 }
-thead th:first-child {
-  border-top-left-radius: 12px;
-}
-thead th:last-child {
-  border-top-right-radius: 12px;
-}
+thead th:first-child { border-top-left-radius: 12px; }
+thead th:last-child { border-top-right-radius: 12px; }
 tbody td {
   padding: 14px 16px;
   color: #5D4E37;
@@ -187,9 +407,7 @@ tbody tr {
 tbody tr:hover {
   background: rgba(201, 168, 108, 0.06);
 }
-tbody tr:last-child td {
-  border-bottom: none;
-}
+tbody tr:last-child td { border-bottom: none; }
 .mono {
   font-family: 'SF Mono', 'Monaco', 'Inconsolata', 'Roboto Mono', monospace;
   font-size: 13px;
@@ -198,6 +416,120 @@ tbody tr:last-child td {
 .display {
   font-weight: 300;
   letter-spacing: -0.5px;
+}
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 16px;
+  margin-top: 20px;
+}
+.page-info {
+  font-size: 13px;
+  color: #8B7355;
+}
+/* 对话框 */
+.modal-mask {
+  position: fixed;
+  inset: 0;
+  background: rgba(93, 78, 55, 0.35);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+.modal-card {
+  width: 480px;
+  max-width: 92vw;
+  background: linear-gradient(135deg, #FEFBF6 0%, #F7F3ED 100%);
+  border: 1px solid #E8E2D9;
+  border-radius: 16px;
+  box-shadow: 0 12px 40px rgba(139, 115, 85, 0.25);
+  overflow: hidden;
+  animation: modalIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(20px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.modal-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 18px 24px;
+  border-bottom: 1px solid #E8E2D9;
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
+}
+.modal-head h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 500;
+  color: #5D4E37;
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  color: #8B7355;
+  cursor: pointer;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+.modal-close:hover {
+  background: rgba(201, 168, 108, 0.15);
+  color: #5D4E37;
+}
+.modal-body {
+  padding: 24px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+.form-row {
+  margin-bottom: 16px;
+}
+.form-row label {
+  display: block;
+  font-size: 13px;
+  color: #8B7355;
+  margin-bottom: 6px;
+  font-weight: 500;
+}
+.req {
+  color: #C47A6E;
+  margin-left: 2px;
+}
+.form-row input, .form-row select {
+  width: 100%;
+  padding: 9px 14px;
+  font-size: 14px;
+  color: #5D4E37;
+  background: #FAFAF8;
+  border: 1px solid #E8E2D9;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-sizing: border-box;
+}
+.form-row input:focus, .form-row select:focus {
+  border-color: #C9A86C;
+  box-shadow: 0 2px 12px rgba(201, 168, 108, 0.25);
+  background: #FEFBF6;
+}
+.form-row input:disabled {
+  background: #F0EDE7;
+  color: #A89F91;
+  cursor: not-allowed;
+}
+.modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #E8E2D9;
+  background: linear-gradient(180deg, #FAFAF8 0%, #F5F2ED 100%);
 }
 
 :deep(.el-input__wrapper) {
@@ -220,33 +552,5 @@ tbody tr:last-child td {
 }
 :deep(.el-input__inner::placeholder) {
   color: #B8A890;
-}
-:deep(.el-select .el-input__wrapper) {
-  background: #FAFAF8;
-}
-:deep(.el-select-dropdown) {
-  --el-select-border-color-hover: #C9A86C;
-}
-:deep(.el-select-dropdown__item) {
-  color: #5D4E37;
-}
-:deep(.el-select-dropdown__item:hover) {
-  background: rgba(201, 168, 108, 0.1);
-}
-:deep(.el-select-dropdown__item.selected) {
-  color: #C9A86C;
-  font-weight: 500;
-}
-:deep(.el-select-dropdown) {
-  background: #FAFAF8;
-  border: 1px solid #E8E2D9;
-  border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(139, 115, 85, 0.12);
-}
-:deep(.el-select-dropdown__list) {
-  padding: 6px;
-}
-:deep(.el-icon) {
-  color: #8B7355;
 }
 </style>

@@ -6,7 +6,7 @@ export const useUserStore = defineStore('user', () => {
   const userInfo = ref(JSON.parse(localStorage.getItem('currentUser') || 'null'));
 
   const login = (userData) => {
-    token.value = userData.token || 'mock-token';
+    token.value = userData.token;
     userInfo.value = userData;
     localStorage.setItem('token', token.value);
     localStorage.setItem('currentUser', JSON.stringify(userData));

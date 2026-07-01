@@ -7,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
@@ -16,11 +17,11 @@ import java.math.BigDecimal;
 import java.util.Arrays;
 
 /**
- * Mock数据初始化器
- * 启动服务时检测到没有数据就自动插入
+ * Mock数据初始化器（已禁用，需设置 zrws.mock.enabled=true 才启用）
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "zrws.mock.enabled", havingValue = "true")
 @Order(3)
 public class MockDataInitializer implements ApplicationRunner {
 

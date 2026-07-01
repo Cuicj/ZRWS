@@ -83,3 +83,9 @@ logs/
 coverage/
 .nyc_output/
 *.lcov
+
+# 本地Maven工具与配置
+apache-maven-*/
+maven.zip
+settings-central.xml
+settings-local.xml

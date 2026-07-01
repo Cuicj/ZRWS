@@ -168,10 +168,6 @@ const loadData = async () => {
       }));
     }
     
-    if (records.value.length === 0) {
-      records.value = generateMockData();
-    }
-    
     erosionData.value = records.value.slice(0, 8).map(r => ({
       region: r.region,
       erosion: r.erosionModulus
@@ -179,7 +175,7 @@ const loadData = async () => {
     
     stats.value = {
       regionCount: records.value.length,
-      avgErosion: Math.round(records.value.reduce((sum, r) => sum + r.erosionModulus, 0) / records.value.length),
+      avgErosion: records.value.length > 0 ? Math.round(records.value.reduce((sum, r) => sum + r.erosionModulus, 0) / records.value.length) : 0,
       totalArea: 12580,
       severeCount: records.value.filter(r => r.erosionGrade === 'SEVERE' || r.erosionGrade === 'VERY_SEVERE' || r.erosionGrade === 'EXTREME').length,
       waterPercent: 65,
@@ -187,38 +183,10 @@ const loadData = async () => {
       freezePercent: 10
     };
   } catch (e) {
-    console.warn('水土流失数据加载失败:', e.message);
-    records.value = generateMockData();
+    console.error('水土流失数据加载失败:', e.message);
   } finally {
     loading.value = false;
   }
-};
-
-const generateMockData = () => {
-  const regions = ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '防城港市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市'];
-  const soilTypes = ['红壤', '砖红壤', '赤红壤', '黄壤', '紫色土', '石灰土'];
-  const types = ['WATER', 'WATER', 'WATER', 'WIND', 'FREEZE'];
-  return regions.map((region, i) => {
-    const modulus = Math.round(200 + Math.random() * 8000);
-    let grade = 'MILD';
-    if (modulus >= 200 && modulus < 2500) grade = 'LIGHT';
-    else if (modulus >= 2500 && modulus < 5000) grade = 'MODERATE';
-    else if (modulus >= 5000 && modulus < 8000) grade = 'SEVERE';
-    else if (modulus >= 8000 && modulus < 15000) grade = 'VERY_SEVERE';
-    else if (modulus >= 15000) grade = 'EXTREME';
-    return {
-      id: i + 1,
-      region,
-      monitorDate: '2026-07-01',
-      erosionType: types[i % types.length],
-      erosionModulus: modulus,
-      erosionGrade: grade,
-      vegetationCoverage: +(30 + Math.random() * 55).toFixed(1),
-      slope: +(3 + Math.random() * 30).toFixed(1),
-      soilType: soilTypes[i % soilTypes.length],
-      tolerableLoss: [200, 500, 1000][i % 3]
-    };
-  });
 };
 
 onMounted(() => {

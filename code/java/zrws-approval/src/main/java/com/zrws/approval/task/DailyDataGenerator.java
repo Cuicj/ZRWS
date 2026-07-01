@@ -5,6 +5,7 @@ import com.zrws.approval.domain.entity.*;
 import com.zrws.approval.mapper.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
@@ -14,11 +15,11 @@ import java.time.format.DateTimeFormatter;
 import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * 每日数据生成定时任务
- * 每天凌晨2点自动生成新的测试数据，确保各页面有数据展示
+ * 每日数据生成定时任务（已禁用，需设置 zrws.mock.enabled=true 才启用）
  */
 @Slf4j
 @Component
+@ConditionalOnProperty(name = "zrws.mock.enabled", havingValue = "true")
 public class DailyDataGenerator {
 
     @Autowired

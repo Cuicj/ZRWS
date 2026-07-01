@@ -894,7 +894,7 @@ const zoomFit = () => {
 };
 
 const loadProcess = (key) => {
-  ElMessage.info(`加载流程 ${key}（演示）`);
+  ElMessage.info(`加载流程 ${key}`);
 };
 
 onMounted(() => {
