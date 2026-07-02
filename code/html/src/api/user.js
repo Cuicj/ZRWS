@@ -2,7 +2,7 @@ import request from '@/utils/request';
 
 export function login(data) {
   return request({
-    url: '/auth/login',
+    url: '/v1/auth/login',
     method: 'post',
     data
   });
@@ -10,30 +10,30 @@ export function login(data) {
 
 export function logout() {
   return request({
-    url: '/auth/logout',
+    url: '/v1/auth/logout',
     method: 'post'
   });
 }
 
 export function getUserInfo() {
   return request({
-    url: '/auth/userinfo',
+    url: '/v1/auth/info',
     method: 'get'
   });
 }
 
 export const loginApi = {
   login: (username, password) => request({
-    url: '/auth/login',
+    url: '/v1/auth/login',
     method: 'post',
     data: { username, password }
   }),
   logout: () => request({
-    url: '/auth/logout',
+    url: '/v1/auth/logout',
     method: 'post'
   }),
   getUserInfo: () => request({
-    url: '/auth/userinfo',
+    url: '/v1/auth/info',
     method: 'get'
   })
 };

@@ -112,8 +112,8 @@ const loadData = async () => {
   try {
     loading.value = true;
     const res = await getDeviceList();
-    if (res && res.data?.list) {
-      const devices = res.data.list;
+    if (res && res.data && res.data.length) {
+      const devices = res.data;
       overview.value.total = devices.length;
       overview.value.online = devices.filter(d => d.status === 'ONLINE').length;
       overview.value.offline = devices.filter(d => d.status === 'OFFLINE').length;

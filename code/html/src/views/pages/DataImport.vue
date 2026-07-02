@@ -250,8 +250,8 @@ const currentBatch = ref(null)
 const loadBoList = async () => {
   try {
     const res = await dataImportApi.getBoList()
-    if (res.data.list) {
-      boList.value = res.data.list
+    if (res.data && res.data.length) {
+      boList.value = res.data
     }
   } catch (e) {
     console.warn('加载BO列表失败，使用默认列表:', e.message)
@@ -269,8 +269,8 @@ const loadBatches = async () => {
   try {
     loading.value = true
     const res = await dataImportApi.getBatches({})
-    if (res.data.batches) {
-      batches.value = res.data.batches.slice(0, 20)
+    if (res.data && res.data.length) {
+      batches.value = res.data.slice(0, 20)
     }
   } catch (e) {
     console.warn('加载批次列表失败:', e.message)

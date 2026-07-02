@@ -117,8 +117,8 @@ const loadData = async () => {
   try {
     loading.value = true;
     const res = await getMissionList();
-    if (res && res.data?.list) {
-      tasks.value = res.data.list.map(t => ({
+    if (res && res.data && res.data.length) {
+      tasks.value = res.data.map(t => ({
         id: t.missionCode || t.id,
         area: t.location || t.area || '-',
         operator: t.operator || '-',

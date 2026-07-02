@@ -407,12 +407,12 @@ const loadAllData = async () => {
       getAnnouncementList()
     ]);
 
-    if (topRes.success) topAnnouncements.value = topRes.list || [];
-    if (hotRes.success) hotList.value = hotRes.list || [];
-    if (recRes.success) recommendList.value = recRes.list || [];
-    if (catRes.success) allCategories.value = catRes.list || [];
-    if (statsRes.success) statistics.value = statsRes.statistics || { byLandType: {} };
-    if (listRes.success) allAnnouncements.value = listRes.list || [];
+    if (topRes.success) topAnnouncements.value = topRes.data || [];
+    if (hotRes.success) hotList.value = hotRes.data || [];
+    if (recRes.success) recommendList.value = recRes.data || [];
+    if (catRes.success) allCategories.value = catRes.data || [];
+    if (statsRes.success) statistics.value = statsRes.data || { byLandType: {} };
+    if (listRes.success) allAnnouncements.value = listRes.data || [];
   } catch (e) {
     console.error('加载数据失败:', e);
   }
@@ -426,12 +426,12 @@ const selectCategory = async (categoryId) => {
     if (selectedCategoryId.value) {
       const res = await getAnnouncementsByCategory(selectedCategoryId.value);
       if (res.success) {
-        allAnnouncements.value = res.list || [];
+        allAnnouncements.value = res.data || [];
       }
     } else {
       const res = await getAnnouncementList();
       if (res.success) {
-        allAnnouncements.value = res.list || [];
+        allAnnouncements.value = res.data || [];
       }
     }
   } catch (e) {
@@ -451,7 +451,7 @@ const handleSearch = async () => {
   try {
     const res = await searchAnnouncements(searchKeyword.value);
     if (res.success) {
-      allAnnouncements.value = res.list || [];
+      allAnnouncements.value = res.data || [];
     }
   } catch (e) {
     console.error('搜索失败:', e);
@@ -464,11 +464,11 @@ const openDetail = async (item) => {
 
   try {
     const res = await getAnnouncementById(item.announcementId);
-    if (res.success && res.announcement) {
-      currentDetail.value = res.announcement;
+    if (res.success && res.data) {
+      currentDetail.value = res.data;
       const idx = allAnnouncements.value.findIndex(a => a.announcementId === item.announcementId);
-      if (idx > -1 && res.announcement.viewCount) {
-        allAnnouncements.value[idx].viewCount = res.announcement.viewCount;
+      if (idx > -1 && res.data.viewCount) {
+        allAnnouncements.value[idx].viewCount = res.data.viewCount;
       }
     }
   } catch (e) {

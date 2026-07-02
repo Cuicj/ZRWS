@@ -1,6 +1,6 @@
 import request from '@/utils/request';
 
-const BASE = '/management';
+const BASE = '/v1/management';
 
 // ==================== 用户管理 ====================
 

@@ -129,7 +129,7 @@ const loadAnnouncements = async () => {
     const res = await getAnnouncementList();
     if (res.code === 0 || res.code === 200) {
       // 根据后端返回的数据结构进行适配
-      announcements.value = (res.data.list || []).map(item => ({
+      announcements.value = (res.data || []).map(item => ({
         id: item.id || item.announcementId,
         title: item.title,
         category: item.category || 'system',
