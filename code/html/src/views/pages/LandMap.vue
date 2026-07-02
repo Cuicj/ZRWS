@@ -125,7 +125,9 @@
 
 <script setup>
 import { ref, onMounted, computed, onUnmounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import * as echarts from 'echarts';
+import { getLandPlotList } from '@/api/landPlot.js';
 
 const mapRef = ref(null);
 const pieRef = ref(null);
@@ -137,6 +139,7 @@ let mapChart = null;
 let pieChart = null;
 let barChart = null;
 const isMapLoaded = ref(false);
+const loading = ref(false);
 
 const formatNum = (num) => {
   return num.toLocaleString();
@@ -147,6 +150,10 @@ onMounted(async () => {
   const geoJSON = await loadChinaMap();
   echarts.registerMap('china', geoJSON);
   isMapLoaded.value = true;
+  
+  // 加载土地数据
+  await loadLandData();
+  
   initMap();
   initPie();
   initBar();
@@ -187,39 +194,40 @@ const legendItems = computed(() => {
     { label: '5000万亩以上', color: '#8B7355' }
   ];
 });
-const landData = ref([
- { name: '北京', area: 16411000, cultivated: 3400000, forest: 6800000, construction: 2100000, water: 800000, disaster: '低' },
- { name: '天津', area: 11966600, cultivated: 4800000, forest: 2200000, construction: 1500000, water: 1200000, disaster: '低' },
- { name: '河北', area: 188800000, cultivated: 98000000, forest: 45000000, construction: 18000000, water: 8000000, disaster: '中' },
- { name: '山西', area: 156700000, cultivated: 58000000, forest: 62000000, construction: 12000000, water: 4000000, disaster: '低' },
- { name: '内蒙古', area: 1183000000, cultivated: 120000000, forest: 280000000, construction: 15000000, water: 65000000, disaster: '低' },
- { name: '辽宁', area: 148000000, cultivated: 65000000, forest: 52000000, construction: 18000000, water: 10000000, disaster: '中' },
- { name: '吉林', area: 187400000, cultivated: 85000000, forest: 78000000, construction: 8000000, water: 12000000, disaster: '低' },
- { name: '黑龙江', area: 473000000, cultivated: 210000000, forest: 190000000, construction: 12000000, water: 45000000, disaster: '低' },
- { name: '上海', area: 6340500, cultivated: 2300000, forest: 600000, construction: 1800000, water: 800000, disaster: '低' },
- { name: '江苏', area: 107200000, cultivated: 58000000, forest: 12000000, construction: 22000000, water: 10000000, disaster: '中' },
- { name: '浙江', area: 105500000, cultivated: 29000000, forest: 59000000, construction: 10000000, water: 4500000, disaster: '中' },
- { name: '安徽', area: 140100000, cultivated: 73000000, forest: 36000000, construction: 16000000, water: 10000000, disaster: '中' },
- { name: '福建', area: 121400000, cultivated: 20000000, forest: 76000000, construction: 7000000, water: 5500000, disaster: '中' },
- { name: '江西', area: 166900000, cultivated: 36000000, forest: 102000000, construction: 8000000, water: 12000000, disaster: '中' },
- { name: '山东', area: 157100000, cultivated: 83000000, forest: 28000000, construction: 25000000, water: 7000000, disaster: '中' },
- { name: '河南', area: 167000000, cultivated: 81000000, forest: 35000000, construction: 23000000, water: 12000000, disaster: '高' },
- { name: '湖北', area: 185900000, cultivated: 50000000, forest: 75000000, construction: 18000000, water: 30000000, disaster: '中' },
- { name: '湖南', area: 211800000, cultivated: 42000000, forest: 122000000, construction: 13000000, water: 20000000, disaster: '中' },
- { name: '广东', area: 179700000, cultivated: 42000000, forest: 90000000, construction: 25000000, water: 12000000, disaster: '中' },
- { name: '广西', area: 237600000, cultivated: 43000000, forest: 146000000, construction: 10000000, water: 21000000, disaster: '中' },
- { name: '海南', area: 35400000, cultivated: 7000000, forest: 20000000, construction: 3000000, water: 3000000, disaster: '低' },
- { name: '重庆', area: 82400000, cultivated: 25000000, forest: 44000000, construction: 5000000, water: 5000000, disaster: '中' },
- { name: '四川', area: 486000000, cultivated: 90000000, forest: 260000000, construction: 18000000, water: 55000000, disaster: '中' },
- { name: '贵州', area: 176200000, cultivated: 45000000, forest: 86000000, construction: 8000000, water: 10000000, disaster: '高' },
- { name: '云南', area: 394100000, cultivated: 60000000, forest: 210000000, construction: 9000000, water: 28000000, disaster: '中' },
- { name: '西藏', area: 1230000000, cultivated: 3000000, forest: 140000000, construction: 2000000, water: 65000000, disaster: '低' },
- { name: '陕西', area: 205600000, cultivated: 58000000, forest: 80000000, construction: 18000000, water: 16000000, disaster: '中' },
- { name: '甘肃', area: 425800000, cultivated: 50000000, forest: 55000000, construction: 8000000, water: 12000000, disaster: '低' },
- { name: '青海', area: 722300000, cultivated: 8000000, forest: 45000000, construction: 3000000, water: 108000000, disaster: '低' },
- { name: '宁夏', area: 66400000, cultivated: 21000000, forest: 15000000, construction: 4000000, water: 6000000, disaster: '中' },
- { name: '新疆', area: 1664900000, cultivated: 75000000, forest: 68000000, construction: 12000000, water: 95000000, disaster: '低' }
-]);
+
+const landData = ref([]);
+
+// 加载土地数据
+const loadLandData = async () => {
+  loading.value = true;
+  try {
+    const res = await getLandPlotList({ year: selectedYear.value });
+    if (res.list) {
+      // 根据后端返回的数据结构进行适配
+      landData.value = (res.list || []).map(item => ({
+        name: item.name || item.provinceName || item.region,
+        area: item.area || item.totalArea || 0,
+        cultivated: item.cultivated || item.cultivatedArea || 0,
+        forest: item.forest || item.forestArea || 0,
+        construction: item.construction || item.constructionArea || 0,
+        water: item.water || item.waterArea || 0,
+        disaster: item.disaster || item.disasterRisk || '低'
+      }));
+      
+      // 初始化图表
+      if (isMapLoaded.value) {
+        initMap();
+        initPie();
+        initBar();
+      }
+    }
+  } catch (error) {
+    console.error('加载土地数据失败:', error);
+    ElMessage.error('加载土地数据失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
 const totalArea = computed(() => landData.value.reduce((sum, item) => sum + item.area, 0));
 const cultivatedArea = computed(() => landData.value.reduce((sum, item) => sum + item.cultivated, 0));
 const forestArea = computed(() => landData.value.reduce((sum, item) => sum + item.forest, 0));

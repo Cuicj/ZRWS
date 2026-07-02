@@ -83,14 +83,17 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getAnnouncementList } from '@/api/announcement.js';
 
 const searchKeyword = ref('');
 const categoryFilter = ref('');
 const statusFilter = ref('');
 const showCreate = ref(false);
+const loading = ref(false);
 
 const form = ref({
   title: '',
@@ -99,14 +102,7 @@ const form = ref({
   isTop: false
 });
 
-const announcements = ref([
-  { id: 'ANN001', title: '系统升级维护通知', category: 'maintenance', categoryText: '维护通知', status: 'published', statusText: '已发布', statusClass: 'status-ok', isTop: true, publisher: '管理员', publishTime: '2026-06-20 18:00', content: '' },
-  { id: 'ANN002', title: '新增土地资源地图功能', category: 'business', categoryText: '业务通知', status: 'published', statusText: '已发布', statusClass: 'status-ok', isTop: true, publisher: '管理员', publishTime: '2026-06-18 10:00', content: '' },
-  { id: 'ANN003', title: '用户权限系统升级公告', category: 'system', categoryText: '系统公告', status: 'published', statusText: '已发布', statusClass: 'status-ok', isTop: false, publisher: '管理员', publishTime: '2026-06-15 09:30', content: '' },
-  { id: 'ANN004', title: '端午节放假安排通知', category: 'system', categoryText: '系统公告', status: 'published', statusText: '已发布', statusClass: 'status-ok', isTop: false, publisher: '管理员', publishTime: '2026-06-10 14:00', content: '' },
-  { id: 'ANN005', title: '新功能测试公告（草稿）', category: 'business', categoryText: '业务通知', status: 'draft', statusText: '草稿', statusClass: 'status-warn', isTop: false, publisher: '管理员', publishTime: '2026-06-25 16:00', content: '' },
-  { id: 'ANN006', title: '旧版功能下线通知', category: 'system', categoryText: '系统公告', status: 'offline', statusText: '已下线', statusClass: 'status-dim', isTop: false, publisher: '管理员', publishTime: '2026-05-01 10:00', content: '' }
-]);
+const announcements = ref([]);
 
 const publishedCount = computed(() => announcements.value.filter(a => a.status === 'published').length);
 const draftCount = computed(() => announcements.value.filter(a => a.status === 'draft').length);
@@ -126,6 +122,67 @@ const filteredAnnouncements = computed(() => {
   return list;
 });
 
+// 加载公告列表
+const loadAnnouncements = async () => {
+  loading.value = true;
+  try {
+    const res = await getAnnouncementList();
+    if (res.code === 0 || res.code === 200) {
+      // 根据后端返回的数据结构进行适配
+      announcements.value = (res.list || []).map(item => ({
+        id: item.id || item.announcementId,
+        title: item.title,
+        category: item.category || 'system',
+        categoryText: getCategoryText(item.category),
+        status: item.status || 'published',
+        statusText: getStatusText(item.status),
+        statusClass: getStatusClass(item.status),
+        isTop: item.isTop || false,
+        publisher: item.publisher || item.author,
+        publishTime: item.publishTime || item.createTime,
+        content: item.content
+      }));
+    } else {
+      ElMessage.error(res.msg || '加载公告失败');
+    }
+  } catch (error) {
+    console.error('加载公告失败:', error);
+    ElMessage.error('加载公告失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 辅助函数：获取分类文本
+const getCategoryText = (category) => {
+  const map = {
+    system: '系统公告',
+    business: '业务通知',
+    maintenance: '维护通知'
+  };
+  return map[category] || category;
+};
+
+// 辅助函数：获取状态文本
+const getStatusText = (status) => {
+  const map = {
+    published: '已发布',
+    draft: '草稿',
+    offline: '已下线'
+  };
+  return map[status] || status;
+};
+
+// 辅助函数：获取状态样式类
+const getStatusClass = (status) => {
+  const map = {
+    published: 'status-ok',
+    draft: 'status-warn',
+    offline: 'status-dim'
+  };
+  return map[status] || 'status-dim';
+};
+
 const saveDraft = () => {
   console.log('保存草稿');
   showCreate.value = false;
@@ -135,6 +192,10 @@ const publish = () => {
   console.log('发布公告');
   showCreate.value = false;
 };
+
+onMounted(() => {
+  loadAnnouncements();
+});
 </script>
 
 <style scoped>

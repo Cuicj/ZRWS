@@ -121,26 +121,37 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes, trendRes, riskRes] = await Promise.all([
-      getClimateWarmingList().catch(() => ({ data: [] })),
+      getClimateWarmingList().catch(() => ({ list: [] })),
       getClimateWarmingStats().catch(() => ({ data: {} })),
-      getClimateWarmingTrend().catch(() => ({ data: [] })),
-      getClimateWarmingRiskDistribution().catch(() => ({ data: [] }))
+      getClimateWarmingTrend().catch(() => ({ data: null })),
+      getClimateWarmingRiskDistribution().catch(() => ({ list: [] }))
     ]);
     
-    if (listRes.data) {
-      records.value = listRes.data;
+    if (listRes.list) {
+      records.value = listRes.list;
     }
     
     if (statsRes.data) {
-      stats.value = statsRes.data;
+      stats.value = {
+        regionCount: statsRes.data.totalRecords || 0,
+        avgAnomaly: statsRes.data.avgTempAnomaly || 0,
+        highTempDays: statsRes.data.highTempDays || 0,
+        highRiskCount: statsRes.data.highRiskCount || 0,
+        warmingRate: statsRes.data.warmingRate || 0
+      };
     }
     
-    if (trendRes.data && trendRes.data.length > 0) {
-      trendData.value = trendRes.data;
+    if (trendRes.data && trendRes.data.months) {
+      const months = trendRes.data.months || [];
+      const anomalies = trendRes.data.tempAnomalies || [];
+      trendData.value = months.map((month, i) => ({
+        month,
+        anomaly: anomalies[i] || 0
+      }));
     }
     
-    if (riskRes.data && riskRes.data.length > 0) {
-      riskDistribution.value = riskRes.data;
+    if (riskRes.list && riskRes.list.length > 0) {
+      riskDistribution.value = riskRes.list;
     } else {
       riskDistribution.value = [
         { level: 'LOW', label: '低风险', count: 5, percent: 35 },

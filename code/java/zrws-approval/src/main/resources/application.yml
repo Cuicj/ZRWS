@@ -133,30 +133,6 @@ logging:
   pattern:
     console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
 
-# DBA 数据库 Schema 自动同步
-zrws:
-  dba:
-    # 是否启用
-    enabled: true
-    # 启动时自动执行同步
-    auto-sync-on-startup: true
-    # 实体类扫描包
-    entity-package: com.zrws.approval.domain.entity
-    # Mapper XML 扫描路径
-    mapper-locations: classpath*:/mapper/**/*.xml
-    # 初始化 SQL 脚本路径
-    sql-init-location: classpath*:/sql/*.sql
-    # 排除的表前缀（Flowable 等框架表）
-    exclude-table-prefixes:
-      - ACT_
-      - act_
-      - FLW_
-      - flw_
-    # 是否打印详细日志
-    verbose: true
-    # 同步失败是否中断启动
-    fail-on-sync-error: false
-
 # 支付宝支付配置
 alipay:
   app-id: ${ALIPAY_APP_ID:your-alipay-app-id}
@@ -168,8 +144,26 @@ alipay:
   format: JSON
   notify-url: https://www.zrws.cloud/approval/api/v1/payment/alipay/notify
 
-# OAuth 配置（支付宝/微信网页授权）
+# ZRWS 自定义配置
 zrws:
+  # Mock 数据开关
+  mock:
+    enabled: false
+  # DBA 数据库 Schema 自动同步
+  dba:
+    enabled: true
+    auto-sync-on-startup: true
+    entity-package: com.zrws.approval.domain.entity
+    mapper-locations: classpath*:/mapper/**/*.xml
+    sql-init-location: classpath*:/sql/*.sql
+    exclude-table-prefixes:
+      - ACT_
+      - act_
+      - FLW_
+      - flw_
+    verbose: true
+    fail-on-sync-error: false
+  # OAuth 配置（支付宝/微信网页授权）
   oauth:
     alipay:
       app-id: ${ALIPAY_APP_ID:your-alipay-app-id}

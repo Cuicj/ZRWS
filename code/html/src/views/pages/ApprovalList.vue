@@ -55,19 +55,18 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import Panel from '@/components/common/Panel.vue';
+import { getTodoList, getMyAppliedList, approveApproval, rejectApproval } from '@/api/approval.js';
 
 const statusFilter = ref('');
 const showDialog = ref(false);
 const currentApproval = ref(null);
 const approvalComment = ref('');
+const loading = ref(false);
 
-const approvals = ref([
-  { id: 'APR-2026-001', type: '外出报备', title: '望城区乔口镇采集任务外出报备', applicant: '王工', dept: '技术部', status: 'pending', createTime: '2026-06-17 08:00' },
-  { id: 'APR-2026-002', type: '物资申领', title: 'RTK 基准站电池采购申请', applicant: '李工', dept: '装备部', status: 'pending', createTime: '2026-06-16 14:30' },
-  { id: 'APR-2026-003', type: '数据导出', title: '岳麓区莲花镇测图数据导出申请', applicant: '张工', dept: '技术部', status: 'approved', createTime: '2026-06-15 10:00' }
-]);
+const approvals = ref([]);
 
 const filteredApprovals = computed(() => {
   if (!statusFilter.value) return approvals.value;
@@ -77,9 +76,99 @@ const filteredApprovals = computed(() => {
 const getStatusClass = (s) => ({ pending: 'status-proc', approved: 'status-ok', rejected: 'status-err' }[s] || 'status-dim');
 const getStatusText = (s) => ({ pending: '待审批', approved: '已通过', rejected: '已驳回' }[s] || s);
 
-const openApproval = (a) => { currentApproval.value = a; approvalComment.value = ''; showDialog.value = true; };
-const approve = () => { if (currentApproval.value) currentApproval.value.status = 'approved'; showDialog.value = false; };
-const reject = () => { if (currentApproval.value) currentApproval.value.status = 'rejected'; showDialog.value = false; };
+// 加载审批列表
+const loadApprovals = async () => {
+  loading.value = true;
+  try {
+    // 获取待办审批列表
+    const todoRes = await getTodoList();
+    // 获取我申请的审批列表
+    const appliedRes = await getMyAppliedList();
+    
+    const todoList = todoRes.list || [];
+    const appliedList = appliedRes.list || [];
+    
+    // 合并列表并适配数据结构
+    approvals.value = [...todoList, ...appliedList].map(item => ({
+      id: item.id || item.approvalId || item.processInstanceId,
+      type: item.type || item.processName,
+      title: item.title || item.businessTitle,
+      applicant: item.applicant || item.applyUser,
+      dept: item.dept || item.department,
+      status: mapStatus(item.status),
+      createTime: item.createTime || item.applyTime
+    }));
+  } catch (error) {
+    console.error('加载审批列表失败:', error);
+    ElMessage.error('加载审批列表失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 状态映射
+const mapStatus = (status) => {
+  const map = {
+    0: 'pending',
+    1: 'approved',
+    2: 'rejected',
+    'pending': 'pending',
+    'approved': 'approved',
+    'rejected': 'rejected',
+    'PENDING': 'pending',
+    'APPROVED': 'approved',
+    'REJECTED': 'rejected'
+  };
+  return map[status] || 'pending';
+};
+
+const openApproval = (a) => { 
+  currentApproval.value = a; 
+  approvalComment.value = ''; 
+  showDialog.value = true; 
+};
+
+const approve = async () => {
+  if (!currentApproval.value) return;
+  
+  try {
+    const res = await approveApproval(currentApproval.value.id, { comment: approvalComment.value });
+    if (res.code === 0 || res.code === 200) {
+      currentApproval.value.status = 'approved';
+      ElMessage.success('审批通过');
+      showDialog.value = false;
+      loadApprovals(); // 重新加载列表
+    } else {
+      ElMessage.error(res.msg || '审批失败');
+    }
+  } catch (error) {
+    console.error('审批失败:', error);
+    ElMessage.error('审批失败，请稍后重试');
+  }
+};
+
+const reject = async () => {
+  if (!currentApproval.value) return;
+  
+  try {
+    const res = await rejectApproval(currentApproval.value.id, { comment: approvalComment.value });
+    if (res.code === 0 || res.code === 200) {
+      currentApproval.value.status = 'rejected';
+      ElMessage.success('审批已驳回');
+      showDialog.value = false;
+      loadApprovals(); // 重新加载列表
+    } else {
+      ElMessage.error(res.msg || '驳回失败');
+    }
+  } catch (error) {
+    console.error('驳回失败:', error);
+    ElMessage.error('驳回失败，请稍后重试');
+  }
+};
+
+onMounted(() => {
+  loadApprovals();
+});
 </script>
 
 <style scoped>

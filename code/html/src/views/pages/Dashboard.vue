@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="dashboard-page">
     <!-- 页面标题 -->
     <div class="page-head">
@@ -151,8 +151,8 @@ const loadData = async () => {
     loading.value = true;
     const [statsRes, tasksRes, devicesRes] = await Promise.all([
       getDashboardStats().catch(() => ({ data: {} })),
-      getRecentTasks({ limit: 5 }).catch(() => ({ data: [] })),
-      getDeviceList().catch(() => ({ data: [] }))
+      getRecentTasks({ limit: 5 }).catch(() => ({ list: [] })),
+      getDeviceList().catch(() => ({ list: [] }))
     ]);
     
     if (statsRes.data) {
@@ -168,8 +168,8 @@ const loadData = async () => {
       };
     }
     
-    if (tasksRes.data && Array.isArray(tasksRes.data)) {
-      recentTasks.value = tasksRes.data.slice(0, 5).map(t => ({
+    if (tasksRes.list && Array.isArray(tasksRes.list)) {
+      recentTasks.value = tasksRes.list.slice(0, 5).map(t => ({
         id: t.missionCode || t.id,
         area: t.location || t.area || '-',
         operator: t.operator || '-',
@@ -180,8 +180,8 @@ const loadData = async () => {
       }));
     }
     
-    if (devicesRes.data && Array.isArray(devicesRes.data)) {
-      deviceList.value = devicesRes.data.slice(0, 5).map(d => ({
+    if (devicesRes.list && Array.isArray(devicesRes.list)) {
+      deviceList.value = devicesRes.list.slice(0, 5).map(d => ({
         id: d.deviceId || d.id,
         name: d.deviceName || d.name,
         statusText: d.status || 'UNKNOWN',

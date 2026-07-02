@@ -4,6 +4,7 @@ import com.zrws.approval.config.MockDataInitializer;
 import com.zrws.approval.task.DailyDataGenerator;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -14,6 +15,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/v1/admin")
 @CrossOrigin(origins = "*")
+@ConditionalOnProperty(name = "zrws.mock.enabled", havingValue = "true")
 public class DataAdminController {
 
     @Autowired

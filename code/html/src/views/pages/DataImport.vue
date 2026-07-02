@@ -250,8 +250,8 @@ const currentBatch = ref(null)
 const loadBoList = async () => {
   try {
     const res = await dataImportApi.getBoList()
-    if (res.data && res.data.list) {
-      boList.value = res.data.list
+    if (res.list) {
+      boList.value = res.list
     }
   } catch (e) {
     console.warn('加载BO列表失败，使用默认列表:', e.message)
@@ -269,8 +269,8 @@ const loadBatches = async () => {
   try {
     loading.value = true
     const res = await dataImportApi.getBatches({})
-    if (res.data && res.data.batches) {
-      batches.value = res.data.batches.slice(0, 20)
+    if (res.batches) {
+      batches.value = res.batches.slice(0, 20)
     }
   } catch (e) {
     console.warn('加载批次列表失败:', e.message)
@@ -327,9 +327,9 @@ const handleUpload = async () => {
       config.value.boType,
       config.value.useAiMapping
     )
-    if (res.data) {
-      analysisResult.value = res.data
-      currentBatchId.value = res.data.batchId
+    if (res.success) {
+      analysisResult.value = res
+      currentBatchId.value = res.batchId
       ElMessage.success('文件分析完成')
     }
   } catch (e) {
@@ -353,8 +353,8 @@ const handleImport = async () => {
       config.value.importMode,
       config.value.useAiMapping
     )
-    if (res.data) {
-      ElMessage.success(`导入完成！成功: ${res.data.successRows}, 失败: ${res.data.failedRows}`)
+    if (res.success) {
+      ElMessage.success(`导入完成！成功: ${res.successRows}, 失败: ${res.failedRows}`)
       analysisResult.value = null
       selectedFile.value = null
       loadBatches()

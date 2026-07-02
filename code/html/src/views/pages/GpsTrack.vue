@@ -56,17 +56,60 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import Panel from '@/components/common/Panel.vue';
+import { getGpsTrackList, getTrackPoints } from '@/api/gpsTrack.js';
 
-const gps = ref({ lng: 112.835210, lat: 28.456720, alt: 120.5, hAcc: 1.2, vAcc: 2.1, satellites: 18 });
-const trackPoints = ref([
-  { seq: 1, time: '08:30:01', lat: 28.456720, lng: 112.835210, alt: 120.0 },
-  { seq: 2, time: '08:30:02', lat: 28.456735, lng: 112.835325, alt: 120.2 },
-  { seq: 3, time: '08:30:03', lat: 28.456750, lng: 112.835440, alt: 119.8 },
-  { seq: 4, time: '08:30:04', lat: 28.456768, lng: 112.835560, alt: 120.1 },
-  { seq: 5, time: '08:30:05', lat: 28.456785, lng: 112.835680, alt: 120.0 }
-]);
+const gps = ref({ lng: 0, lat: 0, alt: 0, hAcc: 0, vAcc: 0, satellites: 0 });
+const trackPoints = ref([]);
+const loading = ref(false);
+
+// 加载GPS航迹数据
+const loadGpsData = async () => {
+  loading.value = true;
+  try {
+    // 获取航迹列表（取第一条作为当前航迹）
+    const trackListRes = await getGpsTrackList({ limit: 1 });
+    
+    const tracks = trackListRes.list || [];
+      if (tracks.length > 0) {
+        const currentTrack = tracks[0];
+        
+        if (currentTrack.latitude && currentTrack.longitude) {
+          gps.value = {
+            lng: currentTrack.longitude,
+            lat: currentTrack.latitude,
+            alt: currentTrack.altitude || 0,
+            hAcc: 0,
+            vAcc: 0,
+            satellites: currentTrack.satelliteCount || 0
+          };
+        }
+        
+        const trackId = currentTrack.trackId || currentTrack.id || currentTrack.missionId;
+        if (trackId) {
+          const pointsRes = await getTrackPoints(trackId);
+          trackPoints.value = (pointsRes.list || []).map((item, index) => ({
+            seq: index + 1,
+            time: item.recordTime || item.time,
+            lat: item.latitude || item.lat,
+            lng: item.longitude || item.lng,
+            alt: item.altitude || item.alt
+          }));
+        }
+      }
+  } catch (error) {
+    console.error('加载GPS航迹失败:', error);
+    ElMessage.error('加载GPS航迹失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadGpsData();
+});
 </script>
 
 <style scoped>

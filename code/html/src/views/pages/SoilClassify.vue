@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="classify-page">
     <section class="page-hero">
       <div class="hero-bg"></div>
@@ -228,7 +228,9 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
+import { getSoilClassifyList, getClassifyHistory } from '@/api/soilClassify.js'
 
 const steps = [
   { id: 1, title: '数据采集', desc: '输入参数/图像/光谱数据' },
@@ -248,6 +250,7 @@ const activeTab = ref('params')
 const analyzing = ref(false)
 const uploadedImage = ref('')
 const fileInput = ref(null)
+const loading = ref(false)
 
 const formData = reactive({
   ph: 6.8,
@@ -260,61 +263,63 @@ const formData = reactive({
   texture: '壤土'
 })
 
-const results = ref([
-  {
-    name: '褐土',
-    confidence: 92,
-    description: '暖温带半湿润地区发育于排水良好地形部位的半淋溶型土壤，腐殖质累积与钙积作用明显。',
-    category: '半淋溶土纲',
-    ph: '6.5-7.5',
-    organic: '2-4',
-    matches: [
-      { field: 'pH 值', score: 95 },
-      { field: '有机质', score: 88 },
-      { field: '质地类型', score: 92 },
-      { field: '颜色特征', score: 90 },
-      { field: '黏粒含量', score: 85 }
-    ]
-  },
-  {
-    name: '潮土',
-    confidence: 76,
-    description: '受地下水活动影响，在河流沉积物上发育的半水成土壤，具有锈纹锈斑特征。',
-    category: '半水成土纲',
-    ph: '7.0-8.5',
-    organic: '1-3',
-    matches: [
-      { field: 'pH 值', score: 72 },
-      { field: '有机质', score: 80 },
-      { field: '质地类型', score: 85 },
-      { field: '水分条件', score: 78 },
-      { field: '黏粒含量', score: 70 }
-    ]
-  },
-  {
-    name: '棕壤',
-    confidence: 65,
-    description: '暖温带湿润气候区落叶阔叶林下发育的淋溶型土壤，黏化作用强，通体无石灰反应。',
-    category: '淋溶土纲',
-    ph: '5.5-6.5',
-    organic: '3-6',
-    matches: [
-      { field: 'pH 值', score: 60 },
-      { field: '有机质', score: 72 },
-      { field: '质地类型', score: 68 },
-      { field: '颜色特征', score: 65 },
-      { field: '结构特征', score: 58 }
-    ]
-  }
-])
+const results = ref([])
+const analysisHistory = ref([])
 
-const analysisHistory = ref([
-  { id: 'ANA-2024-0892', inputType: 'params', typeLabel: '参数输入', sampleCount: 3, result: '褐土', confidence: 92, analysisTime: '2024-12-15 14:32' },
-  { id: 'ANA-2024-0891', inputType: 'image', typeLabel: '图像识别', sampleCount: 1, result: '红壤', confidence: 85, analysisTime: '2024-12-15 10:18' },
-  { id: 'ANA-2024-0890', inputType: 'params', typeLabel: '参数输入', sampleCount: 5, result: '黄壤', confidence: 78, analysisTime: '2024-12-14 16:45' },
-  { id: 'ANA-2024-0889', inputType: 'spectrum', typeLabel: '光谱分析', sampleCount: 12, result: '黑土', confidence: 95, analysisTime: '2024-12-14 09:22' },
-  { id: 'ANA-2024-0888', inputType: 'image', typeLabel: '图像识别', sampleCount: 2, result: '潮土', confidence: 72, analysisTime: '2024-12-13 15:08' }
-])
+// 加载分类结果和历史记录
+const loadClassifyData = async () => {
+  loading.value = true
+  try {
+    // 加载分类列表
+    const listRes = await getSoilClassifyList()
+    // 加载历史记录
+    const historyRes = await getClassifyHistory()
+    
+    if (listRes.list) {
+      results.value = (listRes.list || []).map(item => ({
+        name: item.soilTypeName || item.name,
+        confidence: item.confidence || 0,
+        description: item.description || '',
+        category: item.category || item.soilCategory || '',
+        ph: item.phRange || '6.5-7.5',
+        organic: item.organicRange || '2-4',
+        matches: item.matchDetails || [
+          { field: 'pH 值', score: item.phMatch || 0 },
+          { field: '有机质', score: item.organicMatch || 0 },
+          { field: '质地类型', score: item.textureMatch || 0 },
+          { field: '颜色特征', score: item.colorMatch || 0 }
+        ]
+      }))
+    }
+    
+    if (historyRes.list) {
+      analysisHistory.value = (historyRes.list || []).map(item => ({
+        id: item.id || item.analysisId,
+        inputType: item.inputType || 'params',
+        typeLabel: getInputTypeLabel(item.inputType),
+        sampleCount: item.sampleCount || 1,
+        result: item.resultSoilType || item.result,
+        confidence: item.confidence || 0,
+        analysisTime: item.analysisTime || item.createTime
+      }))
+    }
+  } catch (error) {
+    console.error('加载分类数据失败:', error)
+    ElMessage.error('加载分类数据失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
+}
+
+// 辅助函数：获取输入类型标签
+const getInputTypeLabel = (type) => {
+  const map = {
+    params: '参数输入',
+    image: '图像识别',
+    spectrum: '光谱分析'
+  }
+  return map[type] || type
+}
 
 const resetForm = () => {
   formData.ph = null
@@ -389,6 +394,10 @@ const viewReport = (r) => {
 const viewHistory = (a) => {
   console.log('查看历史:', a.id)
 }
+
+onMounted(() => {
+  loadClassifyData()
+})
 </script>
 
 <style scoped>

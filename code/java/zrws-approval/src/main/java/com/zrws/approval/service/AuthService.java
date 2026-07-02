@@ -59,11 +59,7 @@ public class AuthService {
      * 登录
      */
     public LoginResponse login(LoginRequest request) {
-        // 查询用户
-        SysUser user = sysUserMapper.selectOne(
-                new LambdaQueryWrapper<SysUser>()
-                        .eq(SysUser::getUsername, request.getUsername())
-        );
+        SysUser user = sysUserMapper.selectByUsernameIgnoreTenant(request.getUsername());
         if (user == null) {
             throw new IllegalArgumentException("用户名或密码错误");
         }

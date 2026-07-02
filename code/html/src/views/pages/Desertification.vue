@@ -151,26 +151,37 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes, trendRes, riskRes] = await Promise.all([
-      getDesertificationList().catch(() => ({ data: [] })),
+      getDesertificationList().catch(() => ({ list: [] })),
       getDesertificationStats().catch(() => ({ data: {} })),
-      getDesertificationTrend().catch(() => ({ data: [] })),
-      getDesertificationRiskDistribution().catch(() => ({ data: [] }))
+      getDesertificationTrend().catch(() => ({ data: null })),
+      getDesertificationRiskDistribution().catch(() => ({ list: [] }))
     ]);
     
-    if (listRes.data) {
-      records.value = listRes.data;
+    if (listRes.list) {
+      records.value = listRes.list;
     }
     
     if (statsRes.data) {
-      stats.value = statsRes.data;
+      stats.value = {
+        regionCount: statsRes.data.totalRecords || 0,
+        avgVegetation: statsRes.data.avgVegetationCoverage || 0,
+        totalArea: statsRes.data.totalArea || 0,
+        highRiskCount: statsRes.data.highRiskCount || 0,
+        desertificationRatio: statsRes.data.desertificationRatio || 0
+      };
     }
     
-    if (trendRes.data && trendRes.data.length > 0) {
-      trendData.value = trendRes.data;
+    if (trendRes.data && trendRes.data.months) {
+      const months = trendRes.data.months || [];
+      const coverage = trendRes.data.vegetationCoverage || [];
+      trendData.value = months.map((month, i) => ({
+        month,
+        coverage: coverage[i] || 0
+      }));
     }
     
-    if (riskRes.data && riskRes.data.length > 0) {
-      gradeDistribution.value = riskRes.data;
+    if (riskRes.list && riskRes.list.length > 0) {
+      gradeDistribution.value = riskRes.list;
     } else {
       gradeDistribution.value = [
         { grade: 'MILD', label: '轻度沙漠化', count: 6, percent: 43 },

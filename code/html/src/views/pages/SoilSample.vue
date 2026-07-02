@@ -34,17 +34,57 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getSoilSampleList, getSoilSampleStats } from '@/api/soilSample.js';
 
-const stats = ref({ count: 36, avgPH: '6.7', avgMoisture: '32.5', organic: '2.84' });
-const samples = ref([
-  { id: 'S-001', lat: 28.4568, lng: 112.8352, ph: 6.5, moisture: 34.2, ec: 0.32, soilType: '壤土' },
-  { id: 'S-002', lat: 28.4570, lng: 112.8358, ph: 6.8, moisture: 31.5, ec: 0.28, soilType: '黏壤土' },
-  { id: 'S-003', lat: 28.4572, lng: 112.8362, ph: 7.1, moisture: 28.9, ec: 0.25, soilType: '砂壤土' },
-  { id: 'S-004', lat: 28.4575, lng: 112.8365, ph: 6.3, moisture: 36.8, ec: 0.38, soilType: '重黏土' }
-]);
+const stats = ref({ count: 0, avgPH: '0', avgMoisture: '0', organic: '0' });
+const samples = ref([]);
+const loading = ref(false);
+
+// 加载采样数据和统计信息
+const loadSoilData = async () => {
+  loading.value = true;
+  try {
+    // 加载采样列表
+    const listRes = await getSoilSampleList();
+    // 加载统计信息
+    const statsRes = await getSoilSampleStats();
+    
+    if (listRes.list) {
+      samples.value = (listRes.list || []).map(item => ({
+        id: item.id || item.sampleId,
+        lat: item.latitude || item.lat,
+        lng: item.longitude || item.lng,
+        ph: item.ph || item.phValue,
+        moisture: item.moisture || item.moistureContent,
+        ec: item.ec || item.electricalConductivity,
+        soilType: item.soilType || item.textureType
+      }));
+    }
+    
+    if (statsRes.data) {
+      const statsData = statsRes.data || {};
+      stats.value = {
+        count: statsData.totalCount || samples.value.length,
+        avgPH: statsData.avgPH || '0',
+        avgMoisture: statsData.avgMoisture || '0',
+        organic: statsData.avgOrganic || '0'
+      };
+    }
+  } catch (error) {
+    console.error('加载采样数据失败:', error);
+    ElMessage.error('加载采样数据失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+onMounted(() => {
+  loadSoilData();
+});
 </script>
 
 <style scoped>

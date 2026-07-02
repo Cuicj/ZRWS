@@ -38,3 +38,12 @@ export function getSoilClassificationList(params) {
     params: { ...params, category: 'SOIL_CHINA' }
   });
 }
+
+// 获取分类历史记录
+export function getClassifyHistory(params) {
+  return request({
+    url: '/v1/soil-classification/history',
+    method: 'get',
+    params
+  });
+}

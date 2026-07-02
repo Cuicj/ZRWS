@@ -32,16 +32,62 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { ElMessage } from 'element-plus';
 import Panel from '@/components/common/Panel.vue';
 import StatCard from '@/components/common/StatCard.vue';
+import { getLandPlotList, getAreaStats } from '@/api/landPlot.js';
 
-const stats = ref({ totalPlots: 28, totalArea: 4560, diffPlots: 5, avgAccuracy: 1.2 });
-const plots = ref([
-  { id: 'PLOT-001', name: '乔口镇 1号', gpsArea: 125.6, regArea: 124.8, diff: 0.64, measureTime: '2026-06-17 14:00' },
-  { id: 'PLOT-002', name: '乔口镇 2号', gpsArea: 98.3, regArea: 100.0, diff: -1.7, measureTime: '2026-06-17 14:30' },
-  { id: 'PLOT-003', name: '莲花镇 A区', gpsArea: 256.8, regArea: 250.0, diff: 2.72, measureTime: '2026-06-16 10:00' }
-]);
+const stats = ref({ totalPlots: 0, totalArea: 0, diffPlots: 0, avgAccuracy: 0 });
+const plots = ref([]);
+const loading = ref(false);
+
+// 加载地块数据和统计信息
+const loadLandData = async () => {
+  loading.value = true;
+  try {
+    // 加载地块列表
+    const listRes = await getLandPlotList();
+    // 加载统计信息
+    const statsRes = await getAreaStats();
+    
+    if (listRes.list) {
+      plots.value = (listRes.list || []).map(item => ({
+        id: item.id || item.plotId,
+        name: item.name || item.plotName,
+        gpsArea: item.gpsArea || item.measuredArea,
+        regArea: item.regArea || item.registeredArea,
+        diff: item.diff || calculateDiff(item.gpsArea, item.regArea),
+        measureTime: item.measureTime || item.createTime
+      }));
+    }
+
+    if (statsRes.data) {
+      const statsData = statsRes.data || {};
+      stats.value = {
+        totalPlots: statsData.totalPlots || plots.value.length,
+        totalArea: statsData.totalArea || 0,
+        diffPlots: statsData.diffPlots || 0,
+        avgAccuracy: statsData.avgAccuracy || 0
+      };
+    }
+  } catch (error) {
+    console.error('加载地块数据失败:', error);
+    ElMessage.error('加载地块数据失败，请稍后重试');
+  } finally {
+    loading.value = false;
+  }
+};
+
+// 计算差异百分比
+const calculateDiff = (gpsArea, regArea) => {
+  if (!gpsArea || !regArea) return 0;
+  return ((gpsArea - regArea) / regArea * 100).toFixed(2);
+};
+
+onMounted(() => {
+  loadLandData();
+});
 </script>
 
 <style scoped>

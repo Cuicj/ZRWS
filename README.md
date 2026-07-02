@@ -129,6 +129,8 @@ python3 deploy/webhook_receiver.py
 
 ## 版本历史
 
+- **v4.2.2** - 修复EcoDataInitializer编译错误，生态环境监测模块正式上线
+- **v4.2.0** - 新增生态环境监测模块（气候变暖、沙漠化、水土流失、生态标准库）
 - **v2.0.0** - Spring Boot 3.2.5 + Spring AI 1.0.0-M2
 - **v1.0.0** - 初始版本
 
