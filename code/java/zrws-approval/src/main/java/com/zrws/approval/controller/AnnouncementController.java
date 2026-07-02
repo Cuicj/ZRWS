@@ -306,7 +306,7 @@ public class AnnouncementController {
      * 获取所有行政区域级别
      */
     @GetMapping("/admin-levels")
-    public R<List<String>> getAdminLevels() {
+    public R<List<Map<String, Object>>> getAdminLevels() {
         return R.ok(announcementService.getAllAdminLevels());
     }
 

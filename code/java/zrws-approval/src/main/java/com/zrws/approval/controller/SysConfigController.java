@@ -46,7 +46,7 @@ public class SysConfigController {
      * 获取全局设置
      */
     @GetMapping("/global")
-    public R<Map<String, String>> getGlobalSettings() {
+    public R<Map<String, Object>> getGlobalSettings() {
         return R.ok(configService.getGlobalSettings());
     }
 

@@ -25,7 +25,7 @@ public class SysMenuController {
      * 获取菜单树（按分组，用于侧边栏展示）
      */
     @GetMapping("/tree")
-    public R<List<SysMenu>> getMenuTree() {
+    public R<List<Map<String, Object>>> getMenuTree() {
         return R.ok(menuService.getMenuTree());
     }
 
