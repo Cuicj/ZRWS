@@ -145,8 +145,8 @@ const loadSubcategories = async () => {
   }
   try {
     const res = await getEcoStandardSubcategories(categoryFilter.value);
-    if (res.list) {
-      subcategories.value = res.list;
+    if (res.data && res.data.list) {
+      subcategories.value = res.data.list;
     } else if (res.data) {
       subcategories.value = res.data;
     }
@@ -159,8 +159,8 @@ const loadData = async () => {
   try {
     loading.value = true;
     const res = await getEcoStandardList();
-    if (res.list) {
-      standards.value = res.list;
+    if (res.data && res.data.list) {
+      standards.value = res.data.list;
     } else if (res.data) {
       standards.value = res.data;
     }

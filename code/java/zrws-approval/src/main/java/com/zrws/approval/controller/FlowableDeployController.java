@@ -1,14 +1,12 @@
 package com.zrws.approval.controller;
 
 import com.zrws.approval.service.FlowableDeployService;
-import org.flowable.engine.repository.ProcessDefinition;
+import com.zrws.common.core.domain.R;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -33,12 +31,12 @@ public class FlowableDeployController {
      * POST /api/v1/flowable/deploy/file
      */
     @PostMapping("/deploy/file")
-    public ResponseEntity<Map<String, Object>> deployFile(@RequestParam("file") MultipartFile file) throws IOException {
+    public R<Map<String, Object>> deployFile(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
-            return error("请选择要上传的BPMN文件");
+            return R.fail("请选择要上传的BPMN文件");
         }
         Map<String, Object> result = deployService.deployFromFile(file);
-        return success(result);
+        return R.ok(result);
     }
 
     /**
@@ -46,12 +44,9 @@ public class FlowableDeployController {
      * POST /api/v1/flowable/deploy/batch
      */
     @PostMapping("/deploy/batch")
-    public ResponseEntity<Map<String, Object>> deployBatch() {
+    public R<Map<String, Object>> deployBatch() {
         List<Map<String, Object>> results = deployService.deployAllFromClasspath();
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", results.size());
-        result.put("deployments", results);
-        return success(result);
+        return R.ok(Map.of("total", results.size(), "deployments", results));
     }
 
     /**
@@ -59,18 +54,18 @@ public class FlowableDeployController {
      * POST /api/v1/flowable/deploy/create
      */
     @PostMapping("/deploy/create")
-    public ResponseEntity<Map<String, Object>> createProcess(@RequestBody Map<String, Object> body) {
+    public R<Map<String, Object>> createProcess(@RequestBody Map<String, Object> body) {
         String processKey = (String) body.get("processKey");
         String processName = (String) body.get("processName");
         @SuppressWarnings("unchecked")
         List<Map<String, String>> steps = (List<Map<String, String>>) body.get("steps");
 
         if (processKey == null || processName == null || steps == null) {
-            return error("缺少必要参数");
+            return R.fail("缺少必要参数");
         }
 
         Map<String, Object> result = deployService.createStandardProcess(processKey, processName, steps);
-        return success(result);
+        return R.ok(result);
     }
 
     // ============================================================
@@ -82,12 +77,9 @@ public class FlowableDeployController {
      * GET /api/v1/flowable/definitions
      */
     @GetMapping("/definitions")
-    public ResponseEntity<Map<String, Object>> listDefinitions() {
+    public R<Map<String, Object>> listDefinitions() {
         List<Map<String, Object>> list = deployService.listProcessDefinitions();
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", list.size());
-        result.put("list", list);
-        return success(result);
+        return R.ok(Map.of("total", list.size(), "list", list));
     }
 
     /**
@@ -95,12 +87,12 @@ public class FlowableDeployController {
      * GET /api/v1/flowable/definitions/{processDefinitionId}
      */
     @GetMapping("/definitions/{processDefinitionId}")
-    public ResponseEntity<Map<String, Object>> getDefinition(@PathVariable String processDefinitionId) {
+    public R<Map<String, Object>> getDefinition(@PathVariable String processDefinitionId) {
         Map<String, Object> definition = deployService.getProcessDefinition(processDefinitionId);
         if (definition == null) {
-            return error("流程定义不存在");
+            return R.fail("流程定义不存在");
         }
-        return success(definition);
+        return R.ok(definition);
     }
 
     /**
@@ -108,14 +100,12 @@ public class FlowableDeployController {
      * GET /api/v1/flowable/definitions/{processDefinitionId}/xml
      */
     @GetMapping("/definitions/{processDefinitionId}/xml")
-    public ResponseEntity<Map<String, Object>> getDefinitionXML(@PathVariable String processDefinitionId) {
+    public R<Map<String, Object>> getDefinitionXML(@PathVariable String processDefinitionId) {
         String xml = deployService.getProcessDefinitionXML(processDefinitionId);
         if (xml == null) {
-            return error("流程定义不存在");
+            return R.fail("流程定义不存在");
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("xml", xml);
-        return success(result);
+        return R.ok(Map.of("xml", xml));
     }
 
     /**
@@ -123,13 +113,9 @@ public class FlowableDeployController {
      * GET /api/v1/flowable/definitions/{processKey}/versions
      */
     @GetMapping("/definitions/{processKey}/versions")
-    public ResponseEntity<Map<String, Object>> getVersions(@PathVariable String processKey) {
+    public R<Map<String, Object>> getVersions(@PathVariable String processKey) {
         List<Map<String, Object>> versions = deployService.getProcessVersions(processKey);
-        Map<String, Object> result = new HashMap<>();
-        result.put("processKey", processKey);
-        result.put("total", versions.size());
-        result.put("versions", versions);
-        return success(result);
+        return R.ok(Map.of("processKey", processKey, "total", versions.size(), "versions", versions));
     }
 
     // ============================================================
@@ -141,9 +127,9 @@ public class FlowableDeployController {
      * DELETE /api/v1/flowable/deployments/{deploymentId}
      */
     @DeleteMapping("/deployments/{deploymentId}")
-    public ResponseEntity<Map<String, Object>> deleteDeployment(@PathVariable String deploymentId) {
+    public R<String> deleteDeployment(@PathVariable String deploymentId) {
         deployService.deleteDeployment(deploymentId);
-        return successMsg("删除成功");
+        return R.ok("删除成功");
     }
 
     /**
@@ -151,9 +137,9 @@ public class FlowableDeployController {
      * DELETE /api/v1/flowable/deployments/key/{processKey}
      */
     @DeleteMapping("/deployments/key/{processKey}")
-    public ResponseEntity<Map<String, Object>> deleteByKey(@PathVariable String processKey) {
+    public R<String> deleteByKey(@PathVariable String processKey) {
         deployService.deleteDeploymentByKey(processKey);
-        return successMsg("删除成功");
+        return R.ok("删除成功");
     }
 
     /**
@@ -161,9 +147,9 @@ public class FlowableDeployController {
      * POST /api/v1/flowable/definitions/{processDefinitionId}/suspend
      */
     @PostMapping("/definitions/{processDefinitionId}/suspend")
-    public ResponseEntity<Map<String, Object>> suspendDefinition(@PathVariable String processDefinitionId) {
+    public R<String> suspendDefinition(@PathVariable String processDefinitionId) {
         deployService.suspendProcessDefinition(processDefinitionId);
-        return successMsg("已挂起");
+        return R.ok("已挂起");
     }
 
     /**
@@ -171,9 +157,9 @@ public class FlowableDeployController {
      * POST /api/v1/flowable/definitions/{processDefinitionId}/activate
      */
     @PostMapping("/definitions/{processDefinitionId}/activate")
-    public ResponseEntity<Map<String, Object>> activateDefinition(@PathVariable String processDefinitionId) {
+    public R<String> activateDefinition(@PathVariable String processDefinitionId) {
         deployService.activateProcessDefinition(processDefinitionId);
-        return successMsg("已激活");
+        return R.ok("已激活");
     }
 
     // ============================================================
@@ -185,34 +171,8 @@ public class FlowableDeployController {
      * GET /api/v1/flowable/stats
      */
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats() {
+    public R<Map<String, Object>> getStats() {
         Map<String, Object> stats = deployService.getDeploymentStats();
-        return success(stats);
-    }
-
-    // ============================================================
-    // 辅助方法
-    // ============================================================
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", "success");
-        body.put("data", data);
-        return ResponseEntity.ok(body);
-    }
-
-    private ResponseEntity<Map<String, Object>> successMsg(String msg) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", msg);
-        return ResponseEntity.ok(body);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String msg) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", -1);
-        body.put("msg", msg);
-        return ResponseEntity.ok(body);
+        return R.ok(stats);
     }
 }

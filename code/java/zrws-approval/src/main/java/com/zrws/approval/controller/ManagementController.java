@@ -10,6 +10,7 @@ import com.zrws.approval.mapper.OrganizationMapper;
 import com.zrws.approval.mapper.SysRoleMapper;
 import com.zrws.approval.mapper.SysUserMapper;
 import com.zrws.approval.mapper.UserOrgMapper;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -42,7 +43,7 @@ public class ManagementController {
     // ==================== 用户管理 ====================
 
     @GetMapping("/users")
-    public Map<String, Object> listUsers(
+    public R<Map<String, Object>> listUsers(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String keyword) {
@@ -56,7 +57,6 @@ public class ManagementController {
         wrapper.orderByDesc(SysUser::getCreatedTime);
 
         Page<SysUser> result = sysUserMapper.selectPage(new Page<>(page, size), wrapper);
-        // 清除密码
         result.getRecords().forEach(u -> u.setPassword(null));
 
         Map<String, Object> response = new HashMap<>();
@@ -64,11 +64,11 @@ public class ManagementController {
         response.put("total", result.getTotal());
         response.put("page", page);
         response.put("size", size);
-        return response;
+        return R.ok(response);
     }
 
     @PostMapping("/users")
-    public Map<String, Object> createUser(@RequestBody Map<String, Object> body) {
+    public R<SysUser> createUser(@RequestBody Map<String, Object> body) {
         SysUser user = new SysUser();
         user.setUsername((String) body.get("username"));
         user.setPassword(passwordEncoder.encode((String) body.get("password")));
@@ -76,12 +76,10 @@ public class ManagementController {
         user.setEmail((String) body.get("email"));
         user.setRealName((String) body.get("realName"));
         user.setStatus(SysUser.Status.ACTIVE.name());
-        // 使用当前用户的组织和租户
         user.setCurrentOrgId(body.get("orgId") != null ? Long.valueOf(body.get("orgId").toString()) : null);
         user.setTenantId(body.get("tenantId") != null ? Long.valueOf(body.get("tenantId").toString()) : null);
         sysUserMapper.insert(user);
 
-        // 如果指定了角色，创建用户-组织关联
         if (body.get("orgId") != null && body.get("roleId") != null) {
             UserOrg userOrg = new UserOrg();
             userOrg.setUserId(user.getId());
@@ -94,17 +92,14 @@ public class ManagementController {
         }
 
         user.setPassword(null);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("user", user);
-        return response;
+        return R.ok(user);
     }
 
     @PutMapping("/users/{id}")
-    public Map<String, Object> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public R<SysUser> updateUser(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         SysUser user = sysUserMapper.selectById(id);
         if (user == null) {
-            throw new IllegalArgumentException("用户不存在");
+            return R.fail("用户不存在");
         }
         if (body.containsKey("realName")) user.setRealName((String) body.get("realName"));
         if (body.containsKey("phone")) user.setPhone((String) body.get("phone"));
@@ -114,37 +109,29 @@ public class ManagementController {
         sysUserMapper.updateById(user);
 
         user.setPassword(null);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("user", user);
-        return response;
+        return R.ok(user);
     }
 
     @DeleteMapping("/users/{id}")
-    public Map<String, Object> deleteUser(@PathVariable Long id) {
+    public R<String> deleteUser(@PathVariable Long id) {
         sysUserMapper.deleteById(id);
-        // 删除用户-组织关联
         userOrgMapper.delete(new LambdaQueryWrapper<UserOrg>().eq(UserOrg::getUserId, id));
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        return response;
+        return R.ok("删除成功");
     }
 
     @PutMapping("/users/{id}/password")
-    public Map<String, Object> resetPassword(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public R<String> resetPassword(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         SysUser user = sysUserMapper.selectById(id);
         if (user == null) {
-            throw new IllegalArgumentException("用户不存在");
+            return R.fail("用户不存在");
         }
         user.setPassword(passwordEncoder.encode((String) body.get("password")));
         sysUserMapper.updateById(user);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        return response;
+        return R.ok("重置密码成功");
     }
 
     @GetMapping("/users/{id}/roles")
-    public Map<String, Object> getUserRoles(@PathVariable Long id) {
+    public R<List<Map<String, Object>>> getUserRoles(@PathVariable Long id) {
         List<UserOrg> userOrgs = userOrgMapper.selectList(
                 new LambdaQueryWrapper<UserOrg>().eq(UserOrg::getUserId, id));
         List<Map<String, Object>> roles = new ArrayList<>();
@@ -159,25 +146,20 @@ public class ManagementController {
                 roles.add(r);
             }
         }
-        Map<String, Object> response = new HashMap<>();
-        response.put("roles", roles);
-        return response;
+        return R.ok(roles);
     }
 
     // ==================== 角色管理 ====================
 
     @GetMapping("/roles")
-    public Map<String, Object> listRoles() {
+    public R<List<SysRole>> listRoles() {
         List<SysRole> roles = sysRoleMapper.selectList(
                 new LambdaQueryWrapper<SysRole>().orderByDesc(SysRole::getCreatedTime));
-        Map<String, Object> response = new HashMap<>();
-        response.put("list", roles);
-        response.put("total", roles.size());
-        return response;
+        return R.ok(roles);
     }
 
     @PostMapping("/roles")
-    public Map<String, Object> createRole(@RequestBody Map<String, Object> body) {
+    public R<SysRole> createRole(@RequestBody Map<String, Object> body) {
         SysRole role = new SysRole();
         role.setRoleName((String) body.get("roleName"));
         role.setRoleCode((String) body.get("roleCode"));
@@ -189,17 +171,14 @@ public class ManagementController {
         }
         sysRoleMapper.insert(role);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("role", role);
-        return response;
+        return R.ok(role);
     }
 
     @PutMapping("/roles/{id}")
-    public Map<String, Object> updateRole(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public R<SysRole> updateRole(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         SysRole role = sysRoleMapper.selectById(id);
         if (role == null) {
-            throw new IllegalArgumentException("角色不存在");
+            return R.fail("角色不存在");
         }
         if (body.containsKey("roleName")) role.setRoleName((String) body.get("roleName"));
         if (body.containsKey("roleCode")) role.setRoleCode((String) body.get("roleCode"));
@@ -208,44 +187,34 @@ public class ManagementController {
         if (body.containsKey("permissions")) role.setPermissions(body.get("permissions").toString());
         sysRoleMapper.updateById(role);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("role", role);
-        return response;
+        return R.ok(role);
     }
 
     @DeleteMapping("/roles/{id}")
-    public Map<String, Object> deleteRole(@PathVariable Long id) {
+    public R<String> deleteRole(@PathVariable Long id) {
         sysRoleMapper.deleteById(id);
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        return response;
+        return R.ok("删除成功");
     }
 
     // ==================== 组织管理 ====================
 
     @GetMapping("/orgs")
-    public Map<String, Object> listOrgs() {
+    public R<List<Organization>> listOrgs() {
         List<Organization> orgs = organizationMapper.selectList(null);
-        Map<String, Object> response = new HashMap<>();
-        response.put("list", orgs);
-        response.put("total", orgs.size());
-        return response;
+        return R.ok(orgs);
     }
 
     @GetMapping("/orgs/{id}")
-    public Map<String, Object> getOrg(@PathVariable Long id) {
+    public R<Organization> getOrg(@PathVariable Long id) {
         Organization org = organizationMapper.selectById(id);
-        Map<String, Object> response = new HashMap<>();
-        response.put("org", org);
-        return response;
+        return R.ok(org);
     }
 
     @PutMapping("/orgs/{id}")
-    public Map<String, Object> updateOrg(@PathVariable Long id, @RequestBody Map<String, Object> body) {
+    public R<Organization> updateOrg(@PathVariable Long id, @RequestBody Map<String, Object> body) {
         Organization org = organizationMapper.selectById(id);
         if (org == null) {
-            throw new IllegalArgumentException("组织不存在");
+            return R.fail("组织不存在");
         }
         if (body.containsKey("orgName")) org.setOrgName((String) body.get("orgName"));
         if (body.containsKey("orgType")) org.setOrgType((String) body.get("orgType"));
@@ -254,16 +223,13 @@ public class ManagementController {
         if (body.containsKey("status")) org.setStatus((String) body.get("status"));
         organizationMapper.updateById(org);
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("success", true);
-        response.put("org", org);
-        return response;
+        return R.ok(org);
     }
 
     // ==================== 当前用户信息 ====================
 
     @GetMapping("/current")
-    public Map<String, Object> getCurrentUser(Authentication authentication) {
+    public R<Map<String, Object>> getCurrentUser(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         SysUser user = sysUserMapper.selectById(userId);
         if (user != null) {
@@ -272,11 +238,9 @@ public class ManagementController {
 
         Map<String, Object> response = new HashMap<>();
         response.put("user", user);
-        // 查询用户组织
         if (user != null && user.getCurrentOrgId() != null) {
             Organization org = organizationMapper.selectById(user.getCurrentOrgId());
             response.put("org", org);
-            // 查询用户角色
             List<UserOrg> userOrgs = userOrgMapper.selectList(
                     new LambdaQueryWrapper<UserOrg>().eq(UserOrg::getUserId, userId));
             List<SysRole> roles = new ArrayList<>();
@@ -286,6 +250,6 @@ public class ManagementController {
             }
             response.put("roles", roles);
         }
-        return response;
+        return R.ok(response);
     }
 }

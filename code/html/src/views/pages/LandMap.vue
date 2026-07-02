@@ -202,9 +202,9 @@ const loadLandData = async () => {
   loading.value = true;
   try {
     const res = await getLandPlotList({ year: selectedYear.value });
-    if (res.list) {
+    if (res.data?.list) {
       // 根据后端返回的数据结构进行适配
-      landData.value = (res.list || []).map(item => ({
+      landData.value = (res.data.list || []).map(item => ({
         name: item.name || item.provinceName || item.region,
         area: item.area || item.totalArea || 0,
         cultivated: item.cultivated || item.cultivatedArea || 0,

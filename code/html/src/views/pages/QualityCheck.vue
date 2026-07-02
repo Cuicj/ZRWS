@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="page-head">
       <h1 class="page-title display">质量校验</h1>
@@ -45,12 +45,12 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes] = await Promise.all([
-      getQualityCheckList().catch(() => ({ list: [] })),
+      getQualityCheckList().catch(() => ({ data: { list: [] } })),
       getQualityCheckStats().catch(() => ({ data: {} }))
     ]);
     
-    if (listRes.list) {
-      records.value = listRes.list.map(r => ({
+    if (listRes.data?.list) {
+      records.value = listRes.data.list.map(r => ({
         id: r.checkCode || r.id || '-',
         taskId: r.missionCode || r.taskId || '-',
         checkType: r.checkType || '-',

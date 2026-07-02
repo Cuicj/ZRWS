@@ -111,7 +111,7 @@ async function loadRoles() {
   loading.value = true;
   try {
     const res = await listRoles();
-    roles.value = res.list || [];
+    roles.value = res.data?.list || [];
   } catch (e) {
     ElMessage.error('加载角色列表失败');
     roles.value = [];

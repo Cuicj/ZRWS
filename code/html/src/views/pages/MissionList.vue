@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="page-head">
       <div>
@@ -117,8 +117,8 @@ const loadData = async () => {
   try {
     loading.value = true;
     const res = await getMissionList();
-    if (res && res.list) {
-      tasks.value = res.list.map(t => ({
+    if (res && res.data?.list) {
+      tasks.value = res.data.list.map(t => ({
         id: t.missionCode || t.id,
         area: t.location || t.area || '-',
         operator: t.operator || '-',

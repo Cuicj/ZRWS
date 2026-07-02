@@ -680,8 +680,8 @@ const loadAnalysis = async (id) => {
 const loadSamples = async (analysisId) => {
   try {
     const res = await getSampleList(analysisId);
-    if (res.success && res.list) {
-      rockSamples.value = res.list;
+    if (res.success && res.data?.list) {
+      rockSamples.value = res.data.list;
       if (rockSamples.value.length > 0) {
         selectedSample.value = rockSamples.value[0];
       }
@@ -705,8 +705,8 @@ const openStandardDetail = (std) => { detailStandard.value = std; };
 onMounted(async () => {
   try {
     const res = await getAnalysisList();
-    if (res.success && res.list && res.list.length > 0) {
-      analysisList.value = res.list;
+    if (res.success && res.data?.list && res.data.list.length > 0) {
+      analysisList.value = res.data.list;
       if (analysisList.value.length > 0) {
         selectedAnalysis.value = analysisList.value[0].analysisId;
         currentAnalysis.value = analysisList.value[0];
@@ -721,8 +721,8 @@ onMounted(async () => {
 
   try {
     const stdRes = await getStandardList();
-    if (stdRes.success && stdRes.list && stdRes.list.length > 0) {
-      standardList.value = stdRes.list;
+    if (stdRes.success && stdRes.data?.list && stdRes.data.list.length > 0) {
+      standardList.value = stdRes.data.list;
     } else {
       throw new Error('无标准数据');
     }

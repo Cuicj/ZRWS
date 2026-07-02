@@ -121,14 +121,14 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes, trendRes, riskRes] = await Promise.all([
-      getClimateWarmingList().catch(() => ({ list: [] })),
+      getClimateWarmingList().catch(() => ({ data: { list: [] } })),
       getClimateWarmingStats().catch(() => ({ data: {} })),
       getClimateWarmingTrend().catch(() => ({ data: null })),
-      getClimateWarmingRiskDistribution().catch(() => ({ list: [] }))
+      getClimateWarmingRiskDistribution().catch(() => ({ data: { list: [] } }))
     ]);
     
-    if (listRes.list) {
-      records.value = listRes.list;
+    if (listRes.data && listRes.data.list) {
+      records.value = listRes.data.list;
     }
     
     if (statsRes.data) {
@@ -150,8 +150,8 @@ const loadData = async () => {
       }));
     }
     
-    if (riskRes.list && riskRes.list.length > 0) {
-      riskDistribution.value = riskRes.list;
+    if (riskRes.data && riskRes.data.list && riskRes.data.list.length > 0) {
+      riskDistribution.value = riskRes.data.list;
     } else {
       riskDistribution.value = [
         { level: 'LOW', label: '低风险', count: 5, percent: 35 },

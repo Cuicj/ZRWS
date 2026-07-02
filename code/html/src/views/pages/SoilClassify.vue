@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="classify-page">
     <section class="page-hero">
       <div class="hero-bg"></div>
@@ -275,8 +275,8 @@ const loadClassifyData = async () => {
     // 加载历史记录
     const historyRes = await getClassifyHistory()
     
-    if (listRes.list) {
-      results.value = (listRes.list || []).map(item => ({
+    if (listRes.data?.list) {
+      results.value = (listRes.data.list || []).map(item => ({
         name: item.soilTypeName || item.name,
         confidence: item.confidence || 0,
         description: item.description || '',
@@ -292,8 +292,8 @@ const loadClassifyData = async () => {
       }))
     }
     
-    if (historyRes.list) {
-      analysisHistory.value = (historyRes.list || []).map(item => ({
+    if (historyRes.data?.list) {
+      analysisHistory.value = (historyRes.data.list || []).map(item => ({
         id: item.id || item.analysisId,
         inputType: item.inputType || 'params',
         typeLabel: getInputTypeLabel(item.inputType),

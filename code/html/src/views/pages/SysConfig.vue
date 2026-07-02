@@ -60,9 +60,9 @@ const loadConfig = async () => {
   loading.value = true;
   try {
     const res = await getSysConfigList();
-    if (res.list) {
-      // 根据后端返回的数据结构进行分组
-      const configData = res.list || [];
+    if (res.data.list) {
+      // 根据后端返回的数据结构进行适配
+      const configData = res.data.list || [];
       
       // 将配置按照分组进行整理
       const groupedConfigs = {};

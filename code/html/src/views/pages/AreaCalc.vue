@@ -51,8 +51,8 @@ const loadLandData = async () => {
     // 加载统计信息
     const statsRes = await getAreaStats();
     
-    if (listRes.list) {
-      plots.value = (listRes.list || []).map(item => ({
+    if (listRes.data?.list) {
+      plots.value = (listRes.data.list || []).map(item => ({
         id: item.id || item.plotId,
         name: item.name || item.plotName,
         gpsArea: item.gpsArea || item.measuredArea,

@@ -1,11 +1,10 @@
 package com.zrws.approval.controller;
 
 import com.zrws.approval.service.FlowableAIService;
+import com.zrws.common.core.domain.R;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -31,17 +30,17 @@ public class FlowableAIController {
      * Body: {"description": "我需要一个请假审批流程，员工提交后经理审批，超过3天需要总监审批"}
      */
     @PostMapping("/generate")
-    public ResponseEntity<Map<String, Object>> generateProcess(@RequestBody Map<String, String> body) {
+    public R<Map<String, Object>> generateProcess(@RequestBody Map<String, String> body) {
         String description = body.get("description");
         if (description == null || description.isEmpty()) {
-            return error("请提供流程描述");
+            return R.fail("请提供流程描述");
         }
 
         try {
             Map<String, Object> result = aiService.generateProcessFromDescription(description);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI生成失败: " + e.getMessage());
+            return R.fail("AI生成失败: " + e.getMessage());
         }
     }
 
@@ -51,17 +50,17 @@ public class FlowableAIController {
      * Body: {"description": "我需要一个请假审批流程..."}
      */
     @PostMapping("/generate-deploy")
-    public ResponseEntity<Map<String, Object>> generateAndDeploy(@RequestBody Map<String, String> body) {
+    public R<Map<String, Object>> generateAndDeploy(@RequestBody Map<String, String> body) {
         String description = body.get("description");
         if (description == null || description.isEmpty()) {
-            return error("请提供流程描述");
+            return R.fail("请提供流程描述");
         }
 
         try {
             Map<String, Object> result = aiService.generateAndDeploy(description);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI生成部署失败: " + e.getMessage());
+            return R.fail("AI生成部署失败: " + e.getMessage());
         }
     }
 
@@ -75,20 +74,20 @@ public class FlowableAIController {
      * Body: {"request": "请添加并行审批节点，缩短审批时间"}
      */
     @PostMapping("/optimize/{processDefinitionId}")
-    public ResponseEntity<Map<String, Object>> optimizeProcess(
+    public R<Map<String, Object>> optimizeProcess(
             @PathVariable String processDefinitionId,
             @RequestBody Map<String, String> body) {
 
         String optimizationRequest = body.get("request");
         if (optimizationRequest == null || optimizationRequest.isEmpty()) {
-            return error("请提供优化需求");
+            return R.fail("请提供优化需求");
         }
 
         try {
             Map<String, Object> result = aiService.optimizeProcess(processDefinitionId, optimizationRequest);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI优化失败: " + e.getMessage());
+            return R.fail("AI优化失败: " + e.getMessage());
         }
     }
 
@@ -101,12 +100,12 @@ public class FlowableAIController {
      * GET /api/v1/ai/analyze/{processDefinitionId}
      */
     @GetMapping("/analyze/{processDefinitionId}")
-    public ResponseEntity<Map<String, Object>> analyzeProcess(@PathVariable String processDefinitionId) {
+    public R<Map<String, Object>> analyzeProcess(@PathVariable String processDefinitionId) {
         try {
             Map<String, Object> result = aiService.analyzeProcess(processDefinitionId);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI分析失败: " + e.getMessage());
+            return R.fail("AI分析失败: " + e.getMessage());
         }
     }
 
@@ -120,17 +119,17 @@ public class FlowableAIController {
      * Body: {"scenario": "员工请假申请，需要经理和总监审批"}
      */
     @PostMapping("/recommend")
-    public ResponseEntity<Map<String, Object>> recommendTemplate(@RequestBody Map<String, String> body) {
+    public R<Map<String, Object>> recommendTemplate(@RequestBody Map<String, String> body) {
         String scenario = body.get("scenario");
         if (scenario == null || scenario.isEmpty()) {
-            return error("请提供业务场景描述");
+            return R.fail("请提供业务场景描述");
         }
 
         try {
             Map<String, Object> result = aiService.recommendTemplate(scenario);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI推荐失败: " + e.getMessage());
+            return R.fail("AI推荐失败: " + e.getMessage());
         }
     }
 
@@ -144,12 +143,12 @@ public class FlowableAIController {
      * Body: {"sessionId": "xxx", "message": "我想创建一个采购审批流程"}
      */
     @PostMapping("/chat")
-    public ResponseEntity<Map<String, Object>> chatDesign(@RequestBody Map<String, String> body) {
+    public R<Map<String, Object>> chatDesign(@RequestBody Map<String, String> body) {
         String message = body.get("message");
         String sessionId = body.get("sessionId");
 
         if (message == null || message.isEmpty()) {
-            return error("请输入消息");
+            return R.fail("请输入消息");
         }
 
         // 如果没有sessionId，创建新的
@@ -159,9 +158,9 @@ public class FlowableAIController {
 
         try {
             Map<String, Object> result = aiService.chatDesign(sessionId, message);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("AI对话失败: " + e.getMessage());
+            return R.fail("AI对话失败: " + e.getMessage());
         }
     }
 
@@ -170,9 +169,9 @@ public class FlowableAIController {
      * DELETE /api/v1/ai/chat/{sessionId}
      */
     @DeleteMapping("/chat/{sessionId}")
-    public ResponseEntity<Map<String, Object>> clearSession(@PathVariable String sessionId) {
+    public R<String> clearSession(@PathVariable String sessionId) {
         aiService.clearSession(sessionId);
-        return successMsg("会话已清除");
+        return R.ok("会话已清除");
     }
 
     // ============================================================
@@ -184,40 +183,14 @@ public class FlowableAIController {
      * GET /api/v1/ai/form/{processKey}/{stepKey}
      */
     @GetMapping("/form/{processKey}/{stepKey}")
-    public ResponseEntity<Map<String, Object>> generateForm(
+    public R<Map<String, Object>> generateForm(
             @PathVariable String processKey,
             @PathVariable String stepKey) {
         try {
             Map<String, Object> result = aiService.generateFormFields(processKey, stepKey);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
-            return error("表单生成失败: " + e.getMessage());
+            return R.fail("表单生成失败: " + e.getMessage());
         }
-    }
-
-    // ============================================================
-    // 辅助方法
-    // ============================================================
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", "success");
-        body.put("data", data);
-        return ResponseEntity.ok(body);
-    }
-
-    private ResponseEntity<Map<String, Object>> successMsg(String msg) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", msg);
-        return ResponseEntity.ok(body);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String msg) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", -1);
-        body.put("msg", msg);
-        return ResponseEntity.ok(body);
     }
 }

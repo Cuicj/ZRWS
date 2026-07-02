@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="page-head">
       <h1 class="page-title display">灾害风险评估</h1>
@@ -58,12 +58,12 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes] = await Promise.all([
-      getDisasterRiskList().catch(() => ({ list: [] })),
+      getDisasterRiskList().catch(() => ({ data: { list: [] } })),
       getDisasterRiskStats().catch(() => ({ data: {} }))
     ]);
     
-    if (listRes.list) {
-      records.value = listRes.list.map(r => ({
+    if (listRes.data && listRes.data.list) {
+      records.value = listRes.data.list.map(r => ({
         area: r.location || r.area || '-',
         type: r.disasterType || '-',
         levelText: getLevelText(r.riskLevel),

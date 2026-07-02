@@ -357,13 +357,13 @@ const loadData = async () => {
   try {
     loading.value = true
     const res = await geoStandardApi.list()
-    if (res && res.list) {
-      standards.value = res.list
+    if (res && res.data && res.data.list) {
+      standards.value = res.data.list
       categories.value.forEach(cat => {
         if (cat.key === '') {
-          cat.count = res.list.length
+          cat.count = res.data.list.length
         } else {
-          cat.count = res.list.filter(s => s.category === cat.key).length
+          cat.count = res.data.list.filter(s => s.category === cat.key).length
         }
       })
     }

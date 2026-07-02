@@ -3,12 +3,11 @@ package com.zrws.approval.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zrws.approval.domain.entity.SoilClassification;
 import com.zrws.approval.service.SoilClassificationService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +22,7 @@ public class SoilClassificationController {
     private SoilClassificationService soilClassificationService;
 
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> list(
+    public R<Map<String, Object>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) Long missionId,
@@ -36,29 +35,29 @@ public class SoilClassificationController {
             result.put("total", page.getTotal());
             result.put("pageNum", pageNum);
             result.put("pageSize", pageSize);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("查询土壤分类列表失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id) {
+    public R<SoilClassification> getById(@PathVariable Long id) {
         try {
             SoilClassification record = soilClassificationService.getById(id);
             if (record == null) {
-                return error("记录不存在");
+                return R.fail("记录不存在");
             }
-            return success(Collections.singletonMap("data", record));
+            return R.ok(record);
         } catch (Exception e) {
             log.error("查询土壤分类详情失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/analyze")
-    public ResponseEntity<Map<String, Object>> analyze(@RequestBody Map<String, Object> params) {
+    public R<SoilClassification> analyze(@RequestBody Map<String, Object> params) {
         try {
             SoilClassification result;
             if (params.containsKey("sampleId")) {
@@ -67,56 +66,36 @@ public class SoilClassificationController {
             } else {
                 result = soilClassificationService.analyzeByParams(params);
             }
-            Map<String, Object> data = new HashMap<>();
-            data.put("data", result);
-            data.put("message", "分析完成");
-            return success(data);
+            return R.ok("分析完成", result);
         } catch (Exception e) {
             log.error("土壤分类分析失败", e);
-            return error("分析失败: " + e.getMessage());
+            return R.fail("分析失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/history")
-    public ResponseEntity<Map<String, Object>> getHistory(
+    public R<Map<String, Object>> getHistory(
             @RequestParam(required = false) Long missionId) {
         try {
             List<SoilClassification> history = soilClassificationService.getHistory(missionId);
             Map<String, Object> result = new HashMap<>();
             result.put("list", history);
             result.put("total", history.size());
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("查询分析历史失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+    public R<Void> delete(@PathVariable Long id) {
         try {
             soilClassificationService.delete(id);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功", null);
         } catch (Exception e) {
             log.error("删除土壤分类记录失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            result.putAll((Map<String, Object>) data);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("msg", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

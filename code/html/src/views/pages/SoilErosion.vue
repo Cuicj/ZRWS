@@ -149,12 +149,12 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes] = await Promise.all([
-      getDisasterRiskList().catch(() => ({ list: [] })),
+      getDisasterRiskList().catch(() => ({ data: { list: [] } })),
       getDisasterRiskStats().catch(() => ({ data: {} }))
     ]);
     
-    if (listRes.list && listRes.list.length > 0) {
-      records.value = listRes.list.filter(r => r.disasterType && r.disasterType.includes('侵蚀')).map(r => ({
+    if (listRes.data && listRes.data.list && listRes.data.list.length > 0) {
+      records.value = listRes.data.list.filter(r => r.disasterType && r.disasterType.includes('侵蚀')).map(r => ({
         id: r.id,
         region: r.location || r.area || '-',
         monitorDate: r.monitorDate || '2026-07-01',

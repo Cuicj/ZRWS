@@ -195,8 +195,8 @@ const exporting = ref(false)
 const loadBoList = async () => {
   try {
     const res = await dataImportApi.getBoList()
-    if (res.list) {
-      boList.value = res.list.map(bo => ({
+    if (res.data.list) {
+      boList.value = res.data.list.map(bo => ({
         code: bo.boCode,
         name: bo.boName
       }))
@@ -220,8 +220,8 @@ const loadFields = async (boCode) => {
   }
   try {
     const res = await dataImportApi.getBoFields(boCode)
-    if (res.fields) {
-      fieldList.value = res.fields
+    if (res.data.fields) {
+      fieldList.value = res.data.fields
         .filter(f => f.status === 1)
         .map(f => ({
           code: f.fieldCode,
@@ -248,8 +248,8 @@ const loadTasks = async () => {
   try {
     loading.value = true
     const res = await exportApi.listTasks({})
-    if (res.tasks) {
-      tasks.value = res.tasks.slice(0, 20)
+    if (res.data.tasks) {
+      tasks.value = res.data.tasks.slice(0, 20)
     } else {
       tasks.value = []
     }

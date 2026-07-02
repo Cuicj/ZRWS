@@ -735,9 +735,7 @@ const saveDraft = async () => {
 const loadDrafts = async () => {
   try {
     const res = await getDraftList();
-    if (res && res.list) {
-      drafts.value = res.list;
-    } else if (res && res.data) {
+    if (res && res.data) {
       drafts.value = res.data.list || res.data || [];
     }
   } catch (e) {
@@ -750,7 +748,7 @@ const loadDraft = async (processKeyVal) => {
   
   try {
     const res = await getDraft(processKeyVal);
-    const data = res.data || res;
+    const data = res.data;
     
     if (data && data.xml) {
       await modeler.importXML(data.xml);

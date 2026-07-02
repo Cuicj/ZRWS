@@ -53,8 +53,8 @@ const loadSoilData = async () => {
     // 加载统计信息
     const statsRes = await getSoilSampleStats();
     
-    if (listRes.list) {
-      samples.value = (listRes.list || []).map(item => ({
+    if (listRes.data && listRes.data.list) {
+      samples.value = (listRes.data.list || []).map(item => ({
         id: item.id || item.sampleId,
         lat: item.latitude || item.lat,
         lng: item.longitude || item.lng,

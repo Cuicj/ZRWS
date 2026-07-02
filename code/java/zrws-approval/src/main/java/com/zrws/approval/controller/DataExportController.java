@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zrws.approval.domain.entity.ExportTask;
 import com.zrws.approval.mapper.ExportTaskMapper;
 import com.zrws.approval.service.DataExportService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.FileSystemResource;
@@ -38,15 +39,15 @@ public class DataExportController {
     private ObjectMapper objectMapper;
 
     @PostMapping("/create")
-    public ResponseEntity<Map<String, Object>> createExportTask(@RequestBody Map<String, Object> request) {
+    public R<ExportTask> createExportTask(@RequestBody Map<String, Object> request) {
         String boCode = (String) request.get("boCode");
         String fileFormat = (String) request.get("fileFormat");
 
         if (boCode == null || boCode.isEmpty()) {
-            return error("请提供BO编码");
+            return R.fail("请提供BO编码");
         }
         if (fileFormat == null || fileFormat.isEmpty()) {
-            return error("请提供文件格式");
+            return R.fail("请提供文件格式");
         }
 
         try {
@@ -60,18 +61,18 @@ public class DataExportController {
 
             ExportTask task = dataExportService.createExportTask(boCode, fileFormat, filterConditions, fieldList);
 
-            return success(Collections.singletonMap("task", task));
+            return R.ok(task);
         } catch (Exception e) {
             log.error("创建导出任务失败", e);
-            return error("创建失败: " + e.getMessage());
+            return R.fail("创建失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/execute/{taskId}")
-    public ResponseEntity<Map<String, Object>> executeExportTask(@PathVariable Long taskId) {
+    public R<ExportTask> executeExportTask(@PathVariable Long taskId) {
         ExportTask task = exportTaskMapper.selectById(taskId);
         if (task == null) {
-            return error("任务不存在: " + taskId);
+            return R.fail("任务不存在: " + taskId);
         }
 
         try {
@@ -99,14 +100,14 @@ public class DataExportController {
             task.setErrorMessage(null);
             exportTaskMapper.updateById(task);
 
-            return success(Collections.singletonMap("task", task));
+            return R.ok(task);
         } catch (Exception e) {
             log.error("执行导出任务失败, taskId={}", taskId, e);
             task.setStatus(ExportTask.TaskStatus.FAILED.name());
             task.setEndTime(LocalDateTime.now());
             task.setErrorMessage(e.getMessage());
             exportTaskMapper.updateById(task);
-            return error("导出失败: " + e.getMessage());
+            return R.fail("导出失败: " + e.getMessage());
         }
     }
 
@@ -143,7 +144,7 @@ public class DataExportController {
     }
 
     @GetMapping("/tasks")
-    public ResponseEntity<Map<String, Object>> listExportTasks(
+    public R<List<ExportTask>> listExportTasks(
             @RequestParam(required = false) String boCode) {
 
         List<ExportTask> tasks;
@@ -165,27 +166,6 @@ public class DataExportController {
             tasks = tasks.subList(0, 50);
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("tasks", tasks);
-        return success(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> dataMap = (Map<String, Object>) data;
-            result.putAll(dataMap);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
+        return R.ok(tasks);
     }
 }

@@ -5,12 +5,11 @@ import com.zrws.approval.domain.entity.RockSample;
 import com.zrws.approval.domain.entity.RockStratumAnalysis;
 import com.zrws.approval.mapper.RockSampleMapper;
 import com.zrws.approval.mapper.RockStratumAnalysisMapper;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class RockStratumController {
     // ===== 分析任务 =====
 
     @GetMapping("/analyses")
-    public ResponseEntity<Map<String, Object>> listAnalyses(
+    public R<Map<String, Object>> listAnalyses(
             @RequestParam(required = false) Long missionId) {
         try {
             List<RockStratumAnalysis> list;
@@ -45,72 +44,69 @@ public class RockStratumController {
             Map<String, Object> data = new HashMap<>();
             data.put("list", list);
             data.put("total", list.size());
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询岩层分析列表失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/analyses/{id}")
-    public ResponseEntity<Map<String, Object>> getAnalysis(@PathVariable Long id) {
+    public R<RockStratumAnalysis> getAnalysis(@PathVariable Long id) {
         try {
             RockStratumAnalysis analysis = analysisMapper.selectById(id);
             if (analysis == null) {
-                return error("分析任务不存在");
+                return R.fail("分析任务不存在");
             }
-            return success(Collections.singletonMap("data", analysis));
+            return R.ok(analysis);
         } catch (Exception e) {
             log.error("查询岩层分析详情失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/analyses")
-    public ResponseEntity<Map<String, Object>> createAnalysis(@RequestBody RockStratumAnalysis analysis) {
+    public R<RockStratumAnalysis> createAnalysis(@RequestBody RockStratumAnalysis analysis) {
         try {
             analysis.setStatus("ACTIVE");
             analysis.setIsDeleted(0);
             analysisMapper.insert(analysis);
-            Map<String, Object> data = new HashMap<>();
-            data.put("data", analysis);
-            data.put("message", "创建成功");
-            return success(data);
+            return R.ok("创建成功", analysis);
         } catch (Exception e) {
             log.error("创建岩层分析失败", e);
-            return error("创建失败: " + e.getMessage());
+            return R.fail("创建失败: " + e.getMessage());
         }
     }
 
     @PutMapping("/analyses/{id}")
-    public ResponseEntity<Map<String, Object>> updateAnalysis(
+    public R<Void> updateAnalysis(
             @PathVariable Long id,
             @RequestBody RockStratumAnalysis analysis) {
         try {
             analysis.setAnalysisId(id);
             analysisMapper.updateById(analysis);
-            return success(Collections.singletonMap("message", "更新成功"));
+            return R.ok("更新成功", null);
         } catch (Exception e) {
             log.error("更新岩层分析失败", e);
-            return error("更新失败: " + e.getMessage());
+            return R.fail("更新失败: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/analyses/{id}")
-    public ResponseEntity<Map<String, Object>> deleteAnalysis(@PathVariable Long id) {
+    public R<Void> deleteAnalysis(@PathVariable Long id) {
         try {
             analysisMapper.deleteById(id);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功", null);
         } catch (Exception e) {
             log.error("删除岩层分析失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
     // ===== 岩矿样品 =====
 
     @GetMapping("/samples")
-    public ResponseEntity<Map<String, Object>> listSamples(
+    public R<Map<String, Object>> listSamples(
             @RequestParam(required = false) Long analysisId,
             @RequestParam(required = false) Long missionId) {
         try {
@@ -127,82 +123,62 @@ public class RockStratumController {
             Map<String, Object> data = new HashMap<>();
             data.put("list", list);
             data.put("total", list.size());
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询岩矿样品列表失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/samples/{id}")
-    public ResponseEntity<Map<String, Object>> getSample(@PathVariable Long id) {
+    public R<RockSample> getSample(@PathVariable Long id) {
         try {
             RockSample sample = sampleMapper.selectById(id);
             if (sample == null) {
-                return error("样品不存在");
+                return R.fail("样品不存在");
             }
-            return success(Collections.singletonMap("data", sample));
+            return R.ok(sample);
         } catch (Exception e) {
             log.error("查询岩矿样品详情失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/samples")
-    public ResponseEntity<Map<String, Object>> createSample(@RequestBody RockSample sample) {
+    public R<RockSample> createSample(@RequestBody RockSample sample) {
         try {
             sample.setStatus("ACTIVE");
             sample.setIsDeleted(0);
             sampleMapper.insert(sample);
-            Map<String, Object> data = new HashMap<>();
-            data.put("data", sample);
-            data.put("message", "创建成功");
-            return success(data);
+            return R.ok("创建成功", sample);
         } catch (Exception e) {
             log.error("创建岩矿样品失败", e);
-            return error("创建失败: " + e.getMessage());
+            return R.fail("创建失败: " + e.getMessage());
         }
     }
 
     @PutMapping("/samples/{id}")
-    public ResponseEntity<Map<String, Object>> updateSample(
+    public R<Void> updateSample(
             @PathVariable Long id,
             @RequestBody RockSample sample) {
         try {
             sample.setSampleId(id);
             sampleMapper.updateById(sample);
-            return success(Collections.singletonMap("message", "更新成功"));
+            return R.ok("更新成功", null);
         } catch (Exception e) {
             log.error("更新岩矿样品失败", e);
-            return error("更新失败: " + e.getMessage());
+            return R.fail("更新失败: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/samples/{id}")
-    public ResponseEntity<Map<String, Object>> deleteSample(@PathVariable Long id) {
+    public R<Void> deleteSample(@PathVariable Long id) {
         try {
             sampleMapper.deleteById(id);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功", null);
         } catch (Exception e) {
             log.error("删除岩矿样品失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            result.putAll((Map<String, Object>) data);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

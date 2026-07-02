@@ -85,8 +85,8 @@ const loadApprovals = async () => {
     // 获取我申请的审批列表
     const appliedRes = await getMyAppliedList();
     
-    const todoList = todoRes.list || [];
-    const appliedList = appliedRes.list || [];
+    const todoList = todoRes.data.list || [];
+    const appliedList = appliedRes.data.list || [];
     
     // 合并列表并适配数据结构
     approvals.value = [...todoList, ...appliedList].map(item => ({

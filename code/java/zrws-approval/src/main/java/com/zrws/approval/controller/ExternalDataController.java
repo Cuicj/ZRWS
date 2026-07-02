@@ -1,10 +1,10 @@
 package com.zrws.approval.controller;
 
 import com.zrws.approval.service.ExternalDataService;
+import com.zrws.common.core.domain.R;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -25,7 +25,7 @@ public class ExternalDataController {
      * 获取可用数据源列表
      */
     @GetMapping("/sources")
-    public ResponseEntity<Map<String, Object>> listSources() {
+    public R<List<Map<String, Object>>> listSources() {
         try {
             List<Map<String, Object>> sources = new ArrayList<>();
 
@@ -53,13 +53,10 @@ public class ExternalDataController {
             source3.put("lastSync", null);
             sources.add(source3);
 
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", sources);
-            result.put("total", sources.size());
-            return success(result);
+            return R.ok(sources);
         } catch (Exception e) {
             log.error("获取数据源列表失败", e);
-            return error("获取失败: " + e.getMessage());
+            return R.fail("获取失败: " + e.getMessage());
         }
     }
 
@@ -67,17 +64,17 @@ public class ExternalDataController {
      * 测试数据源连接
      */
     @PostMapping("/sources/{sourceCode}/test")
-    public ResponseEntity<Map<String, Object>> testConnection(@PathVariable String sourceCode) {
+    public R<Map<String, Object>> testConnection(@PathVariable String sourceCode) {
         try {
             boolean connected = externalDataService.testConnection(sourceCode);
             Map<String, Object> result = new HashMap<>();
             result.put("sourceCode", sourceCode);
             result.put("connected", connected);
             result.put("message", connected ? "连接成功" : "连接失败");
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("测试数据源连接失败: {}", sourceCode, e);
-            return error("测试失败: " + e.getMessage());
+            return R.fail("测试失败: " + e.getMessage());
         }
     }
 
@@ -85,7 +82,7 @@ public class ExternalDataController {
      * 拉取外部数据
      */
     @PostMapping("/fetch")
-    public ResponseEntity<Map<String, Object>> fetchData(@RequestBody FetchRequest request) {
+    public R<Map<String, Object>> fetchData(@RequestBody FetchRequest request) {
         try {
             ExternalDataService.ExternalDataResult result = externalDataService.fetchSoilData(
                     request.getSource(),
@@ -101,10 +98,10 @@ public class ExternalDataController {
             response.put("rawData", result.getRawData());
             response.put("mappedData", result.getMappedData());
 
-            return success(response);
+            return R.ok(response);
         } catch (Exception e) {
             log.error("拉取外部数据失败", e);
-            return error("拉取失败: " + e.getMessage());
+            return R.fail("拉取失败: " + e.getMessage());
         }
     }
 
@@ -112,16 +109,13 @@ public class ExternalDataController {
      * 获取字段映射关系
      */
     @GetMapping("/field-mapping")
-    public ResponseEntity<Map<String, Object>> getFieldMapping() {
+    public R<Map<String, String>> getFieldMapping() {
         try {
             Map<String, String> mapping = externalDataService.getFieldMapping();
-            Map<String, Object> result = new HashMap<>();
-            result.put("mapping", mapping);
-            result.put("total", mapping.size());
-            return success(result);
+            return R.ok(mapping);
         } catch (Exception e) {
             log.error("获取字段映射失败", e);
-            return error("获取失败: " + e.getMessage());
+            return R.fail("获取失败: " + e.getMessage());
         }
     }
 
@@ -129,7 +123,7 @@ public class ExternalDataController {
      * 字段映射测试
      */
     @PostMapping("/field-mapping/test")
-    public ResponseEntity<Map<String, Object>> testFieldMapping(@RequestBody Map<String, Object> testData) {
+    public R<Map<String, Object>> testFieldMapping(@RequestBody Map<String, Object> testData) {
         try {
             Map<String, Object> mappedData = externalDataService.autoFieldMapping(testData);
             Map<String, Object> convertedData = externalDataService.convertDataFormat(mappedData);
@@ -138,10 +132,10 @@ public class ExternalDataController {
             result.put("original", testData);
             result.put("mapped", mappedData);
             result.put("converted", convertedData);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("字段映射测试失败", e);
-            return error("测试失败: " + e.getMessage());
+            return R.fail("测试失败: " + e.getMessage());
         }
     }
 
@@ -149,33 +143,17 @@ public class ExternalDataController {
      * 数据格式转换测试
      */
     @PostMapping("/convert/test")
-    public ResponseEntity<Map<String, Object>> testConvert(@RequestBody Map<String, Object> testData) {
+    public R<Map<String, Object>> testConvert(@RequestBody Map<String, Object> testData) {
         try {
             Map<String, Object> convertedData = externalDataService.convertDataFormat(testData);
             Map<String, Object> result = new HashMap<>();
             result.put("original", testData);
             result.put("converted", convertedData);
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("数据格式转换测试失败", e);
-            return error("测试失败: " + e.getMessage());
+            return R.fail("测试失败: " + e.getMessage());
         }
-    }
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 200);
-        result.put("message", "success");
-        result.put("data", data);
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 500);
-        result.put("message", message);
-        result.put("data", null);
-        return ResponseEntity.ok(result);
     }
 
     @Data

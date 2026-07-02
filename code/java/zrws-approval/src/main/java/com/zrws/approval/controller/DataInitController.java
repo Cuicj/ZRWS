@@ -1,14 +1,11 @@
 package com.zrws.approval.controller;
 
 import com.zrws.approval.config.MockDataInitializer;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @Slf4j
 @RestController
@@ -20,18 +17,13 @@ public class DataInitController {
     private MockDataInitializer mockDataInitializer;
 
     @PostMapping("/init-data")
-    public ResponseEntity<Map<String, Object>> initData() {
-        Map<String, Object> result = new HashMap<>();
+    public R<Void> initData() {
         try {
             mockDataInitializer.run(null);
-            result.put("success", true);
-            result.put("message", "数据初始化完成");
-            return ResponseEntity.ok(result);
+            return R.ok();
         } catch (Exception e) {
             log.error("数据初始化失败", e);
-            result.put("success", false);
-            result.put("error", e.getMessage());
-            return ResponseEntity.badRequest().body(result);
+            return R.fail(e.getMessage());
         }
     }
 }

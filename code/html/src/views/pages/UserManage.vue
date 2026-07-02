@@ -151,8 +151,8 @@ async function loadUsers() {
   loading.value = true;
   try {
     const res = await listUsers({ page: page.value, size: size.value, keyword: searchKeyword.value });
-    users.value = res.list || [];
-    total.value = res.total || 0;
+    users.value = res.data?.list || [];
+    total.value = res.data?.total || 0;
   } catch (e) {
     ElMessage.error('加载用户列表失败');
     users.value = [];

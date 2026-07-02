@@ -462,8 +462,8 @@ const apiDocList = ref([
 const loadCompanies = async () => {
   try {
     const res = await openApi.listCompanies()
-    if (res.companies && res.companies.length) {
-      companyList.value = res.companies
+    if (res.data.companies && res.data.companies.length) {
+      companyList.value = res.data.companies
     }
   } catch (e) {
     console.warn('加载公司列表失败:', e.message)
@@ -473,8 +473,8 @@ const loadCompanies = async () => {
 const loadApiKeys = async () => {
   try {
     const res = await openApi.listApiKeys()
-    if (res.apiKeys && res.apiKeys.length) {
-      apiKeyList.value = res.apiKeys
+    if (res.data.apiKeys && res.data.apiKeys.length) {
+      apiKeyList.value = res.data.apiKeys
     }
   } catch (e) {
     console.warn('加载API Key列表失败:', e.message)

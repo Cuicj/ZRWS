@@ -112,7 +112,7 @@ async function loadOrgs() {
   loading.value = true;
   try {
     const res = await listOrgs();
-    orgs.value = res.list || [];
+    orgs.value = res.data?.list || [];
   } catch (e) {
     ElMessage.error('加载组织列表失败');
     orgs.value = [];

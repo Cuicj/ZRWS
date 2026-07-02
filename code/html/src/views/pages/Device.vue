@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="page-container">
     <div class="page-head">
       <div>
@@ -112,8 +112,8 @@ const loadData = async () => {
   try {
     loading.value = true;
     const res = await getDeviceList();
-    if (res && res.list) {
-      const devices = res.list;
+    if (res && res.data?.list) {
+      const devices = res.data.list;
       overview.value.total = devices.length;
       overview.value.online = devices.filter(d => d.status === 'ONLINE').length;
       overview.value.offline = devices.filter(d => d.status === 'OFFLINE').length;

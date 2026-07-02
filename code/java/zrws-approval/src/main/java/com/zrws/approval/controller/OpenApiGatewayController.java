@@ -12,10 +12,10 @@ import com.zrws.approval.mapper.GeoStandardMapper;
 import com.zrws.approval.mapper.RockStratumAnalysisMapper;
 import com.zrws.approval.mapper.SoilSampleMapper;
 import com.zrws.approval.service.OpenApiAuthService;
+import com.zrws.common.core.domain.R;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -46,7 +46,7 @@ public class OpenApiGatewayController {
     private ObjectMapper objectMapper;
 
     @GetMapping("/soil-standards")
-    public ResponseEntity<Map<String, Object>> getSoilStandards(
+    public R<Map<String, Object>> getSoilStandards(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -57,11 +57,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/soil-standards", null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -88,15 +88,15 @@ public class OpenApiGatewayController {
             data.put("size", size);
             data.put("pages", resultPage.getPages());
 
-            return buildSuccessResponse(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询土壤标准列表失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/soil-standards/{id}")
-    public ResponseEntity<Map<String, Object>> getSoilStandardById(
+    public R<GeoStandard> getSoilStandardById(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -105,27 +105,27 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/soil-standards/" + id, null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
             GeoStandard standard = geoStandardMapper.selectById(id);
             if (standard == null) {
-                return buildErrorResponse("标准不存在");
+                return R.fail("标准不存在");
             }
-            return buildSuccessResponse(standard);
+            return R.ok(standard);
         } catch (Exception e) {
             log.error("查询土壤标准详情失败, id={}", id, e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/soil-analysis/classify")
-    public ResponseEntity<Map<String, Object>> soilAnalysisClassify(
+    public R<Map<String, Object>> soilAnalysisClassify(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -141,11 +141,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "POST", "/openapi/v1/soil-analysis/classify", bodyStr);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -184,15 +184,15 @@ public class OpenApiGatewayController {
             data.put("total", topResults.size());
             data.put("inputParams", normalizedParams);
 
-            return buildSuccessResponse(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("AI土壤分类失败", e);
-            return buildErrorResponse("分类失败: " + e.getMessage());
+            return R.fail("分类失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/soil-samples")
-    public ResponseEntity<Map<String, Object>> getSoilSamples(
+    public R<Map<String, Object>> getSoilSamples(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -204,11 +204,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/soil-samples", null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -234,15 +234,15 @@ public class OpenApiGatewayController {
             data.put("size", size);
             data.put("pages", resultPage.getPages());
 
-            return buildSuccessResponse(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询土壤采样数据失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/geo-standards")
-    public ResponseEntity<Map<String, Object>> getGeoStandards(
+    public R<List<GeoStandard>> getGeoStandards(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -251,11 +251,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/geo-standards", null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -265,15 +265,15 @@ public class OpenApiGatewayController {
             } else {
                 standards = geoStandardMapper.selectList(null);
             }
-            return buildSuccessResponse(Collections.singletonMap("standards", standards));
+            return R.ok(standards);
         } catch (Exception e) {
             log.error("查询地质标准数据失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/geo-standards/{id}")
-    public ResponseEntity<Map<String, Object>> getGeoStandardById(
+    public R<GeoStandard> getGeoStandardById(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -282,27 +282,27 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/geo-standards/" + id, null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
             GeoStandard standard = geoStandardMapper.selectById(id);
             if (standard == null) {
-                return buildErrorResponse("标准不存在");
+                return R.fail("标准不存在");
             }
-            return buildSuccessResponse(Collections.singletonMap("standard", standard));
+            return R.ok(standard);
         } catch (Exception e) {
             log.error("查询标准详情失败, id={}", id, e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/soil-analysis/query")
-    public ResponseEntity<Map<String, Object>> querySoilAnalysis(
+    public R<Map<String, Object>> querySoilAnalysis(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -318,11 +318,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "POST", "/openapi/v1/soil-analysis/query", bodyStr);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -340,15 +340,15 @@ public class OpenApiGatewayController {
             Map<String, Object> data = new HashMap<>();
             data.put("total", result.size());
             data.put("records", result);
-            return buildSuccessResponse(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("土质分析数据查询失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/disaster-risk/query")
-    public ResponseEntity<Map<String, Object>> queryDisasterRisk(
+    public R<List<DisasterRisk>> queryDisasterRisk(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -357,11 +357,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/disaster-risk/query", null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
@@ -375,15 +375,15 @@ public class OpenApiGatewayController {
                 }
                 risks = filtered;
             }
-            return buildSuccessResponse(Collections.singletonMap("risks", risks));
+            return R.ok(risks);
         } catch (Exception e) {
             log.error("灾害风险数据查询失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/rock-stratum/query")
-    public ResponseEntity<Map<String, Object>> queryRockStratum(
+    public R<List<RockStratumAnalysis>> queryRockStratum(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature,
@@ -399,24 +399,24 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "POST", "/openapi/v1/rock-stratum/query", bodyStr);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         try {
             List<RockStratumAnalysis> analyses = rockStratumAnalysisMapper.selectAll();
-            return buildSuccessResponse(Collections.singletonMap("analyses", analyses));
+            return R.ok(analyses);
         } catch (Exception e) {
             log.error("岩层分析数据查询失败", e);
-            return buildErrorResponse("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/api-doc")
-    public ResponseEntity<Map<String, Object>> getApiDoc(
+    public R<List<Map<String, Object>>> getApiDoc(
             @RequestHeader(value = "X-API-Key", required = false) String apiKey,
             @RequestHeader(value = "X-Timestamp", required = false) String timestamp,
             @RequestHeader(value = "X-Signature", required = false) String signature) {
@@ -424,11 +424,11 @@ public class OpenApiGatewayController {
         boolean authValid = authService.validateSignature(apiKey, timestamp, signature,
                 "GET", "/openapi/v1/api-doc", null);
         if (!authValid) {
-            return buildErrorResponse("认证失败：无效的API Key或签名");
+            return R.fail("认证失败：无效的API Key或签名");
         }
 
         if (!authService.checkRateLimit(apiKey)) {
-            return buildErrorResponse("请求频率超过限制");
+            return R.fail("请求频率超过限制");
         }
 
         List<Map<String, Object>> apis = new ArrayList<>();
@@ -496,7 +496,7 @@ public class OpenApiGatewayController {
         api9.put("params", "请求体: 查询条件");
         apis.add(api9);
 
-        return buildSuccessResponse(Collections.singletonMap("apis", apis));
+        return R.ok(apis);
     }
 
     private Map<String, Object> normalizeSoilParams(Map<String, Object> request) {
@@ -741,23 +741,5 @@ public class OpenApiGatewayController {
         Object value = map.get(key);
         if (value == null) return null;
         return value.toString();
-    }
-
-    private ResponseEntity<Map<String, Object>> buildSuccessResponse(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 200);
-        result.put("message", "success");
-        result.put("data", data);
-        result.put("timestamp", System.currentTimeMillis());
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> buildErrorResponse(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("code", 400);
-        result.put("message", message);
-        result.put("data", null);
-        result.put("timestamp", System.currentTimeMillis());
-        return ResponseEntity.badRequest().body(result);
     }
 }

@@ -3,14 +3,13 @@ package com.zrws.approval.controller;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.zrws.approval.domain.entity.Desertification;
 import com.zrws.approval.service.DesertificationService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,7 +24,7 @@ public class DesertificationController {
     private DesertificationService desertificationService;
 
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> list(
+    public R<Map<String, Object>> list(
             @RequestParam(defaultValue = "1") int pageNum,
             @RequestParam(defaultValue = "20") int pageSize,
             @RequestParam(required = false) String region,
@@ -35,149 +34,122 @@ public class DesertificationController {
             @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate) {
         try {
             Page<Desertification> page = desertificationService.getPage(pageNum, pageSize, region, grade, riskLevel, startDate, endDate);
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", page.getRecords());
-            result.put("total", page.getTotal());
-            result.put("pageNum", pageNum);
-            result.put("pageSize", pageSize);
-            return success(result);
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", page.getRecords());
+            data.put("total", page.getTotal());
+            data.put("pageNum", pageNum);
+            data.put("pageSize", pageSize);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询沙漠化数据失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id) {
+    public R<Desertification> getById(@PathVariable Long id) {
         try {
             Desertification record = desertificationService.getById(id);
             if (record == null) {
-                return error("记录不存在");
+                return R.fail("记录不存在");
             }
-            return success(Collections.singletonMap("data", record));
+            return R.ok(record);
         } catch (Exception e) {
             log.error("查询沙漠化详情失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/stats")
-    public ResponseEntity<Map<String, Object>> getStats() {
+    public R<Map<String, Object>> getStats() {
         try {
             Map<String, Object> stats = desertificationService.getStats();
-            return success(Collections.singletonMap("data", stats));
+            return R.ok(stats);
         } catch (Exception e) {
             log.error("查询沙漠化统计失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/trend")
-    public ResponseEntity<Map<String, Object>> getTrend(@RequestParam(required = false) String region) {
+    public R<Map<String, Object>> getTrend(@RequestParam(required = false) String region) {
         try {
             Map<String, Object> trend = desertificationService.getTrendData(region);
-            return success(Collections.singletonMap("data", trend));
+            return R.ok(trend);
         } catch (Exception e) {
             log.error("查询沙漠化趋势失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/grade-distribution")
-    public ResponseEntity<Map<String, Object>> getGradeDistribution() {
+    public R<List<Map<String, Object>>> getGradeDistribution() {
         try {
             List<Map<String, Object>> distribution = desertificationService.getGradeDistribution();
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", distribution);
-            return success(result);
+            return R.ok(distribution);
         } catch (Exception e) {
             log.error("查询程度分布失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/risk-distribution")
-    public ResponseEntity<Map<String, Object>> getRiskDistribution() {
+    public R<List<Map<String, Object>>> getRiskDistribution() {
         try {
             List<Map<String, Object>> distribution = desertificationService.getRiskDistribution();
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", distribution);
-            return success(result);
+            return R.ok(distribution);
         } catch (Exception e) {
             log.error("查询风险分布失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> create(@RequestBody Desertification desertification) {
+    public R<Desertification> create(@RequestBody Desertification desertification) {
         try {
             desertification.setIsDeleted(0);
             desertificationService.add(desertification);
-            Map<String, Object> result = new HashMap<>();
-            result.put("data", desertification);
-            result.put("message", "创建成功");
-            return success(result);
+            return R.ok("创建成功", desertification);
         } catch (Exception e) {
             log.error("创建沙漠化记录失败", e);
-            return error("创建失败: " + e.getMessage());
+            return R.fail("创建失败: " + e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody Desertification desertification) {
+    public R<String> update(@PathVariable Long id, @RequestBody Desertification desertification) {
         try {
             desertification.setRecordId(id);
             desertificationService.update(desertification);
-            return success(Collections.singletonMap("message", "更新成功"));
+            return R.ok("更新成功");
         } catch (Exception e) {
             log.error("更新沙漠化记录失败", e);
-            return error("更新失败: " + e.getMessage());
+            return R.fail("更新失败: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+    public R<String> delete(@PathVariable Long id) {
         try {
             desertificationService.delete(id);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功");
         } catch (Exception e) {
             log.error("删除沙漠化记录失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/{id}/assess")
-    public ResponseEntity<Map<String, Object>> assess(@PathVariable Long id) {
+    public R<Desertification> assess(@PathVariable Long id) {
         try {
             Desertification result = desertificationService.assessRisk(id);
             if (result == null) {
-                return error("记录不存在");
+                return R.fail("记录不存在");
             }
-            Map<String, Object> data = new HashMap<>();
-            data.put("data", result);
-            data.put("message", "评估完成");
-            return success(data);
+            return R.ok("评估完成", result);
         } catch (Exception e) {
             log.error("沙漠化风险评估失败", e);
-            return error("评估失败: " + e.getMessage());
+            return R.fail("评估失败: " + e.getMessage());
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            result.putAll((Map<String, Object>) data);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

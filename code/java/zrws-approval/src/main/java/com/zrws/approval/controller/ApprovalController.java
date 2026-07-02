@@ -4,13 +4,12 @@ import com.zrws.approval.domain.entity.ApprovalComment;
 import com.zrws.approval.domain.entity.ApprovalTask;
 import com.zrws.approval.dto.SubmitApprovalReq;
 import com.zrws.approval.service.ApprovalService;
+import com.zrws.common.core.domain.R;
 import org.flowable.task.api.history.HistoricTaskInstance;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -31,9 +30,9 @@ public class ApprovalController {
      * POST /api/v1/submit
      */
     @PostMapping("/submit")
-    public ResponseEntity<Map<String, Object>> submit(@RequestBody @Validated SubmitApprovalReq req) {
+    public R<Map<String, Object>> submit(@RequestBody @Validated SubmitApprovalReq req) {
         Map<String, Object> result = approvalService.submitApproval(req);
-        return success(result);
+        return R.ok(result);
     }
 
     /**
@@ -41,12 +40,12 @@ public class ApprovalController {
      * POST /api/v1/{taskId}/approve
      */
     @PostMapping("/{taskId}/approve")
-    public ResponseEntity<Map<String, Object>> approve(@PathVariable Long taskId,
+    public R<String> approve(@PathVariable Long taskId,
                                                         @RequestParam Long approverId,
                                                         @RequestParam String approverName,
                                                         @RequestParam(required = false, defaultValue = "同意") String opinion) {
         approvalService.approve(taskId, approverId, approverName, opinion);
-        return successMsg("审批通过");
+        return R.ok("审批通过");
     }
 
     /**
@@ -54,12 +53,12 @@ public class ApprovalController {
      * POST /api/v1/{taskId}/reject
      */
     @PostMapping("/{taskId}/reject")
-    public ResponseEntity<Map<String, Object>> reject(@PathVariable Long taskId,
+    public R<String> reject(@PathVariable Long taskId,
                                                        @RequestParam Long approverId,
                                                        @RequestParam String approverName,
                                                        @RequestParam(required = false, defaultValue = "驳回") String reason) {
         approvalService.reject(taskId, approverId, approverName, reason);
-        return successMsg("已驳回");
+        return R.ok("已驳回");
     }
 
     /**
@@ -67,12 +66,12 @@ public class ApprovalController {
      * POST /api/v1/{taskId}/return
      */
     @PostMapping("/{taskId}/return")
-    public ResponseEntity<Map<String, Object>> returnBack(@PathVariable Long taskId,
+    public R<String> returnBack(@PathVariable Long taskId,
                                                           @RequestParam Long approverId,
                                                           @RequestParam String approverName,
                                                           @RequestParam(required = false, defaultValue = "退回修改") String reason) {
         approvalService.returnBack(taskId, approverId, approverName, reason);
-        return successMsg("已退回");
+        return R.ok("已退回");
     }
 
     /**
@@ -80,12 +79,9 @@ public class ApprovalController {
      * GET /api/v1/todo?assignee=1020
      */
     @GetMapping("/todo")
-    public ResponseEntity<Map<String, Object>> todo(@RequestParam String assignee) {
+    public R<Map<String, Object>> todo(@RequestParam String assignee) {
         List<ApprovalTask> list = approvalService.todoList(assignee);
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", list.size());
-        result.put("list", list);
-        return success(result);
+        return R.ok(Map.of("total", list.size(), "list", list));
     }
 
     /**
@@ -93,12 +89,9 @@ public class ApprovalController {
      * GET /api/v1/my-applied?applicantId=1001
      */
     @GetMapping("/my-applied")
-    public ResponseEntity<Map<String, Object>> myApplied(@RequestParam Long applicantId) {
+    public R<Map<String, Object>> myApplied(@RequestParam Long applicantId) {
         List<ApprovalTask> list = approvalService.myApplied(applicantId);
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", list.size());
-        result.put("list", list);
-        return success(result);
+        return R.ok(Map.of("total", list.size(), "list", list));
     }
 
     /**
@@ -106,12 +99,9 @@ public class ApprovalController {
      * GET /api/v1/done?assignee=1020
      */
     @GetMapping("/done")
-    public ResponseEntity<Map<String, Object>> myDone(@RequestParam String assignee) {
+    public R<Map<String, Object>> myDone(@RequestParam String assignee) {
         List<HistoricTaskInstance> list = approvalService.myDone(assignee);
-        Map<String, Object> result = new HashMap<>();
-        result.put("total", list.size());
-        result.put("list", list);
-        return success(result);
+        return R.ok(Map.of("total", list.size(), "list", list));
     }
 
     /**
@@ -119,13 +109,10 @@ public class ApprovalController {
      * GET /api/v1/{taskId}/history
      */
     @GetMapping("/{taskId}/history")
-    public ResponseEntity<Map<String, Object>> history(@PathVariable Long taskId) {
-        Map<String, Object> result = new HashMap<>();
+    public R<Map<String, Object>> history(@PathVariable Long taskId) {
         ApprovalTask task = approvalService.getById(taskId);
         List<ApprovalComment> history = approvalService.history(taskId);
-        result.put("task", task);
-        result.put("history", history);
-        return success(result);
+        return R.ok(Map.of("task", task, "history", history));
     }
 
     /**
@@ -133,25 +120,7 @@ public class ApprovalController {
      * GET /api/v1/task/{taskId}
      */
     @GetMapping("/task/{taskId}")
-    public ResponseEntity<Map<String, Object>> getTask(@PathVariable Long taskId) {
-        return success(approvalService.getById(taskId));
-    }
-
-    // ============================================================
-    // 辅助方法
-    // ============================================================
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", "success");
-        body.put("data", data);
-        return ResponseEntity.ok(body);
-    }
-
-    private ResponseEntity<Map<String, Object>> successMsg(String msg) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("code", 0);
-        body.put("msg", msg);
-        return ResponseEntity.ok(body);
+    public R<ApprovalTask> getTask(@PathVariable Long taskId) {
+        return R.ok(approvalService.getById(taskId));
     }
 }

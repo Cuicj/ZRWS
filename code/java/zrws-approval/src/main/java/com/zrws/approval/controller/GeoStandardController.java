@@ -4,10 +4,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.zrws.approval.domain.entity.GeoStandard;
 import com.zrws.approval.mapper.GeoStandardMapper;
+import com.zrws.common.core.domain.R;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -29,7 +29,7 @@ public class GeoStandardController {
     private ObjectMapper objectMapper;
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> list(
+    public R<Map<String, Object>> list(
             @RequestParam(required = false) String category,
             @RequestParam(required = false) String system,
             @RequestParam(required = false) String keyword) {
@@ -48,99 +48,96 @@ public class GeoStandardController {
             }
             wrapper.orderByAsc(GeoStandard::getSortOrder);
             List<GeoStandard> list = geoStandardMapper.selectList(wrapper);
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", list);
-            result.put("total", list.size());
-            return success(result);
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", list);
+            data.put("total", list.size());
+            return R.ok(data);
         } catch (Exception e) {
             log.error("查询地质标准失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id) {
+    public R<GeoStandard> getById(@PathVariable Long id) {
         try {
             GeoStandard standard = geoStandardMapper.selectById(id);
             if (standard == null) {
-                return error("标准不存在");
+                return R.fail("标准不存在");
             }
-            return success(Collections.singletonMap("data", standard));
+            return R.ok(standard);
         } catch (Exception e) {
             log.error("查询地质标准详情失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/category/{category}")
-    public ResponseEntity<Map<String, Object>> getByCategory(@PathVariable String category) {
+    public R<Map<String, Object>> getByCategory(@PathVariable String category) {
         try {
             List<GeoStandard> list = geoStandardMapper.selectByCategory(category);
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", list);
-            result.put("total", list.size());
-            return success(result);
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", list);
+            data.put("total", list.size());
+            return R.ok(data);
         } catch (Exception e) {
             log.error("按分类查询地质标准失败", e);
-            return error("查询失败: " + e.getMessage());
+            return R.fail("查询失败: " + e.getMessage());
         }
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Map<String, Object>> search(@RequestParam String keyword) {
+    public R<Map<String, Object>> search(@RequestParam String keyword) {
         try {
             List<GeoStandard> list = geoStandardMapper.searchByName(keyword);
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", list);
-            result.put("total", list.size());
-            return success(result);
+            Map<String, Object> data = new HashMap<>();
+            data.put("list", list);
+            data.put("total", list.size());
+            return R.ok(data);
         } catch (Exception e) {
             log.error("搜索地质标准失败", e);
-            return error("搜索失败: " + e.getMessage());
+            return R.fail("搜索失败: " + e.getMessage());
         }
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> create(@RequestBody GeoStandard standard) {
+    public R<GeoStandard> create(@RequestBody GeoStandard standard) {
         try {
             standard.setStatus("ACTIVE");
             standard.setIsDeleted(0);
             geoStandardMapper.insert(standard);
-            Map<String, Object> result = new HashMap<>();
-            result.put("data", standard);
-            result.put("message", "创建成功");
-            return success(result);
+            return R.ok("创建成功", standard);
         } catch (Exception e) {
             log.error("创建地质标准失败", e);
-            return error("创建失败: " + e.getMessage());
+            return R.fail("创建失败: " + e.getMessage());
         }
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> update(@PathVariable Long id, @RequestBody GeoStandard standard) {
+    public R<String> update(@PathVariable Long id, @RequestBody GeoStandard standard) {
         try {
             standard.setStandardId(id);
             geoStandardMapper.updateById(standard);
-            return success(Collections.singletonMap("message", "更新成功"));
+            return R.ok("更新成功");
         } catch (Exception e) {
             log.error("更新地质标准失败", e);
-            return error("更新失败: " + e.getMessage());
+            return R.fail("更新失败: " + e.getMessage());
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+    public R<String> delete(@PathVariable Long id) {
         try {
             geoStandardMapper.deleteById(id);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功");
         } catch (Exception e) {
             log.error("删除地质标准失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/ai/classify")
-    public ResponseEntity<Map<String, Object>> aiClassify(@RequestBody SoilClassifyRequest request) {
+    public R<Map<String, Object>> aiClassify(@RequestBody SoilClassifyRequest request) {
         try {
             List<GeoStandard> standards = geoStandardMapper.selectList(
                     new LambdaQueryWrapper<GeoStandard>()
@@ -165,15 +162,15 @@ public class GeoStandardController {
             Map<String, Object> data = new HashMap<>();
             data.put("list", topResults);
             data.put("total", topResults.size());
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("AI土壤分类比对失败", e);
-            return error("分类比对失败: " + e.getMessage());
+            return R.fail("分类比对失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/ai/compare")
-    public ResponseEntity<Map<String, Object>> aiBatchCompare(@RequestBody List<SoilClassifyRequest> requests) {
+    public R<Map<String, Object>> aiBatchCompare(@RequestBody List<SoilClassifyRequest> requests) {
         try {
             List<GeoStandard> standards = geoStandardMapper.selectList(
                     new LambdaQueryWrapper<GeoStandard>()
@@ -204,19 +201,19 @@ public class GeoStandardController {
             Map<String, Object> data = new HashMap<>();
             data.put("results", batchResults);
             data.put("total", batchResults.size());
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("AI批量比对失败", e);
-            return error("批量比对失败: " + e.getMessage());
+            return R.fail("批量比对失败: " + e.getMessage());
         }
     }
 
     @PostMapping("/ai/diagram/{id}")
-    public ResponseEntity<Map<String, Object>> generateDiagram(@PathVariable Long id) {
+    public R<DiagramDescription> generateDiagram(@PathVariable Long id) {
         try {
             GeoStandard standard = geoStandardMapper.selectById(id);
             if (standard == null) {
-                return error("标准不存在");
+                return R.fail("标准不存在");
             }
 
             DiagramDescription diagram = new DiagramDescription();
@@ -270,12 +267,10 @@ public class GeoStandardController {
                     createLayer("R层", "母岩层", ">150cm", "灰色", "坚硬岩石")
             ));
 
-            Map<String, Object> data = new HashMap<>();
-            data.put("diagram", diagram);
-            return success(data);
+            return R.ok(diagram);
         } catch (Exception e) {
             log.error("生成标准图示描述失败", e);
-            return error("生成图示失败: " + e.getMessage());
+            return R.fail("生成图示失败: " + e.getMessage());
         }
     }
 
@@ -535,22 +530,5 @@ public class GeoStandardController {
             private String color;
             private String structure;
         }
-    }
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            result.putAll((Map<String, Object>) data);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

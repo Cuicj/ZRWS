@@ -151,14 +151,14 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes, trendRes, riskRes] = await Promise.all([
-      getDesertificationList().catch(() => ({ list: [] })),
+      getDesertificationList().catch(() => ({ data: { list: [] } })),
       getDesertificationStats().catch(() => ({ data: {} })),
       getDesertificationTrend().catch(() => ({ data: null })),
-      getDesertificationRiskDistribution().catch(() => ({ list: [] }))
+      getDesertificationRiskDistribution().catch(() => ({ data: { list: [] } }))
     ]);
     
-    if (listRes.list) {
-      records.value = listRes.list;
+    if (listRes.data && listRes.data.list) {
+      records.value = listRes.data.list;
     }
     
     if (statsRes.data) {
@@ -180,8 +180,8 @@ const loadData = async () => {
       }));
     }
     
-    if (riskRes.list && riskRes.list.length > 0) {
-      gradeDistribution.value = riskRes.list;
+    if (riskRes.data && riskRes.data.list && riskRes.data.list.length > 0) {
+      gradeDistribution.value = riskRes.data.list;
     } else {
       gradeDistribution.value = [
         { grade: 'MILD', label: '轻度沙漠化', count: 6, percent: 43 },

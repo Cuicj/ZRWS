@@ -429,8 +429,8 @@ const handleResize = () => {
 const loadTemplates = async () => {
   try {
     const res = await reportApi.listTemplates({})
-    if (res.templates && res.templates.length) {
-      templates.value = res.templates
+    if (res.data.templates && res.data.templates.length) {
+      templates.value = res.data.templates
     }
   } catch (e) {
     console.warn('加载模板列表失败:', e.message)

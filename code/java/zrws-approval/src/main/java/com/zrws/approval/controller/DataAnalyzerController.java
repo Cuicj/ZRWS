@@ -15,9 +15,9 @@ import com.zrws.approval.service.AIAnalyzerService;
 import com.zrws.approval.service.DataImportService;
 import com.zrws.approval.service.ApprovalFlowConfigService;
 import com.zrws.approval.service.DataStatisticsService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -66,7 +66,7 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/bo
      */
     @GetMapping("/bo")
-    public ResponseEntity<Map<String, Object>> listBoDefinitions(
+    public R<List<BoDefinition>> listBoDefinitions(
             @RequestParam(required = false) String boType) {
 
         List<BoDefinition> definitions;
@@ -76,10 +76,7 @@ public class DataAnalyzerController {
             definitions = boDefinitionMapper.selectActiveList();
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", definitions);
-        return success(result);
+        return R.ok(definitions);
     }
 
     /**
@@ -87,20 +84,16 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/bo/{boCode}
      */
     @GetMapping("/bo/{boCode}")
-    public ResponseEntity<Map<String, Object>> getBoDefinition(@PathVariable String boCode) {
+    public R<BoDefinition> getBoDefinition(@PathVariable String boCode) {
         BoDefinition bo = boDefinitionMapper.selectByBoCode(boCode);
         if (bo == null) {
-            return error("BO定义不存在: " + boCode);
+            return R.fail("BO定义不存在: " + boCode);
         }
 
-        // 获取字段配置
         List<BoField> fields = boFieldMapper.selectByBoId(bo.getBoId());
         bo.setFields(fields);
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("bo", bo);
-        return success(result);
+        return R.ok(bo);
     }
 
     /**
@@ -108,18 +101,15 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/bo/{boCode}/fields
      */
     @GetMapping("/bo/{boCode}/fields")
-    public ResponseEntity<Map<String, Object>> getBoFields(@PathVariable String boCode) {
+    public R<List<BoField>> getBoFields(@PathVariable String boCode) {
         BoDefinition bo = boDefinitionMapper.selectByBoCode(boCode);
         if (bo == null) {
-            return error("BO定义不存在: " + boCode);
+            return R.fail("BO定义不存在: " + boCode);
         }
 
         List<BoField> fields = boFieldMapper.selectByBoId(bo.getBoId());
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("fields", fields);
-        return success(result);
+        return R.ok(fields);
     }
 
     // ============================================================
@@ -132,13 +122,13 @@ public class DataAnalyzerController {
      * Body: {"boCode": "SOIL_SAMPLE", "filePath": "/path/to/file.xlsx", "useAiEnhance": true}
      */
     @PostMapping("/analyze")
-    public ResponseEntity<Map<String, Object>> analyzeData(@RequestBody DataAnalysisRequest request) {
+    public R<DataAnalysisResponse> analyzeData(@RequestBody DataAnalysisRequest request) {
         if (request.getBoCode() == null || request.getBoCode().isEmpty()) {
-            return error("请提供BO编码");
+            return R.fail("请提供BO编码");
         }
 
         if (request.getFilePath() == null && request.getFileContent() == null) {
-            return error("请提供文件路径或文件内容");
+            return R.fail("请提供文件路径或文件内容");
         }
 
         try {
@@ -147,14 +137,14 @@ public class DataAnalyzerController {
             DataAnalysisResponse response = dataImportService.analyzeData(request);
 
             if (response.getSuccess()) {
-                return success(response);
+                return R.ok(response);
             } else {
-                return error(response.getErrorMessage());
+                return R.fail(response.getErrorMessage());
             }
 
         } catch (Exception e) {
             log.error("数据分析失败", e);
-            return error("分析失败: " + e.getMessage());
+            return R.fail("分析失败: " + e.getMessage());
         }
     }
 
@@ -164,37 +154,34 @@ public class DataAnalyzerController {
      * FormData: file, boCode, useAiEnhance
      */
     @PostMapping("/upload-analyze")
-    public ResponseEntity<Map<String, Object>> uploadAndAnalyze(
+    public R<DataAnalysisResponse> uploadAndAnalyze(
             @RequestParam("file") MultipartFile file,
             @RequestParam("boCode") String boCode,
             @RequestParam(value = "useAiEnhance", defaultValue = "true") Boolean useAiEnhance) {
 
         if (file.isEmpty()) {
-            return error("请上传文件");
+            return R.fail("请上传文件");
         }
 
         try {
-            // 保存文件
             String filePath = saveUploadFile(file);
 
-            // 构建请求
             DataAnalysisRequest request = new DataAnalysisRequest();
             request.setBoCode(boCode);
             request.setFilePath(filePath);
             request.setUseAiEnhance(useAiEnhance);
 
-            // 分析数据
             DataAnalysisResponse response = dataImportService.analyzeData(request);
 
             if (response.getSuccess()) {
-                return success(response);
+                return R.ok(response);
             } else {
-                return error(response.getErrorMessage());
+                return R.fail(response.getErrorMessage());
             }
 
         } catch (Exception e) {
             log.error("上传分析失败", e);
-            return error("分析失败: " + e.getMessage());
+            return R.fail("分析失败: " + e.getMessage());
         }
     }
 
@@ -204,23 +191,23 @@ public class DataAnalyzerController {
      * Body: {"boCode": "SOIL_SAMPLE", "headers": ["样本编号", "pH值", "纬度", "经度"]}
      */
     @PostMapping("/mapping")
-    public ResponseEntity<Map<String, Object>> intelligentMapping(@RequestBody Map<String, Object> request) {
+    public R<Map<String, Object>> intelligentMapping(@RequestBody Map<String, Object> request) {
         String boCode = (String) request.get("boCode");
         @SuppressWarnings("unchecked")
         List<String> headers = (List<String>) request.get("headers");
 
         if (boCode == null || headers == null) {
-            return error("请提供BO编码和字段列表");
+            return R.fail("请提供BO编码和字段列表");
         }
 
         try {
             var mappings = aiAnalyzerService.intelligentFieldMapping(headers, boCode);
 
-            return success(Collections.singletonMap("mappings", mappings));
+            return R.ok(Collections.singletonMap("mappings", mappings));
 
         } catch (Exception e) {
             log.error("字段映射失败", e);
-            return error("映射失败: " + e.getMessage());
+            return R.fail("映射失败: " + e.getMessage());
         }
     }
 
@@ -234,13 +221,13 @@ public class DataAnalyzerController {
      * Body: {"boCode": "SOIL_SAMPLE", "filePath": "/path/to/file.xlsx", "importMode": "INSERT_UPDATE"}
      */
     @PostMapping("/import")
-    public ResponseEntity<Map<String, Object>> importData(@RequestBody DataImportRequest request) {
+    public R<DataImportResponse> importData(@RequestBody DataImportRequest request) {
         if (request.getBoCode() == null || request.getBoCode().isEmpty()) {
-            return error("请提供BO编码");
+            return R.fail("请提供BO编码");
         }
 
         if (request.getFilePath() == null && request.getFileContent() == null) {
-            return error("请提供文件路径或文件内容");
+            return R.fail("请提供文件路径或文件内容");
         }
 
         try {
@@ -249,14 +236,14 @@ public class DataAnalyzerController {
             DataImportResponse response = dataImportService.importData(request);
 
             if (response.getSuccess()) {
-                return success(response);
+                return R.ok(response);
             } else {
-                return error("导入失败");
+                return R.fail("导入失败");
             }
 
         } catch (Exception e) {
             log.error("数据导入失败", e);
-            return error("导入失败: " + e.getMessage());
+            return R.fail("导入失败: " + e.getMessage());
         }
     }
 
@@ -266,7 +253,7 @@ public class DataAnalyzerController {
      * FormData: file, boCode, importMode, useAiMapping, autoFix
      */
     @PostMapping("/upload-import")
-    public ResponseEntity<Map<String, Object>> uploadAndImport(
+    public R<DataImportResponse> uploadAndImport(
             @RequestParam("file") MultipartFile file,
             @RequestParam("boCode") String boCode,
             @RequestParam(value = "importMode", defaultValue = "INSERT_UPDATE") String importMode,
@@ -274,14 +261,12 @@ public class DataAnalyzerController {
             @RequestParam(value = "autoFix", defaultValue = "false") Boolean autoFix) {
 
         if (file.isEmpty()) {
-            return error("请上传文件");
+            return R.fail("请上传文件");
         }
 
         try {
-            // 保存文件
             String filePath = saveUploadFile(file);
 
-            // 构建请求
             DataImportRequest request = new DataImportRequest();
             request.setBoCode(boCode);
             request.setFilePath(filePath);
@@ -289,18 +274,17 @@ public class DataAnalyzerController {
             request.setUseAiMapping(useAiMapping);
             request.setAutoFix(autoFix);
 
-            // 导入数据
             DataImportResponse response = dataImportService.importData(request);
 
             if (response.getSuccess()) {
-                return success(response);
+                return R.ok(response);
             } else {
-                return error("导入失败");
+                return R.fail("导入失败");
             }
 
         } catch (Exception e) {
             log.error("上传导入失败", e);
-            return error("导入失败: " + e.getMessage());
+            return R.fail("导入失败: " + e.getMessage());
         }
     }
 
@@ -313,7 +297,7 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/batches
      */
     @GetMapping("/batches")
-    public ResponseEntity<Map<String, Object>> listBatches(
+    public R<List<DataImportBatch>> listBatches(
             @RequestParam(required = false) String boCode,
             @RequestParam(required = false) Long operatorId,
             @RequestParam(required = false) String keyword) {
@@ -328,7 +312,6 @@ public class DataAnalyzerController {
             batches = batchMapper.selectList(null);
         }
 
-        // 关键字搜索
         if (keyword != null && !keyword.isEmpty()) {
             batches = batches.stream()
                     .filter(b -> b.getBatchNo().toLowerCase().contains(keyword.toLowerCase()) ||
@@ -336,10 +319,7 @@ public class DataAnalyzerController {
                     .toList();
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("batches", batches);
-        return success(result);
+        return R.ok(batches);
     }
 
     /**
@@ -347,16 +327,13 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/batches/{batchNo}
      */
     @GetMapping("/batches/{batchNo}")
-    public ResponseEntity<Map<String, Object>> getBatchDetail(@PathVariable String batchNo) {
+    public R<DataImportBatch> getBatchDetail(@PathVariable String batchNo) {
         DataImportBatch batch = batchMapper.selectByBatchNo(batchNo);
         if (batch == null) {
-            return error("批次不存在: " + batchNo);
+            return R.fail("批次不存在: " + batchNo);
         }
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("batch", batch);
-        return success(result);
+        return R.ok(batch);
     }
 
     // ============================================================
@@ -368,29 +345,28 @@ public class DataAnalyzerController {
      * POST /api/v1/dataanalyzer/ai-report
      */
     @PostMapping("/ai-report")
-    public ResponseEntity<Map<String, Object>> generateAIReport(@RequestBody DataAnalysisRequest request) {
+    public R<Map<String, Object>> generateAIReport(@RequestBody DataAnalysisRequest request) {
         if (request.getBoCode() == null) {
-            return error("请提供BO编码");
+            return R.fail("请提供BO编码");
         }
 
         try {
             DataAnalysisResponse analysisResponse = dataImportService.analyzeData(request);
 
             if (!analysisResponse.getSuccess()) {
-                return error(analysisResponse.getErrorMessage());
+                return R.fail(analysisResponse.getErrorMessage());
             }
 
             String report = aiAnalyzerService.generateAnalysisReport(request, analysisResponse);
 
             Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
             result.put("report", report);
             result.put("analysis", analysisResponse);
-            return success(result);
+            return R.ok(result);
 
         } catch (Exception e) {
             log.error("生成AI报告失败", e);
-            return error("报告生成失败: " + e.getMessage());
+            return R.fail("报告生成失败: " + e.getMessage());
         }
     }
 
@@ -403,12 +379,9 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/approval-configs
      */
     @GetMapping("/approval-configs")
-    public ResponseEntity<Map<String, Object>> listApprovalConfigs() {
+    public R<List<ApprovalFlowConfig>> listApprovalConfigs() {
         List<ApprovalFlowConfig> configs = approvalFlowConfigService.getAllConfigs();
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("configs", configs);
-        return success(result);
+        return R.ok(configs);
     }
 
     /**
@@ -416,12 +389,9 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/approval-configs/bo/{boCode}
      */
     @GetMapping("/approval-configs/bo/{boCode}")
-    public ResponseEntity<Map<String, Object>> getApprovalConfigsByBo(@PathVariable String boCode) {
+    public R<List<ApprovalFlowConfig>> getApprovalConfigsByBo(@PathVariable String boCode) {
         List<ApprovalFlowConfig> configs = approvalFlowConfigService.getConfigsByBoCode(boCode);
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("configs", configs);
-        return success(result);
+        return R.ok(configs);
     }
 
     /**
@@ -429,13 +399,9 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/approval-config/{configId}
      */
     @GetMapping("/approval-config/{configId}")
-    public ResponseEntity<Map<String, Object>> getApprovalConfig(@PathVariable Long configId) {
+    public R<ApprovalFlowConfig> getApprovalConfig(@PathVariable Long configId) {
         ApprovalFlowConfig config = approvalFlowConfigService.getConfig(null, null);
-        // 需要在Service中添加根据ID查询的方法
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("config", config);
-        return success(result);
+        return R.ok(config);
     }
 
     /**
@@ -443,16 +409,13 @@ public class DataAnalyzerController {
      * POST /api/v1/dataanalyzer/approval-config
      */
     @PostMapping("/approval-config")
-    public ResponseEntity<Map<String, Object>> saveApprovalConfig(@RequestBody ApprovalFlowConfig config) {
+    public R<ApprovalFlowConfig> saveApprovalConfig(@RequestBody ApprovalFlowConfig config) {
         try {
             ApprovalFlowConfig saved = approvalFlowConfigService.saveConfig(config);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("config", saved);
-            return success(result);
+            return R.ok(saved);
         } catch (Exception e) {
             log.error("保存审批配置失败", e);
-            return error("保存失败: " + e.getMessage());
+            return R.fail("保存失败: " + e.getMessage());
         }
     }
 
@@ -461,13 +424,13 @@ public class DataAnalyzerController {
      * PUT /api/v1/dataanalyzer/approval-config
      */
     @PutMapping("/approval-config")
-    public ResponseEntity<Map<String, Object>> updateApprovalConfig(@RequestBody ApprovalFlowConfig config) {
+    public R<String> updateApprovalConfig(@RequestBody ApprovalFlowConfig config) {
         try {
             approvalFlowConfigService.updateConfig(config.getConfigId(), config);
-            return success(Collections.singletonMap("message", "更新成功"));
+            return R.ok("更新成功");
         } catch (Exception e) {
             log.error("更新审批配置失败", e);
-            return error("更新失败: " + e.getMessage());
+            return R.fail("更新失败: " + e.getMessage());
         }
     }
 
@@ -476,13 +439,13 @@ public class DataAnalyzerController {
      * DELETE /api/v1/dataanalyzer/approval-config/{configId}
      */
     @DeleteMapping("/approval-config/{configId}")
-    public ResponseEntity<Map<String, Object>> deleteApprovalConfig(@PathVariable Long configId) {
+    public R<String> deleteApprovalConfig(@PathVariable Long configId) {
         try {
             approvalFlowConfigService.deleteConfig(configId);
-            return success(Collections.singletonMap("message", "删除成功"));
+            return R.ok("删除成功");
         } catch (Exception e) {
             log.error("删除审批配置失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
@@ -491,17 +454,17 @@ public class DataAnalyzerController {
      * PATCH /api/v1/dataanalyzer/approval-config/{configId}/toggle
      */
     @PatchMapping("/approval-config/{configId}/toggle")
-    public ResponseEntity<Map<String, Object>> toggleApprovalConfig(@PathVariable Long configId,
+    public R<String> toggleApprovalConfig(@PathVariable Long configId,
                                                                    @RequestBody Map<String, Integer> body) {
         try {
             ApprovalFlowConfig config = new ApprovalFlowConfig();
             config.setConfigId(configId);
             config.setEnableApproval(body.get("enableApproval"));
             approvalFlowConfigService.updateConfig(configId, config);
-            return success(Collections.singletonMap("message", "操作成功"));
+            return R.ok("操作成功");
         } catch (Exception e) {
             log.error("切换审批配置状态失败", e);
-            return error("操作失败: " + e.getMessage());
+            return R.fail("操作失败: " + e.getMessage());
         }
     }
 
@@ -510,17 +473,16 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/approval-config/check
      */
     @GetMapping("/approval-config/check")
-    public ResponseEntity<Map<String, Object>> checkNeedApproval(
+    public R<Map<String, Object>> checkNeedApproval(
             @RequestParam String boCode,
             @RequestParam String operationType) {
         boolean needApproval = approvalFlowConfigService.needApproval(boCode, operationType);
         String processKey = approvalFlowConfigService.getApprovalProcessKey(boCode, operationType);
 
         Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
         result.put("needApproval", needApproval);
         result.put("processKey", processKey);
-        return success(result);
+        return R.ok(result);
     }
 
     // ============================================================
@@ -532,13 +494,12 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/stats/summary
      */
     @GetMapping("/stats/summary")
-    public ResponseEntity<Map<String, Object>> getStatsSummary() {
+    public R<Map<String, Object>> getStatsSummary() {
         try {
             Map<String, Object> importStats = dataStatisticsService.getImportStats();
             Map<String, Object> summary = dataStatisticsService.getSummary();
 
             Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
             result.put("total", importStats.get("total"));
             result.put("success", importStats.get("success"));
             result.put("failed", importStats.get("failed"));
@@ -549,18 +510,16 @@ public class DataAnalyzerController {
             result.put("successRate", importStats.get("successRate"));
             result.put("dataSuccessRate", importStats.get("dataSuccessRate"));
 
-            // 按BO统计
             @SuppressWarnings("unchecked")
             List<Map<String, Object>> byBo = (List<Map<String, Object>>) summary.get("byBo");
             result.put("byBo", byBo);
 
-            // 按日期统计（最近7天）
             result.put("byDate", summary.get("week"));
 
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("获取统计汇总失败", e);
-            return error("获取统计失败: " + e.getMessage());
+            return R.fail("获取统计失败: " + e.getMessage());
         }
     }
 
@@ -569,15 +528,14 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/stats/today
      */
     @GetMapping("/stats/today")
-    public ResponseEntity<Map<String, Object>> getTodayStats(@RequestParam(required = false) String boCode) {
+    public R<Map<String, Object>> getTodayStats(@RequestParam(required = false) String boCode) {
         try {
             Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
             result.put("today", dataStatisticsService.getTodayStats(boCode));
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("获取今日统计失败", e);
-            return error("获取统计失败: " + e.getMessage());
+            return R.fail("获取统计失败: " + e.getMessage());
         }
     }
 
@@ -586,17 +544,16 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/stats/date-range
      */
     @GetMapping("/stats/date-range")
-    public ResponseEntity<Map<String, Object>> getStatsByDateRange(
+    public R<Map<String, Object>> getStatsByDateRange(
             @RequestParam String startDate,
             @RequestParam String endDate) {
         try {
             Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
             result.put("stats", dataStatisticsService.getStatsByDateRange(startDate, endDate));
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("获取日期范围统计失败", e);
-            return error("获取统计失败: " + e.getMessage());
+            return R.fail("获取统计失败: " + e.getMessage());
         }
     }
 
@@ -605,15 +562,14 @@ public class DataAnalyzerController {
      * GET /api/v1/dataanalyzer/stats/bo/{boCode}
      */
     @GetMapping("/stats/bo/{boCode}")
-    public ResponseEntity<Map<String, Object>> getStatsByBoCode(@PathVariable String boCode) {
+    public R<Map<String, Object>> getStatsByBoCode(@PathVariable String boCode) {
         try {
             Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
             result.put("stats", dataStatisticsService.getStatsByBoCode(boCode));
-            return success(result);
+            return R.ok(result);
         } catch (Exception e) {
             log.error("获取BO统计失败", e);
-            return error("获取统计失败: " + e.getMessage());
+            return R.fail("获取统计失败: " + e.getMessage());
         }
     }
 
@@ -633,23 +589,5 @@ public class DataAnalyzerController {
         file.transferTo(destFile);
 
         return destFile.getAbsolutePath();
-    }
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> dataMap = (Map<String, Object>) data;
-            result.putAll(dataMap);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

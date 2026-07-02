@@ -4,12 +4,11 @@ import com.zrws.approval.domain.entity.Announcement;
 import com.zrws.approval.domain.entity.AnnouncementAudit;
 import com.zrws.approval.domain.entity.AnnouncementCategory;
 import com.zrws.approval.service.AnnouncementService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,7 +33,7 @@ public class AnnouncementController {
      * 获取已发布的公告列表
      */
     @GetMapping("/list")
-    public ResponseEntity<Map<String, Object>> getPublishedList(
+    public R<List<Announcement>> getPublishedList(
             @RequestParam(required = false) Long categoryId,
             @RequestParam(required = false) String keyword) {
         List<Announcement> list;
@@ -45,83 +44,61 @@ public class AnnouncementController {
         } else {
             list = announcementService.getPublishedAnnouncements();
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", list);
-        return success(result);
+        return R.ok(list);
     }
 
     /**
      * 获取公告详情
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> getById(@PathVariable Long id) {
+    public R<Announcement> getById(@PathVariable Long id) {
         Announcement announcement = announcementService.getAnnouncementById(id);
         if (announcement == null) {
-            return error("公告不存在");
+            return R.fail("公告不存在");
         }
-        // 增加浏览次数
         announcementService.viewAnnouncement(id);
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("announcement", announcement);
-        return success(result);
+        return R.ok(announcement);
     }
 
     /**
      * 获取置顶公告
      */
     @GetMapping("/top")
-    public ResponseEntity<Map<String, Object>> getTop() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getTopAnnouncements());
-        return success(result);
+    public R<List<Announcement>> getTop() {
+        return R.ok(announcementService.getTopAnnouncements());
     }
 
     /**
      * 获取推荐公告
      */
     @GetMapping("/recommend")
-    public ResponseEntity<Map<String, Object>> getRecommend() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getRecommendAnnouncements());
-        return success(result);
+    public R<List<Announcement>> getRecommend() {
+        return R.ok(announcementService.getRecommendAnnouncements());
     }
 
     /**
      * 获取热门公告
      */
     @GetMapping("/hot")
-    public ResponseEntity<Map<String, Object>> getHot() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getHotAnnouncements());
-        return success(result);
+    public R<List<Announcement>> getHot() {
+        return R.ok(announcementService.getHotAnnouncements());
     }
 
     /**
      * 获取最新公告
      */
     @GetMapping("/latest")
-    public ResponseEntity<Map<String, Object>> getLatest(@RequestParam(defaultValue = "10") int limit) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getLatestAnnouncements(limit));
-        return success(result);
+    public R<List<Announcement>> getLatest(@RequestParam(defaultValue = "10") int limit) {
+        return R.ok(announcementService.getLatestAnnouncements(limit));
     }
 
     /**
      * 点赞
      */
     @PostMapping("/{id}/like")
-    public ResponseEntity<Map<String, Object>> like(@PathVariable Long id) {
+    public R<String> like(@PathVariable Long id) {
         announcementService.likeAnnouncement(id);
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("message", "点赞成功");
-        return success(result);
+        return R.ok("点赞成功");
     }
 
     // ============================================================
@@ -132,27 +109,21 @@ public class AnnouncementController {
      * 获取所有分类
      */
     @GetMapping("/category")
-    public ResponseEntity<Map<String, Object>> getCategories() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getActiveCategories());
-        return success(result);
+    public R<List<AnnouncementCategory>> getCategories() {
+        return R.ok(announcementService.getActiveCategories());
     }
 
     /**
      * 保存分类
      */
     @PostMapping("/category")
-    public ResponseEntity<Map<String, Object>> saveCategory(@RequestBody AnnouncementCategory category) {
+    public R<AnnouncementCategory> saveCategory(@RequestBody AnnouncementCategory category) {
         try {
             AnnouncementCategory saved = announcementService.saveCategory(category);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("category", saved);
-            return success(result);
+            return R.ok("保存成功", saved);
         } catch (Exception e) {
             log.error("保存分类失败", e);
-            return error("保存失败: " + e.getMessage());
+            return R.fail("保存失败: " + e.getMessage());
         }
     }
 
@@ -160,16 +131,13 @@ public class AnnouncementController {
      * 删除分类
      */
     @DeleteMapping("/category/{id}")
-    public ResponseEntity<Map<String, Object>> deleteCategory(@PathVariable Long id) {
+    public R<String> deleteCategory(@PathVariable Long id) {
         try {
             announcementService.deleteCategory(id);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "删除成功");
-            return success(result);
+            return R.ok("删除成功");
         } catch (Exception e) {
             log.error("删除分类失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
@@ -181,7 +149,7 @@ public class AnnouncementController {
      * 获取所有公告(管理)
      */
     @GetMapping("/manage/list")
-    public ResponseEntity<Map<String, Object>> getManageList(
+    public R<List<Announcement>> getManageList(
             @RequestParam(required = false) String status,
             @RequestParam(required = false) String auditStatus) {
         List<Announcement> list;
@@ -190,26 +158,20 @@ public class AnnouncementController {
         } else {
             list = announcementService.getPublishedAnnouncements();
         }
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", list);
-        return success(result);
+        return R.ok(list);
     }
 
     /**
      * 保存公告
      */
     @PostMapping
-    public ResponseEntity<Map<String, Object>> save(@RequestBody Announcement announcement) {
+    public R<Announcement> save(@RequestBody Announcement announcement) {
         try {
             Announcement saved = announcementService.saveAnnouncement(announcement);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("announcement", saved);
-            return success(result);
+            return R.ok("保存成功", saved);
         } catch (Exception e) {
             log.error("保存公告失败", e);
-            return error("保存失败: " + e.getMessage());
+            return R.fail("保存失败: " + e.getMessage());
         }
     }
 
@@ -217,16 +179,13 @@ public class AnnouncementController {
      * 删除公告
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Map<String, Object>> delete(@PathVariable Long id) {
+    public R<String> delete(@PathVariable Long id) {
         try {
             announcementService.deleteAnnouncement(id);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "删除成功");
-            return success(result);
+            return R.ok("删除成功");
         } catch (Exception e) {
             log.error("删除公告失败", e);
-            return error("删除失败: " + e.getMessage());
+            return R.fail("删除失败: " + e.getMessage());
         }
     }
 
@@ -238,7 +197,7 @@ public class AnnouncementController {
      * 提交审核
      */
     @PostMapping("/{id}/submit")
-    public ResponseEntity<Map<String, Object>> submitAudit(
+    public R<String> submitAudit(
             @PathVariable Long id,
             @RequestBody Map<String, Object> operator) {
         try {
@@ -246,13 +205,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.submitForAudit(id, operatorId, operatorName);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "提交审核成功");
-            return success(result);
+            return R.ok("提交审核成功");
         } catch (Exception e) {
             log.error("提交审核失败", e);
-            return error("提交失败: " + e.getMessage());
+            return R.fail("提交失败: " + e.getMessage());
         }
     }
 
@@ -260,7 +216,7 @@ public class AnnouncementController {
      * 审批通过
      */
     @PostMapping("/{id}/approve")
-    public ResponseEntity<Map<String, Object>> approve(
+    public R<String> approve(
             @PathVariable Long id,
             @RequestBody Map<String, Object> auditInfo) {
         try {
@@ -269,13 +225,10 @@ public class AnnouncementController {
             String auditorName = (String) auditInfo.getOrDefault("auditorName", "管理员");
             String comment = (String) auditInfo.get("comment");
             announcementService.approve(id, auditorId, auditorName, comment);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "审批通过");
-            return success(result);
+            return R.ok("审批通过");
         } catch (Exception e) {
             log.error("审批失败", e);
-            return error("审批失败: " + e.getMessage());
+            return R.fail("审批失败: " + e.getMessage());
         }
     }
 
@@ -283,7 +236,7 @@ public class AnnouncementController {
      * 驳回
      */
     @PostMapping("/{id}/reject")
-    public ResponseEntity<Map<String, Object>> reject(
+    public R<String> reject(
             @PathVariable Long id,
             @RequestBody Map<String, Object> auditInfo) {
         try {
@@ -292,13 +245,10 @@ public class AnnouncementController {
             String auditorName = (String) auditInfo.getOrDefault("auditorName", "管理员");
             String reason = (String) auditInfo.get("reason");
             announcementService.reject(id, auditorId, auditorName, reason);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "已驳回");
-            return success(result);
+            return R.ok("已驳回");
         } catch (Exception e) {
             log.error("驳回失败", e);
-            return error("驳回失败: " + e.getMessage());
+            return R.fail("驳回失败: " + e.getMessage());
         }
     }
 
@@ -306,7 +256,7 @@ public class AnnouncementController {
      * 发布
      */
     @PostMapping("/{id}/publish")
-    public ResponseEntity<Map<String, Object>> publish(
+    public R<String> publish(
             @PathVariable Long id,
             @RequestBody Map<String, Object> operator) {
         try {
@@ -314,13 +264,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.publish(id, operatorId, operatorName);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "发布成功");
-            return success(result);
+            return R.ok("发布成功");
         } catch (Exception e) {
             log.error("发布失败", e);
-            return error("发布失败: " + e.getMessage());
+            return R.fail("发布失败: " + e.getMessage());
         }
     }
 
@@ -328,7 +275,7 @@ public class AnnouncementController {
      * 下线
      */
     @PostMapping("/{id}/offline")
-    public ResponseEntity<Map<String, Object>> offline(
+    public R<String> offline(
             @PathVariable Long id,
             @RequestBody Map<String, Object> operator) {
         try {
@@ -336,13 +283,10 @@ public class AnnouncementController {
                     Long.valueOf(operator.get("operatorId").toString()) : 1L;
             String operatorName = (String) operator.getOrDefault("operatorName", "管理员");
             announcementService.offline(id, operatorId, operatorName);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "下线成功");
-            return success(result);
+            return R.ok("下线成功");
         } catch (Exception e) {
             log.error("下线失败", e);
-            return error("下线失败: " + e.getMessage());
+            return R.fail("下线失败: " + e.getMessage());
         }
     }
 
@@ -350,11 +294,8 @@ public class AnnouncementController {
      * 获取审核记录
      */
     @GetMapping("/{id}/audit")
-    public ResponseEntity<Map<String, Object>> getAuditRecords(@PathVariable Long id) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getAuditRecords(id));
-        return success(result);
+    public R<List<AnnouncementAudit>> getAuditRecords(@PathVariable Long id) {
+        return R.ok(announcementService.getAuditRecords(id));
     }
 
     // ============================================================
@@ -365,54 +306,41 @@ public class AnnouncementController {
      * 获取所有行政区域级别
      */
     @GetMapping("/admin-levels")
-    public ResponseEntity<Map<String, Object>> getAdminLevels() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getAllAdminLevels());
-        return success(result);
+    public R<List<String>> getAdminLevels() {
+        return R.ok(announcementService.getAllAdminLevels());
     }
 
     /**
      * 按行政区域级别获取公告
      */
     @GetMapping("/by-level")
-    public ResponseEntity<Map<String, Object>> getByAdminLevel(@RequestParam String level) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getAnnouncementsByAdminLevel(level));
-        return success(result);
+    public R<List<Announcement>> getByAdminLevel(@RequestParam String level) {
+        return R.ok(announcementService.getAnnouncementsByAdminLevel(level));
     }
 
     /**
      * 按行政区域获取公告
      */
     @GetMapping("/by-region")
-    public ResponseEntity<Map<String, Object>> getByRegion(
+    public R<List<Announcement>> getByRegion(
             @RequestParam(required = false) String province,
             @RequestParam(required = false) String city,
             @RequestParam(required = false) String county,
             @RequestParam(required = false) String township) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("list", announcementService.getAnnouncementsByRegion(province, city, county, township));
-        return success(result);
+        return R.ok(announcementService.getAnnouncementsByRegion(province, city, county, township));
     }
 
     /**
      * AI分析单条公告
      */
     @PostMapping("/{id}/analyze")
-    public ResponseEntity<Map<String, Object>> analyzeWithAI(@PathVariable Long id) {
+    public R<Announcement> analyzeWithAI(@PathVariable Long id) {
         try {
             Announcement analyzed = announcementService.analyzeWithAI(id);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "AI分析完成");
-            result.put("announcement", analyzed);
-            return success(result);
+            return R.ok("AI分析完成", analyzed);
         } catch (Exception e) {
             log.error("AI分析失败", e);
-            return error("AI分析失败: " + e.getMessage());
+            return R.fail("AI分析失败: " + e.getMessage());
         }
     }
 
@@ -420,22 +348,20 @@ public class AnnouncementController {
      * 批量AI分析
      */
     @PostMapping("/batch-analyze")
-    public ResponseEntity<Map<String, Object>> batchAnalyzeWithAI(@RequestBody Map<String, Object> request) {
+    public R<Map<String, Object>> batchAnalyzeWithAI(@RequestBody Map<String, Object> request) {
         try {
             @SuppressWarnings("unchecked")
             List<Long> ids = (List<Long>) request.get("ids");
             if (ids == null || ids.isEmpty()) {
-                return error("请选择要分析的公告");
+                return R.fail("请选择要分析的公告");
             }
             int count = announcementService.batchAnalyzeWithAI(ids);
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", true);
-            result.put("message", "成功分析 " + count + " 条公告");
-            result.put("count", count);
-            return success(result);
+            Map<String, Object> data = new HashMap<>();
+            data.put("count", count);
+            return R.ok("成功分析 " + count + " 条公告", data);
         } catch (Exception e) {
             log.error("批量AI分析失败", e);
-            return error("批量AI分析失败: " + e.getMessage());
+            return R.fail("批量AI分析失败: " + e.getMessage());
         }
     }
 
@@ -443,32 +369,7 @@ public class AnnouncementController {
      * 获取统计信息
      */
     @GetMapping("/statistics")
-    public ResponseEntity<Map<String, Object>> getStatistics() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        result.put("statistics", announcementService.getStatistics());
-        return success(result);
-    }
-
-    // ============================================================
-    // 私有方法
-    // ============================================================
-
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            @SuppressWarnings("unchecked")
-            Map<String, Object> dataMap = (Map<String, Object>) data;
-            result.putAll(dataMap);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
+    public R<Map<String, Object>> getStatistics() {
+        return R.ok(announcementService.getStatistics());
     }
 }

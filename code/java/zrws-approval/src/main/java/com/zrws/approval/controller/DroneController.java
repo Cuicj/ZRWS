@@ -6,12 +6,11 @@ import com.zrws.approval.domain.entity.FlightMission;
 import com.zrws.approval.mapper.DeviceMapper;
 import com.zrws.approval.mapper.FlightMissionMapper;
 import com.zrws.approval.service.UnifiedDroneSDKService;
+import com.zrws.common.core.domain.R;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +39,7 @@ public class DroneController {
      * 获取无人机设备列表
      */
     @GetMapping("/devices")
-    public ResponseEntity<Map<String, Object>> listDevices(
+    public R<List<Map<String, Object>>> listDevices(
             @RequestParam(required = false) String brand,
             @RequestParam(required = false) String status) {
         
@@ -57,7 +56,6 @@ public class DroneController {
         
         List<Device> devices = deviceMapper.selectList(wrapper);
         
-        // 补充连接状态
         List<Map<String, Object>> deviceList = devices.stream().map(d -> {
             Map<String, Object> map = new HashMap<>();
             map.put("deviceId", d.getDeviceId());
@@ -77,23 +75,19 @@ public class DroneController {
             map.put("totalFlightHours", d.getTotalFlightHours());
             map.put("lastOnline", d.getLastOnline());
             
-            // 判断是否已连接
             map.put("isConnected", droneSDKService.getActiveConnections().containsKey(d.getDeviceId().toString()));
             
             return map;
         }).collect(Collectors.toList());
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", deviceList);
-        result.put("total", deviceList.size());
-        return success(result);
+        return R.ok(deviceList);
     }
 
     /**
      * 连接无人机
      */
     @PostMapping("/connect/{deviceId}")
-    public ResponseEntity<Map<String, Object>> connectDrone(@PathVariable Long deviceId) {
+    public R<Map<String, Object>> connectDrone(@PathVariable Long deviceId) {
         try {
             UnifiedDroneSDKService.DroneConnection connection = droneSDKService.connectDrone(deviceId.toString());
             Map<String, Object> data = new HashMap<>();
@@ -103,10 +97,10 @@ public class DroneController {
             data.put("model", connection.getModel());
             data.put("status", connection.getStatus());
             data.put("message", "连接成功");
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("连接无人机失败", e);
-            return error("连接失败: " + e.getMessage());
+            return R.fail("连接失败: " + e.getMessage());
         }
     }
 
@@ -114,13 +108,13 @@ public class DroneController {
      * 断开无人机连接
      */
     @PostMapping("/disconnect/{deviceId}")
-    public ResponseEntity<Map<String, Object>> disconnectDrone(@PathVariable Long deviceId) {
+    public R<String> disconnectDrone(@PathVariable Long deviceId) {
         try {
             droneSDKService.disconnectDrone(deviceId.toString());
-            return success(Collections.singletonMap("message", "断开连接成功"));
+            return R.ok("断开连接成功");
         } catch (Exception e) {
             log.error("断开连接失败", e);
-            return error("断开失败: " + e.getMessage());
+            return R.fail("断开失败: " + e.getMessage());
         }
     }
 
@@ -128,7 +122,7 @@ public class DroneController {
      * 获取活跃连接列表
      */
     @GetMapping("/connections")
-    public ResponseEntity<Map<String, Object>> getActiveConnections() {
+    public R<List<Map<String, Object>>> getActiveConnections() {
         Map<String, UnifiedDroneSDKService.DroneConnection> connections = droneSDKService.getActiveConnections();
         List<Map<String, Object>> list = connections.values().stream().map(c -> {
             Map<String, Object> map = new HashMap<>();
@@ -142,10 +136,7 @@ public class DroneController {
             return map;
         }).collect(Collectors.toList());
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
-        result.put("total", list.size());
-        return success(result);
+        return R.ok(list);
     }
 
     // ==================== 任务管理 ====================
@@ -154,7 +145,7 @@ public class DroneController {
      * 上传航点任务
      */
     @PostMapping("/missions/waypoint")
-    public ResponseEntity<Map<String, Object>> uploadWaypointMission(
+    public R<Map<String, Object>> uploadWaypointMission(
             @RequestBody Map<String, Object> request) {
         try {
             String deviceId = (String) request.get("deviceId");
@@ -183,13 +174,13 @@ public class DroneController {
                 data.put("totalDistance", result.getTotalDistance());
                 data.put("estimatedDuration", result.getEstimatedDuration());
                 data.put("message", result.getMessage());
-                return success(data);
+                return R.ok(data);
             } else {
-                return error(result.getMessage());
+                return R.fail(result.getMessage());
             }
         } catch (Exception e) {
             log.error("上传航点任务失败", e);
-            return error("上传失败: " + e.getMessage());
+            return R.fail("上传失败: " + e.getMessage());
         }
     }
 
@@ -197,7 +188,7 @@ public class DroneController {
      * 上传区域扫描任务
      */
     @PostMapping("/missions/polygon")
-    public ResponseEntity<Map<String, Object>> uploadPolygonMission(
+    public R<Map<String, Object>> uploadPolygonMission(
             @RequestBody Map<String, Object> request) {
         try {
             String deviceId = (String) request.get("deviceId");
@@ -228,13 +219,13 @@ public class DroneController {
                 data.put("totalDistance", result.getTotalDistance());
                 data.put("estimatedDuration", result.getEstimatedDuration());
                 data.put("message", result.getMessage());
-                return success(data);
+                return R.ok(data);
             } else {
-                return error(result.getMessage());
+                return R.fail(result.getMessage());
             }
         } catch (Exception e) {
             log.error("上传区域扫描任务失败", e);
-            return error("上传失败: " + e.getMessage());
+            return R.fail("上传失败: " + e.getMessage());
         }
     }
 
@@ -242,13 +233,13 @@ public class DroneController {
      * 开始执行任务
      */
     @PostMapping("/missions/{deviceId}/start")
-    public ResponseEntity<Map<String, Object>> startMission(@PathVariable String deviceId) {
+    public R<String> startMission(@PathVariable String deviceId) {
         try {
             droneSDKService.startMission(deviceId);
-            return success(Collections.singletonMap("message", "任务已开始"));
+            return R.ok("任务已开始");
         } catch (Exception e) {
             log.error("启动任务失败", e);
-            return error("启动失败: " + e.getMessage());
+            return R.fail("启动失败: " + e.getMessage());
         }
     }
 
@@ -256,13 +247,13 @@ public class DroneController {
      * 停止任务
      */
     @PostMapping("/missions/{deviceId}/stop")
-    public ResponseEntity<Map<String, Object>> stopMission(@PathVariable String deviceId) {
+    public R<String> stopMission(@PathVariable String deviceId) {
         try {
             droneSDKService.stopMission(deviceId);
-            return success(Collections.singletonMap("message", "任务已停止"));
+            return R.ok("任务已停止");
         } catch (Exception e) {
             log.error("停止任务失败", e);
-            return error("停止失败: " + e.getMessage());
+            return R.fail("停止失败: " + e.getMessage());
         }
     }
 
@@ -270,13 +261,13 @@ public class DroneController {
      * 返航
      */
     @PostMapping("/missions/{deviceId}/return")
-    public ResponseEntity<Map<String, Object>> returnToHome(@PathVariable String deviceId) {
+    public R<String> returnToHome(@PathVariable String deviceId) {
         try {
             droneSDKService.returnToHome(deviceId);
-            return success(Collections.singletonMap("message", "返航指令已发送"));
+            return R.ok("返航指令已发送");
         } catch (Exception e) {
             log.error("返航失败", e);
-            return error("返航失败: " + e.getMessage());
+            return R.fail("返航失败: " + e.getMessage());
         }
     }
 
@@ -286,13 +277,13 @@ public class DroneController {
      * 获取实时遥测数据
      */
     @GetMapping("/telemetry/{deviceId}")
-    public ResponseEntity<Map<String, Object>> getLiveTelemetry(@PathVariable String deviceId) {
+    public R<Map<String, Object>> getLiveTelemetry(@PathVariable String deviceId) {
         try {
             UnifiedDroneSDKService.FlightTelemetry telemetry = 
                 droneSDKService.getLiveTelemetry(deviceId);
             
             if (telemetry == null) {
-                return error("设备未连接或无数据");
+                return R.fail("设备未连接或无数据");
             }
             
             Map<String, Object> data = new HashMap<>();
@@ -318,10 +309,10 @@ public class DroneController {
             data.put("windSpeed", telemetry.getWindSpeed());
             data.put("flightMode", telemetry.getFlightMode());
             data.put("isFlying", telemetry.isFlying());
-            return success(data);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("获取遥测数据失败", e);
-            return error("获取失败: " + e.getMessage());
+            return R.fail("获取失败: " + e.getMessage());
         }
     }
 
@@ -329,7 +320,7 @@ public class DroneController {
      * 获取所有活跃设备的遥测数据
      */
     @GetMapping("/telemetry/all")
-    public ResponseEntity<Map<String, Object>> getAllTelemetry() {
+    public R<List<Map<String, Object>>> getAllTelemetry() {
         Map<String, UnifiedDroneSDKService.FlightTelemetry> telemetryMap = 
             droneSDKService.getLiveTelemetryData();
         
@@ -347,10 +338,7 @@ public class DroneController {
             return map;
         }).collect(Collectors.toList());
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
-        result.put("total", list.size());
-        return success(result);
+        return R.ok(list);
     }
 
     // ==================== 数据获取 ====================
@@ -359,7 +347,7 @@ public class DroneController {
      * 获取飞行任务列表
      */
     @GetMapping("/missions")
-    public ResponseEntity<Map<String, Object>> listMissions(
+    public R<List<Map<String, Object>>> listMissions(
             @RequestParam(required = false) Long missionId,
             @RequestParam(required = false) String status) {
         
@@ -400,17 +388,14 @@ public class DroneController {
             return map;
         }).collect(Collectors.toList());
         
-        Map<String, Object> result = new HashMap<>();
-        result.put("list", list);
-        result.put("total", list.size());
-        return success(result);
+        return R.ok(list);
     }
 
     /**
      * 获取已拍照列表
      */
     @GetMapping("/photos/{deviceId}")
-    public ResponseEntity<Map<String, Object>> getPhotos(@PathVariable String deviceId) {
+    public R<List<Map<String, Object>>> getPhotos(@PathVariable String deviceId) {
         try {
             List<UnifiedDroneSDKService.CapturedPhoto> photos = 
                 droneSDKService.getCapturedPhotos(deviceId);
@@ -430,13 +415,10 @@ public class DroneController {
                 return map;
             }).collect(Collectors.toList());
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("list", list);
-            result.put("total", list.size());
-            return success(result);
+            return R.ok(list);
         } catch (Exception e) {
             log.error("获取照片列表失败", e);
-            return error("获取失败: " + e.getMessage());
+            return R.fail("获取失败: " + e.getMessage());
         }
     }
 
@@ -444,7 +426,7 @@ public class DroneController {
      * 获取LiDAR数据
      */
     @GetMapping("/lidar/{deviceId}")
-    public ResponseEntity<Map<String, Object>> getLidarData(@PathVariable String deviceId) {
+    public R<Map<String, Object>> getLidarData(@PathVariable String deviceId) {
         try {
             UnifiedDroneSDKService.LidarData lidar = droneSDKService.getLidarData(deviceId);
             
@@ -452,7 +434,7 @@ public class DroneController {
             if (lidar == null) {
                 data.put("data", null);
                 data.put("message", "无LiDAR数据");
-                return success(data);
+                return R.ok(data);
             }
             
             data.put("deviceId", lidar.getDeviceId());
@@ -464,31 +446,10 @@ public class DroneController {
             data.put("filePath", lidar.getFilePath());
             data.put("status", lidar.getStatus());
             
-            Map<String, Object> result = new HashMap<>();
-            result.put("data", data);
-            return success(result);
+            return R.ok(data);
         } catch (Exception e) {
             log.error("获取LiDAR数据失败", e);
-            return error("获取失败: " + e.getMessage());
+            return R.fail("获取失败: " + e.getMessage());
         }
-    }
-
-    // ==================== 辅助方法 ====================
-
-    @SuppressWarnings("unchecked")
-    private ResponseEntity<Map<String, Object>> success(Object data) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", true);
-        if (data instanceof Map) {
-            result.putAll((Map<String, Object>) data);
-        }
-        return ResponseEntity.ok(result);
-    }
-
-    private ResponseEntity<Map<String, Object>> error(String message) {
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", false);
-        result.put("error", message);
-        return ResponseEntity.badRequest().body(result);
     }
 }

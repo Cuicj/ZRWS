@@ -72,7 +72,7 @@ const loadGpsData = async () => {
     // 获取航迹列表（取第一条作为当前航迹）
     const trackListRes = await getGpsTrackList({ limit: 1 });
     
-    const tracks = trackListRes.list || [];
+    const tracks = trackListRes.data.list || [];
       if (tracks.length > 0) {
         const currentTrack = tracks[0];
         
@@ -90,7 +90,7 @@ const loadGpsData = async () => {
         const trackId = currentTrack.trackId || currentTrack.id || currentTrack.missionId;
         if (trackId) {
           const pointsRes = await getTrackPoints(trackId);
-          trackPoints.value = (pointsRes.list || []).map((item, index) => ({
+          trackPoints.value = (pointsRes.data.list || []).map((item, index) => ({
             seq: index + 1,
             time: item.recordTime || item.time,
             lat: item.latitude || item.lat,
