@@ -34,7 +34,7 @@ public class LoginIpRuleController {
             @RequestParam(defaultValue = "20") int size,
             @RequestParam(required = false) String ruleType,
             @RequestParam(required = false) String status) {
-        LambdaQueryWrapper<LoginIpRule> wrapper = new LambdaQueryWrapper<>()
+        LambdaQueryWrapper<LoginIpRule> wrapper = new LambdaQueryWrapper<LoginIpRule>()
                 .eq(LoginIpRule::getIsDeleted, 0)
                 .orderByDesc(LoginIpRule::getCreatedTime);
         if (ruleType != null && !ruleType.isBlank()) {

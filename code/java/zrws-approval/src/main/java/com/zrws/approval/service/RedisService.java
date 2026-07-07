@@ -41,6 +41,19 @@ public class RedisService {
         }
     }
 
+    public String getString(String key) {
+        Object val = get(key);
+        return val != null ? val.toString() : null;
+    }
+
+    public void setEx(String key, Object value, int seconds) {
+        set(key, value, seconds, TimeUnit.SECONDS);
+    }
+
+    public void del(String key) {
+        delete(key);
+    }
+
     public Boolean delete(String key) {
         try {
             return redisTemplate.delete(key);

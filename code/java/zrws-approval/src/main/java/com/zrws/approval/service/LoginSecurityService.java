@@ -86,7 +86,7 @@ public class LoginSecurityService {
      * 获取IP尝试次数
      */
     private int getIpAttemptCount(String ip) {
-        String count = redisService.get(IP_ATTEMPT_KEY_PREFIX + ip);
+        String count = redisService.getString(IP_ATTEMPT_KEY_PREFIX + ip);
         return count == null ? 0 : Integer.parseInt(count);
     }
 
@@ -95,7 +95,7 @@ public class LoginSecurityService {
      */
     private int incrementIpAttempt(String ip) {
         String key = IP_ATTEMPT_KEY_PREFIX + ip;
-        String count = redisService.get(key);
+        String count = redisService.getString(key);
         int newCount = count == null ? 1 : Integer.parseInt(count) + 1;
         redisService.setEx(key, String.valueOf(newCount), ATTEMPT_WINDOW_MINUTES * 60);
         return newCount;
@@ -126,7 +126,7 @@ public class LoginSecurityService {
      * 获取用户尝试次数
      */
     private int getUserAttemptCount(String username) {
-        String count = redisService.get(USER_ATTEMPT_KEY_PREFIX + username);
+        String count = redisService.getString(USER_ATTEMPT_KEY_PREFIX + username);
         return count == null ? 0 : Integer.parseInt(count);
     }
 
@@ -135,7 +135,7 @@ public class LoginSecurityService {
      */
     private int incrementUserAttempt(String username) {
         String key = USER_ATTEMPT_KEY_PREFIX + username;
-        String count = redisService.get(key);
+        String count = redisService.getString(key);
         int newCount = count == null ? 1 : Integer.parseInt(count) + 1;
         redisService.setEx(key, String.valueOf(newCount), ATTEMPT_WINDOW_MINUTES * 60);
         return newCount;

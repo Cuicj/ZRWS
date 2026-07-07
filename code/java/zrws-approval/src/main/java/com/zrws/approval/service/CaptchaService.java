@@ -62,7 +62,7 @@ public class CaptchaService {
         if (uuid == null || code == null || uuid.isBlank() || code.isBlank()) {
             return false;
         }
-        String storedCode = redisService.get(CAPTCHA_KEY_PREFIX + uuid);
+        String storedCode = redisService.getString(CAPTCHA_KEY_PREFIX + uuid);
         if (storedCode == null) {
             return false;
         }
