@@ -35,22 +35,12 @@ async function main() {
   });
   log('SSH 连接成功');
 
-  log('清理失败缓存...');
-  await sshExec(conn, `rm -rf /root/.m2/repository/org/springframework/ai/spring-ai-bom/1.0.0-M3 2>/dev/null; echo "cleaned"`);
+  log('切换到 main 分支并拉取最新代码...');
+  await sshExec(conn, `cd ${remoteProjectDir} && git checkout main && git pull origin main`);
 
-  log('编译后端 (强制更新依赖)...');
-  const { code: buildCode } = await sshExec(
-    conn,
-    `cd ${remoteProjectDir}/code/java && mvn clean package -DskipTests -U -pl zrws-approval -am 2>&1 | tail -80`
-  );
-  
-  if (buildCode !== 0) {
-    log('编译失败！尝试使用备用方案...');
-    
-    // 尝试用阿里云的spring插件仓库
-    log('尝试添加 Spring Milestone 镜像...');
-    await sshExec(conn, `mkdir -p /root/.m2`);
-    await sshExec(conn, `cat > /root/.m2/settings.xml << 'EOF'
+  log('配置 Maven settings (使用官方 Spring Milestone)...');
+  await sshExec(conn, `mkdir -p /root/.m2`);
+  await sshExec(conn, `cat > /root/.m2/settings.xml << 'EOF'
 <settings>
   <mirrors>
     <mirror>
@@ -67,14 +57,14 @@ async function main() {
         <repository>
           <id>spring-milestones</id>
           <name>Spring Milestones</name>
-          <url>https://maven.aliyun.com/repository/spring-milestone</url>
+          <url>https://repo.spring.io/milestone</url>
         </repository>
       </repositories>
       <pluginRepositories>
         <pluginRepository>
           <id>spring-milestones</id>
           <name>Spring Milestones</name>
-          <url>https://maven.aliyun.com/repository/spring-milestone</url>
+          <url>https://repo.spring.io/milestone</url>
         </pluginRepository>
       </pluginRepositories>
     </profile>
@@ -83,19 +73,23 @@ async function main() {
     <activeProfile>spring-milestones</activeProfile>
   </activeProfiles>
 </settings>
-EOF` );
-    
-    log('重新编译...');
-    const { code: buildCode2 } = await sshExec(
-      conn,
-      `cd ${remoteProjectDir}/code/java && mvn clean package -DskipTests -U -pl zrws-approval -am 2>&1 | tail -80`
-    );
-    
-    if (buildCode2 !== 0) {
-      log('编译仍然失败！');
-      conn.end();
-      process.exit(1);
-    }
+EOF`);
+
+  log('清理失败缓存...');
+  await sshExec(conn, `rm -rf /root/.m2/repository/org/springframework/ai/spring-ai-bom/1.0.0-M3 2>/dev/null; echo "cleaned"`);
+
+  log('编译后端 (强制更新依赖)...');
+  const { code: buildCode, output } = await sshExec(
+    conn,
+    `cd ${remoteProjectDir}/code/java && mvn clean package -Dmaven.test.skip=true -U -pl zrws-approval -am 2>&1 | tail -100`
+  );
+  
+  if (buildCode !== 0) {
+    log('编译失败！');
+    console.log('=== 编译错误详情 ===');
+    console.log(output);
+    conn.end();
+    process.exit(1);
   }
   log('编译成功');
 
@@ -128,7 +122,7 @@ EOF` );
   log('验证列表接口...');
   const verifyCmd = 'TOKEN=$(curl -s -X POST http://127.0.0.1:5571/approval/api/v1/auth/login -H \'Content-Type: application/json\' -d \'{"username":"admin","password":"admin123"}\' | python3 -c "import sys,json; print(json.load(sys.stdin)[\'data\'][\'token\'])" 2>/dev/null || echo "")'
     + '; echo "TOKEN_LEN: ${#TOKEN}"'
-    + '; curl -s -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:5571/approval/api/v1/climate-warming/list?page=1&size=3" | head -c 300';
+    + '; curl -s -H "Authorization: Bearer $TOKEN" "http://127.0.0.1:5571/approval/api/v1/management/users?page=1&size=3" | head -c 500';
   await sshExec(conn, verifyCmd);
   console.log('');
 

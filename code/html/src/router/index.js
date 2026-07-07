@@ -226,6 +226,14 @@ const routes = [
         meta: { group: '系统', title: '组织管理', icon: '◎' }
       },
 
+      // 登录IP限制
+      {
+        path: 'login-ip',
+        name: 'LoginIpManage',
+        component: () => import('@/views/pages/LoginIpManage.vue'),
+        meta: { group: '系统', title: '登录IP限制', icon: '⊞' }
+      },
+
       // 系统配置
       {
         path: 'sys-config',
@@ -248,6 +256,14 @@ const routes = [
         name: 'ReportCenter',
         component: () => import('@/views/pages/ReportCenter.vue'),
         meta: { group: '系统', title: '报表中心', icon: '📊' }
+      },
+
+      // AI视频生成
+      {
+        path: 'video-gen',
+        name: 'VideoGeneration',
+        component: () => import('@/views/pages/VideoGeneration.vue'),
+        meta: { group: 'AI 能力', title: 'AI 视频生成', icon: '🎬' }
       },
 
       // 对外接口管理

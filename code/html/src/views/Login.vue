@@ -25,6 +25,12 @@
           <el-input v-model="password" type="password" placeholder="密码" size="large" prefix-icon="Lock" show-password />
         </el-form-item>
         <el-form-item>
+          <div class="captcha-row">
+            <el-input v-model="captcha" placeholder="验证码" size="large" style="flex:1" />
+            <img :src="captchaImage" class="captcha-img" @click="refreshCaptcha" alt="验证码" />
+          </div>
+        </el-form-item>
+        <el-form-item>
           <el-select v-model="role" placeholder="选择角色" size="large" style="width:100%">
             <el-option label="技术管理员" value="admin" />
             <el-option label="普通用户" value="user" />
@@ -77,6 +83,9 @@ const username = ref('');
 const password = ref('');
 const role = ref('admin');
 const loading = ref(false);
+const captcha = ref('');
+const captchaUuid = ref('');
+const captchaImage = ref('');
 
 const downloadPageUrl = window.location.origin + '/app-download.html';
 const qrCodeUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=' + encodeURIComponent(downloadPageUrl);
@@ -92,6 +101,20 @@ const goToH5 = () => {
 
 const goToRegister = () => {
   window.open(registerUrl, '_blank');
+};
+
+const refreshCaptcha = async () => {
+  try {
+    const res = await fetch('/approval/api/v1/auth/captcha');
+    const result = await res.json();
+    if (result.success && result.data) {
+      captchaUuid.value = result.data.uuid;
+      captchaImage.value = result.data.image;
+      captcha.value = '';
+    }
+  } catch (e) {
+    console.error('获取验证码失败:', e);
+  }
 };
 
 const getParticleStyle = (n) => {
@@ -115,6 +138,10 @@ const handleLogin = async () => {
     ElMessage.warning('请输入用户名和密码');
     return;
   }
+  if (!captcha.value) {
+    ElMessage.warning('请输入验证码');
+    return;
+  }
 
   try {
     loading.value = true;
@@ -122,7 +149,12 @@ const handleLogin = async () => {
     const res = await fetch('/approval/api/v1/auth/login', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: username.value, password: password.value })
+      body: JSON.stringify({ 
+        username: username.value, 
+        password: password.value,
+        captchaUuid: captchaUuid.value,
+        captcha: captcha.value
+      })
     });
     const result = await res.json();
 
@@ -153,6 +185,7 @@ const handleLogin = async () => {
 };
 
 onMounted(() => {
+  refreshCaptcha();
   if (localStorage.getItem('token')) {
     router.push('/app/dashboard');
   }
@@ -322,6 +355,19 @@ onMounted(() => {
 
 .login-form {
   margin-bottom: var(--s-4);
+}
+
+.captcha-row {
+  display: flex;
+  gap: 12px;
+}
+
+.captcha-img {
+  width: 120px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  border: 1px solid var(--ink-600);
 }
 
 :deep(.el-input__wrapper) {

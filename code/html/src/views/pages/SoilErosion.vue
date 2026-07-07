@@ -149,23 +149,30 @@ const loadData = async () => {
   try {
     loading.value = true;
     const [listRes, statsRes] = await Promise.all([
-      getDisasterRiskList().catch(() => ({ data: { list: [] } })),
+      getDisasterRiskList({ disasterType: 'SOIL_EROSION', pageSize: 100 }).catch(() => ({ data: { list: [] } })),
       getDisasterRiskStats().catch(() => ({ data: {} }))
     ]);
     
     if (listRes.data && listRes.data.list && listRes.data.list.length > 0) {
-      records.value = listRes.data.list.filter(r => r.disasterType && r.disasterType.includes('侵蚀')).map(r => ({
-        id: r.id,
-        region: r.location || r.area || '-',
-        monitorDate: r.monitorDate || '2026-07-01',
-        erosionType: r.erosionType || 'WATER',
-        erosionModulus: r.erosionModulus || r.riskScore * 50 || 1500,
-        erosionGrade: r.erosionGrade || (r.riskScore > 70 ? 'SEVERE' : r.riskScore > 40 ? 'MODERATE' : 'LIGHT'),
-        vegetationCoverage: r.vegetationCoverage || (40 + Math.random() * 40).toFixed(1),
-        slope: r.slope || (5 + Math.random() * 25).toFixed(1),
-        soilType: r.soilType || '红壤',
-        tolerableLoss: r.tolerableLoss || 500
-      }));
+      records.value = listRes.data.list.filter(r => r.disasterType === 'SOIL_EROSION').map(r => {
+        // 解析 monitoringData JSON 获取水土流失详细指标
+        let md = {};
+        try {
+          md = r.monitoringData ? JSON.parse(r.monitoringData) : {};
+        } catch (e) { md = {}; }
+        return {
+          id: r.riskId,
+          region: r.region || '-',
+          monitorDate: r.assessmentTime ? r.assessmentTime.substring(0, 10) : new Date().toISOString().substring(0, 10),
+          erosionType: md.erosionType || 'WATER',
+          erosionModulus: md.erosionModulus || (r.riskScore ? r.riskScore * 50 : 1500),
+          erosionGrade: md.erosionGrade || (r.riskScore > 70 ? 'SEVERE' : r.riskScore > 40 ? 'MODERATE' : 'LIGHT'),
+          vegetationCoverage: md.vegetationCoverage || (40 + Math.random() * 40).toFixed(1),
+          slope: md.slope || (5 + Math.random() * 25).toFixed(1),
+          soilType: md.soilType || '红壤',
+          tolerableLoss: md.tolerableLoss || 500
+        };
+      });
     }
     
     erosionData.value = records.value.slice(0, 8).map(r => ({

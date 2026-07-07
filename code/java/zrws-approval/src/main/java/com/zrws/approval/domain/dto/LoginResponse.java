@@ -34,4 +34,7 @@ public class LoginResponse {
 
     /** 头像 */
     private String avatar;
+
+    /** 天气信息 */
+    private WeatherInfo weather;
 }

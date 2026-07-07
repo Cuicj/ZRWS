@@ -137,10 +137,17 @@ const defaultMenus = [
       { path: 'user-manage', name: '用户管理', icon: '◉' },
       { path: 'role-manage', name: '角色管理', icon: '◆' },
       { path: 'org-manage', name: '组织管理', icon: '◎' },
+      { path: 'login-ip', name: '登录IP限制', icon: '⊞' },
       { path: 'sys-config', name: '系统配置', icon: '⚙' },
       { path: 'announcement', name: '公告管理', icon: '✉' },
       { path: 'open-api', name: '对外接口', icon: '🔌' },
       { path: 'api-playground', name: 'API调试', icon: '⚡' }
+    ]
+  },
+  {
+    title: 'AI 能力',
+    items: [
+      { path: 'video-gen', name: 'AI 视频生成', icon: '🎬' }
     ]
   }
 ];

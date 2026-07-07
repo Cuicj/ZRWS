@@ -55,28 +55,69 @@ public class AuthService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private WeatherService weatherService;
+
+    @Autowired
+    private LoginIpRuleService loginIpRuleService;
+
+    @Autowired
+    private CaptchaService captchaService;
+
+    @Autowired
+    private LoginSecurityService loginSecurityService;
+
     /**
      * 登录
      */
-    public LoginResponse login(LoginRequest request) {
-        SysUser user = sysUserMapper.selectByUsernameIgnoreTenant(request.getUsername());
+    public LoginResponse login(LoginRequest request, String clientIp) {
+        String username = request.getUsername();
+        
+        // 安全限制检查（登录前）
+        String securityError = loginSecurityService.checkBeforeLogin(clientIp, username);
+        if (securityError != null) {
+            throw new IllegalStateException(securityError);
+        }
+        
+        // 验证码校验
+        if (!captchaService.validateCaptcha(request.getCaptchaUuid(), request.getCaptcha())) {
+            loginSecurityService.recordLoginFailure(clientIp, username);
+            throw new IllegalArgumentException("验证码错误或已失效");
+        }
+        
+        SysUser user = sysUserMapper.selectByUsernameIgnoreTenant(username);
         if (user == null) {
+            loginSecurityService.recordLoginFailure(clientIp, username);
             throw new IllegalArgumentException("用户名或密码错误");
         }
         // 校验密码
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
+            loginSecurityService.recordLoginFailure(clientIp, username);
             throw new IllegalArgumentException("用户名或密码错误");
         }
         // 校验状态
         if (!SysUser.Status.ACTIVE.name().equals(user.getStatus())) {
             throw new IllegalStateException("账号已被禁用");
         }
+        // IP限制检查
+        if (!loginIpRuleService.isIpAllowed(clientIp, user.getTenantId())) {
+            throw new IllegalStateException("当前IP地址被禁止登录");
+        }
         // 生成JWT
         String token = jwtTokenProvider.generateToken(
                 user.getId(), user.getUsername(), user.getCurrentOrgId(), user.getTenantId());
         // 缓存token
         redisService.set(TOKEN_CACHE_PREFIX + user.getId(), token);
-        return buildLoginResponse(user, token);
+        LoginResponse response = buildLoginResponse(user, token);
+        // 根据IP获取天气（失败不影响登录）
+        try {
+            response.setWeather(weatherService.getWeatherByIp(clientIp));
+        } catch (Exception e) {
+            log.warn("获取天气失败，不影响登录: {}", e.getMessage());
+        }
+        // 登录成功，重置安全计数
+        loginSecurityService.recordLoginSuccess(clientIp, username);
+        return response;
     }
 
     /**

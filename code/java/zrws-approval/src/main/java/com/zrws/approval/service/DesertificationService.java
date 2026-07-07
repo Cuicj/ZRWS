@@ -101,22 +101,38 @@ public class DesertificationService {
             list = desertificationMapper.selectList(
                     new LambdaQueryWrapper<Desertification>()
                             .eq(Desertification::getIsDeleted, 0)
-                            .orderByDesc(Desertification::getMonitorDate)
-                            .last("LIMIT 12")
+                            .ge(Desertification::getMonitorDate, LocalDate.now().minusMonths(12))
+                            .orderByAsc(Desertification::getMonitorDate)
             );
         }
-        Collections.reverse(list);
+
+        // 按月分组并取平均值
+        LinkedHashMap<String, List<Desertification>> byMonth = new LinkedHashMap<>();
+        for (Desertification record : list) {
+            String monthKey = record.getMonitorDate().getYear() + "-" +
+                    String.format("%02d", record.getMonitorDate().getMonthValue());
+            byMonth.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(record);
+        }
 
         List<String> months = new ArrayList<>();
         List<BigDecimal> vegetationCoverages = new ArrayList<>();
         List<BigDecimal> bareLandRatios = new ArrayList<>();
         List<BigDecimal> desertificationAreas = new ArrayList<>();
 
-        for (Desertification record : list) {
-            months.add(record.getMonitorDate().getMonthValue() + "月");
-            vegetationCoverages.add(record.getVegetationCoverage());
-            bareLandRatios.add(record.getBareLandRatio());
-            desertificationAreas.add(record.getDesertificationArea());
+        for (Map.Entry<String, List<Desertification>> entry : byMonth.entrySet()) {
+            List<Desertification> records = entry.getValue();
+            months.add(entry.getKey().split("-")[1] + "月");
+
+            BigDecimal vegSum = BigDecimal.ZERO, bareSum = BigDecimal.ZERO, areaSum = BigDecimal.ZERO;
+            for (Desertification r : records) {
+                vegSum = vegSum.add(r.getVegetationCoverage() != null ? r.getVegetationCoverage() : BigDecimal.ZERO);
+                bareSum = bareSum.add(r.getBareLandRatio() != null ? r.getBareLandRatio() : BigDecimal.ZERO);
+                areaSum = areaSum.add(r.getDesertificationArea() != null ? r.getDesertificationArea() : BigDecimal.ZERO);
+            }
+            int count = records.size();
+            vegetationCoverages.add(vegSum.divide(BigDecimal.valueOf(count), 1, BigDecimal.ROUND_HALF_UP));
+            bareLandRatios.add(bareSum.divide(BigDecimal.valueOf(count), 1, BigDecimal.ROUND_HALF_UP));
+            desertificationAreas.add(areaSum.divide(BigDecimal.valueOf(count), 2, BigDecimal.ROUND_HALF_UP));
         }
 
         result.put("months", months);

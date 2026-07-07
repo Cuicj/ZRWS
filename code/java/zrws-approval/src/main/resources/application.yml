@@ -149,6 +149,32 @@ zrws:
   # Mock 数据开关
   mock:
     enabled: false
+  # AI视频生成配置
+  video-gen:
+    enabled: true
+    default-provider: KUAISHOU_KELING
+    storage-path: uploads/videos
+    max-concurrent-tasks: 3
+    max-retry-count: 2
+    poll-interval-seconds: 10
+    task-timeout-minutes: 30
+    providers:
+      MOCK:
+        enabled: true
+      KUAISHOU_KELING:
+        api-key: api-key-kling-ZlVpZyfjRbefJklkUFWDvtoO7JCCodpROii2C6Q7_mg
+        base-url: https://api.klingai.com
+        model-name: kling-v1
+        connect-timeout-seconds: 10
+        read-timeout-seconds: 120
+      BYTE_JIMENG:
+        api-key: ${JIMENG_API_KEY:your-jimeng-api-key}
+        base-url: https://api.jimeng.com
+        model-name: jimeng-v1
+      TENCENT_HUNYUAN:
+        api-key: ${HUNYUAN_API_KEY:your-hunyuan-api-key}
+        base-url: https://hunyuan.tencentcloudapi.com
+        model-name: hunyuan-video
   # DBA 数据库 Schema 自动同步
   dba:
     enabled: true

@@ -99,22 +99,38 @@ public class ClimateWarmingService {
             list = climateWarmingMapper.selectList(
                     new LambdaQueryWrapper<ClimateWarming>()
                             .eq(ClimateWarming::getIsDeleted, 0)
-                            .orderByDesc(ClimateWarming::getMonitorDate)
-                            .last("LIMIT 12")
+                            .ge(ClimateWarming::getMonitorDate, LocalDate.now().minusMonths(12))
+                            .orderByAsc(ClimateWarming::getMonitorDate)
             );
         }
-        Collections.reverse(list);
+
+        // 按月分组并取平均值
+        LinkedHashMap<String, List<ClimateWarming>> byMonth = new LinkedHashMap<>();
+        for (ClimateWarming record : list) {
+            String monthKey = record.getMonitorDate().getYear() + "-" +
+                    String.format("%02d", record.getMonitorDate().getMonthValue());
+            byMonth.computeIfAbsent(monthKey, k -> new ArrayList<>()).add(record);
+        }
 
         List<String> months = new ArrayList<>();
         List<BigDecimal> avgTemperatures = new ArrayList<>();
         List<BigDecimal> tempAnomalies = new ArrayList<>();
         List<BigDecimal> precipitations = new ArrayList<>();
 
-        for (ClimateWarming record : list) {
-            months.add(record.getMonitorDate().getMonthValue() + "月");
-            avgTemperatures.add(record.getAvgTemperature());
-            tempAnomalies.add(record.getTemperatureAnomaly());
-            precipitations.add(record.getPrecipitation());
+        for (Map.Entry<String, List<ClimateWarming>> entry : byMonth.entrySet()) {
+            List<ClimateWarming> records = entry.getValue();
+            months.add(entry.getKey().split("-")[1] + "月");
+
+            BigDecimal tempSum = BigDecimal.ZERO, anomalySum = BigDecimal.ZERO, precipSum = BigDecimal.ZERO;
+            for (ClimateWarming r : records) {
+                tempSum = tempSum.add(r.getAvgTemperature() != null ? r.getAvgTemperature() : BigDecimal.ZERO);
+                anomalySum = anomalySum.add(r.getTemperatureAnomaly() != null ? r.getTemperatureAnomaly() : BigDecimal.ZERO);
+                precipSum = precipSum.add(r.getPrecipitation() != null ? r.getPrecipitation() : BigDecimal.ZERO);
+            }
+            int count = records.size();
+            avgTemperatures.add(tempSum.divide(BigDecimal.valueOf(count), 1, BigDecimal.ROUND_HALF_UP));
+            tempAnomalies.add(anomalySum.divide(BigDecimal.valueOf(count), 2, BigDecimal.ROUND_HALF_UP));
+            precipitations.add(precipSum.divide(BigDecimal.valueOf(count), 1, BigDecimal.ROUND_HALF_UP));
         }
 
         result.put("months", months);

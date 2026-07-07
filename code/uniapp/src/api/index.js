@@ -2,10 +2,8 @@
  * 智壤卫士 API 请求封装
  */
 
-// 开发环境使用本地后端，生产环境使用真实域名
-const BASE_URL = process.env.NODE_ENV === 'development' 
-  ? 'https://www.zrws.cloud/approval'
-  : 'https://www.zrws.cloud'
+// 线上环境
+const BASE_URL = 'https://www.zrws.cloud/approval'
 const TIMEOUT = 15000
 
 // 获取 token

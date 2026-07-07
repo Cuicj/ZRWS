@@ -6,9 +6,18 @@
         <h1 class="page-title display">运行仪表盘</h1>
         <div class="page-meta mono">DASHBOARD · {{ currentDate }} · {{ currentUser.name }}</div>
       </div>
-      <button class="btn btn-ghost btn-sm" @click="refreshData">
-        <span>↻</span> 刷新
-      </button>
+      <div class="head-right">
+        <div v-if="weather" class="weather-card">
+          <span class="weather-icon">{{ weatherIcon }}</span>
+          <div class="weather-info">
+            <span class="weather-temp">{{ Math.round(weather.temperature) }}°C</span>
+            <span class="weather-desc">{{ weather.weather }} · {{ weather.city }}</span>
+          </div>
+        </div>
+        <button class="btn btn-ghost btn-sm" @click="refreshData">
+          <span>↻</span> 刷新
+        </button>
+      </div>
     </div>
 
     <!-- 指标卡 -->
@@ -115,15 +124,34 @@
 /**
  * Dashboard.vue - 运行仪表盘页面
  */
-import { ref, onMounted, nextTick, onUnmounted } from 'vue';
+import { ref, computed, onMounted, nextTick, onUnmounted } from 'vue';
 import * as echarts from 'echarts';
 import StatCard from '@/components/common/StatCard.vue';
 import Panel from '@/components/common/Panel.vue';
+import { useUserStore } from '@/stores/user';
 import { getDashboardStats, getRecentTasks, getDeviceList } from '@/api/dashboard';
 
+const userStore = useUserStore();
 const currentDate = ref(new Date().toLocaleDateString('zh-CN'));
 
-const currentUser = ref({ name: '王工' });
+const currentUser = ref({ name: userStore.userInfo?.realName || '王工' });
+
+// 天气信息（从登录响应中获取）
+const weather = computed(() => userStore.userInfo?.weather || null);
+const weatherIcon = computed(() => {
+  if (!weather.value) return '';
+  const code = weather.value.weatherCode;
+  if (code === 0) return '☀';
+  if (code <= 2) return '⛅';
+  if (code === 3) return '☁';
+  if (code >= 45 && code <= 48) return '🌫';
+  if (code >= 51 && code <= 67) return '🌧';
+  if (code >= 71 && code <= 77) return '🌨';
+  if (code >= 80 && code <= 82) return '🌦';
+  if (code >= 85 && code <= 86) return '🌨';
+  if (code >= 95) return '⛈';
+  return '🌡';
+});
 
 const stats = ref({
   taskCount: 0,
@@ -335,6 +363,43 @@ onUnmounted(() => {
   padding-bottom: var(--s-4);
   margin-bottom: var(--s-5);
   border-bottom: var(--line);
+}
+
+.head-right {
+  display: flex;
+  align-items: center;
+  gap: var(--s-3);
+}
+
+.weather-card {
+  display: flex;
+  align-items: center;
+  gap: var(--s-2);
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(212, 184, 122, 0.1), rgba(127, 179, 213, 0.1));
+  border: 1px solid rgba(212, 184, 122, 0.2);
+  border-radius: 10px;
+}
+
+.weather-icon {
+  font-size: 24px;
+}
+
+.weather-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.weather-temp {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.weather-desc {
+  font-size: 11px;
+  color: var(--signal-dim);
 }
 
 .page-title {

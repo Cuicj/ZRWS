@@ -4,7 +4,9 @@ import com.zrws.approval.domain.dto.LoginRequest;
 import com.zrws.approval.domain.dto.LoginResponse;
 import com.zrws.approval.domain.dto.RegisterRequest;
 import com.zrws.approval.service.AuthService;
+import com.zrws.approval.service.CaptchaService;
 import com.zrws.common.core.domain.R;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -22,19 +24,37 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    @Autowired
+    private CaptchaService captchaService;
+
     /**
      * 登录
      */
     @PostMapping("/login")
-    public R<LoginResponse> login(@RequestBody LoginRequest request) {
+    public R<LoginResponse> login(@RequestBody LoginRequest request, HttpServletRequest httpRequest) {
         try {
-            LoginResponse response = authService.login(request);
+            String clientIp = getClientIp(httpRequest);
+            LoginResponse response = authService.login(request, clientIp);
             return R.ok(response);
         } catch (IllegalArgumentException | IllegalStateException e) {
             return R.fail(e.getMessage());
         } catch (Exception e) {
             log.error("登录失败", e);
             return R.fail("登录失败");
+        }
+    }
+
+    /**
+     * 获取验证码图片
+     */
+    @GetMapping("/captcha")
+    public R<java.util.Map<String, String>> getCaptcha() {
+        try {
+            java.util.Map<String, String> captcha = captchaService.generateCaptcha();
+            return R.ok(captcha);
+        } catch (Exception e) {
+            log.error("生成验证码失败", e);
+            return R.fail("生成验证码失败");
         }
     }
 
@@ -134,5 +154,19 @@ public class AuthController {
             return authorization.substring(7);
         }
         return authorization;
+    }
+
+    /**
+     * 获取客户端真实IP地址（处理代理）
+     */
+    private String getClientIp(HttpServletRequest request) {
+        String[] headers = {"X-Forwarded-For", "X-Real-IP", "Proxy-Client-IP", "WL-Proxy-Client-IP"};
+        for (String header : headers) {
+            String ip = request.getHeader(header);
+            if (ip != null && !ip.isBlank() && !"unknown".equalsIgnoreCase(ip)) {
+                return ip.contains(",") ? ip.split(",")[0].trim() : ip;
+            }
+        }
+        return request.getRemoteAddr();
     }
 }
