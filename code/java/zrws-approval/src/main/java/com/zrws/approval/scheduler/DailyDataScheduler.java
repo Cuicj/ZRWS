@@ -32,6 +32,16 @@ public class DailyDataScheduler {
     private DesertificationMapper desertificationMapper;
     @Autowired
     private DisasterRiskMapper disasterRiskMapper;
+    @Autowired
+    private GpsTrackPointMapper gpsTrackPointMapper;
+    @Autowired
+    private ReportTemplateMapper reportTemplateMapper;
+    @Autowired
+    private LandPlotMapper landPlotMapper;
+    @Autowired
+    private SoilClassificationMapper soilClassificationMapper;
+    @Autowired
+    private RockStratumAnalysisMapper rockStratumAnalysisMapper;
 
     private final Random random = new Random();
 
@@ -44,6 +54,7 @@ public class DailyDataScheduler {
             generateQualityChecks();
             generateClimateWarmingData();
             generateDisasterRiskData();
+            generateGpsTrackData();
             updateDeviceStatus();
             log.info("[每日数据] 每日业务数据生成完成");
         } catch (Exception e) {
@@ -344,6 +355,11 @@ public class DailyDataScheduler {
             backfillClimateWarmingHistory();
             backfillDesertificationHistory();
             backfillDisasterRiskHistory();
+            backfillGpsTrackHistory();
+            initReportTemplateData();
+            backfillLandPlotData();
+            backfillSoilClassificationData();
+            backfillRockStratumAnalysisData();
             log.info("[数据回填] 历史数据回填完成");
         } catch (Exception e) {
             log.error("[数据回填] 历史数据回填失败: {}", e.getMessage(), e);
@@ -639,5 +655,350 @@ public class DailyDataScheduler {
             }
         }
         log.info("[数据回填] 灾害风险历史数据生成完成，共 {} 条", totalGenerated);
+    }
+
+    // ==================== GPS航迹数据生成 ====================
+
+    private void generateGpsTrackData() {
+        long count = gpsTrackPointMapper.selectCount(
+            new LambdaQueryWrapper<GpsTrackPoint>()
+                .ge(GpsTrackPoint::getGpsTime, LocalDate.now().toString())
+        );
+        if (count > 0) {
+            log.info("[每日数据] 今日已有GPS航迹点数据，跳过生成");
+            return;
+        }
+
+        // 每日生成2条航迹，每条航迹30-50个点
+        String[] areaNames = {"南宁武鸣区", "柳州柳江县", "桂林临桂区", "梧州苍梧县", "北海合浦县"};
+        int trackCount = 2;
+        int totalPoints = 0;
+
+        for (int t = 0; t < trackCount; t++) {
+            long missionId = 9000L + LocalDate.now().getDayOfYear() * 10L + t;
+            String missionCode = "GT-" + LocalDate.now().getYear() + "-" + String.format("%03d", LocalDate.now().getDayOfYear()) + "-" + (t + 1);
+            String areaName = areaNames[random.nextInt(areaNames.length)];
+
+            double centerLat = 22.5 + random.nextDouble() * 3.0;
+            double centerLng = 107.5 + random.nextDouble() * 4.0;
+            int pointCount = 30 + random.nextInt(21);
+            LocalDateTime startTime = LocalDateTime.now().minusHours(3 - t);
+
+            for (int i = 0; i < pointCount; i++) {
+                GpsTrackPoint point = new GpsTrackPoint();
+                point.setMissionId(missionId);
+                point.setMissionCode(missionCode);
+                point.setSequence(i + 1);
+                // 沿航迹行进，纬度经度渐变
+                point.setLatitude(centerLat + (random.nextDouble() - 0.5) * 0.05 + i * 0.001);
+                point.setLongitude(centerLng + (random.nextDouble() - 0.5) * 0.05 + i * 0.001);
+                point.setAltitude(80 + random.nextDouble() * 60);
+                point.setSpeed(8 + random.nextDouble() * 12);
+                point.setHeading(random.nextDouble() * 360);
+                point.setGpsTime(startTime.plusSeconds(i * 5L).toString());
+                point.setSatellites(8 + random.nextInt(6));
+                point.setFixType(random.nextBoolean() ? "RTK_FIX" : "RTK_FLOAT");
+                point.setAccuracyH(0.02 + random.nextDouble() * 0.2);
+                point.setAccuracyV(0.05 + random.nextDouble() * 0.3);
+                point.setPointType(i == 0 ? "TAKEOFF" : (i == pointCount - 1 ? "LANDING" : (i % 10 == 0 ? "SAMPLE" : "SCAN")));
+                point.setIsDeleted(0);
+                gpsTrackPointMapper.insert(point);
+                totalPoints++;
+            }
+        }
+        log.info("[每日数据] 生成GPS航迹 {} 条，航迹点 {} 个", trackCount, totalPoints);
+    }
+
+    private void backfillGpsTrackHistory() {
+        long totalRecords = gpsTrackPointMapper.selectCount(
+            new LambdaQueryWrapper<GpsTrackPoint>().eq(GpsTrackPoint::getIsDeleted, 0)
+        );
+        if (totalRecords >= 200) {
+            log.info("[数据回填] GPS航迹历史数据已存在（{}条），跳过回填", totalRecords);
+            return;
+        }
+
+        log.info("[数据回填] 开始生成GPS航迹历史数据（过去30天）...");
+        String[] areaNames = {"南宁武鸣区", "柳州柳江县", "桂林临桂区", "梧州苍梧县", "北海合浦县", "防城港东兴市", "钦州灵山县", "贵港桂平市"};
+        LocalDate today = LocalDate.now();
+        int totalGenerated = 0;
+
+        for (int dayOffset = 29; dayOffset >= 1; dayOffset--) {
+            LocalDate monitorDate = today.minusDays(dayOffset);
+            String dateStr = monitorDate.toString();
+
+            long dayCount = gpsTrackPointMapper.selectCount(
+                new LambdaQueryWrapper<GpsTrackPoint>().likeRight(GpsTrackPoint::getGpsTime, dateStr)
+            );
+            if (dayCount > 0) {
+                continue;
+            }
+
+            int trackCount = 1 + random.nextInt(2);
+            for (int t = 0; t < trackCount; t++) {
+                long missionId = 8000L + dayOffset * 10L + t;
+                String missionCode = "GT-" + monitorDate.getYear() + "-" + String.format("%03d", monitorDate.getDayOfYear()) + "-" + (t + 1);
+
+                double centerLat = 22.5 + random.nextDouble() * 3.0;
+                double centerLng = 107.5 + random.nextDouble() * 4.0;
+                int pointCount = 25 + random.nextInt(26);
+                LocalDateTime startTime = monitorDate.atTime(9 + t * 2, 0).plusMinutes(random.nextInt(30));
+
+                for (int i = 0; i < pointCount; i++) {
+                    GpsTrackPoint point = new GpsTrackPoint();
+                    point.setMissionId(missionId);
+                    point.setMissionCode(missionCode);
+                    point.setSequence(i + 1);
+                    point.setLatitude(centerLat + (random.nextDouble() - 0.5) * 0.05 + i * 0.001);
+                    point.setLongitude(centerLng + (random.nextDouble() - 0.5) * 0.05 + i * 0.001);
+                    point.setAltitude(80 + random.nextDouble() * 60);
+                    point.setSpeed(8 + random.nextDouble() * 12);
+                    point.setHeading(random.nextDouble() * 360);
+                    point.setGpsTime(startTime.plusSeconds(i * 5L).toString());
+                    point.setSatellites(8 + random.nextInt(6));
+                    point.setFixType(random.nextBoolean() ? "RTK_FIX" : "RTK_FLOAT");
+                    point.setAccuracyH(0.02 + random.nextDouble() * 0.2);
+                    point.setAccuracyV(0.05 + random.nextDouble() * 0.3);
+                    point.setPointType(i == 0 ? "TAKEOFF" : (i == pointCount - 1 ? "LANDING" : (i % 10 == 0 ? "SAMPLE" : "SCAN")));
+                    point.setIsDeleted(0);
+                    gpsTrackPointMapper.insert(point);
+                    totalGenerated++;
+                }
+            }
+        }
+        log.info("[数据回填] GPS航迹历史数据生成完成，共 {} 个航迹点", totalGenerated);
+    }
+
+    // ==================== 报告模板初始化 ====================
+
+    private void initReportTemplateData() {
+        long totalRecords = reportTemplateMapper.selectCount(
+            new LambdaQueryWrapper<ReportTemplate>().eq(ReportTemplate::getIsDeleted, 0)
+        );
+        if (totalRecords > 0) {
+            log.info("[数据回填] 报告模板数据已存在（{}条），跳过初始化", totalRecords);
+            return;
+        }
+
+        log.info("[数据回填] 开始初始化报告模板数据...");
+        String[][] templates = {
+            {"RT-DASHBOARD-01", "综合监控仪表盘报告", "STANDARD", "DASHBOARD", "汇总飞行任务、土壤采样、设备状态等核心监控指标的仪表盘报表", "PDF"},
+            {"RT-SOIL-01", "土壤采样分析报告", "STANDARD", "SOIL", "土壤样本理化性质分析报告，包含pH值、有机质、氮磷钾含量等指标", "PDF"},
+            {"RT-SOIL-02", "土壤肥力评估报告", "CUSTOM", "SOIL", "基于多期采样数据的土壤肥力综合评估报告", "EXCEL"},
+            {"RT-DISASTER-01", "灾害风险评估报告", "STANDARD", "DISASTER", "水土流失、滑坡、泥石流等灾害风险综合评估报告", "PDF"},
+            {"RT-ROCK-01", "岩层结构分析报告", "STANDARD", "ROCK", "钻孔取样、物探数据综合分析形成的岩层结构报告", "WORD"},
+            {"RT-DEVICE-01", "设备运行统计报告", "STANDARD", "DEVICE", "无人机等设备运行状态、电池、信号统计报表", "EXCEL"},
+            {"RT-QUALITY-01", "质量检测报告", "STANDARD", "QUALITY", "照片质量、数据完整性、坐标精度等质量校验统计报告", "PDF"},
+            {"RT-CLIMATE-01", "气候变化监测报告", "CUSTOM", "DASHBOARD", "气候变暖、沙漠化等生态环境监测数据综合报告", "PDF"}
+        };
+
+        int generated = 0;
+        for (String[] tpl : templates) {
+            ReportTemplate rt = new ReportTemplate();
+            rt.setTemplateCode(tpl[0]);
+            rt.setTemplateName(tpl[1]);
+            rt.setTemplateType(tpl[2]);
+            rt.setCategory(tpl[3]);
+            rt.setDescription(tpl[4]);
+            rt.setTemplateContent("{\"sections\":[{\"title\":\"概述\",\"type\":\"summary\"},{\"title\":\"数据明细\",\"type\":\"table\"},{\"title\":\"图表分析\",\"type\":\"chart\"},{\"title\":\"结论建议\",\"type\":\"conclusion\"}]}");
+            rt.setDataSource("{\"primaryTable\":\"zrws_" + tpl[3].toLowerCase() + "\",\"dateRange\":\"LAST_30_DAYS\"}");
+            rt.setParameters("[{\"name\":\"startDate\",\"type\":\"date\",\"required\":true},{\"name\":\"endDate\",\"type\":\"date\",\"required\":true},{\"name\":\"region\",\"type\":\"string\",\"required\":false}]");
+            rt.setOutputFormat(tpl[5]);
+            rt.setStatus("ACTIVE");
+            rt.setIsDeleted(0);
+            reportTemplateMapper.insert(rt);
+            generated++;
+        }
+        log.info("[数据回填] 报告模板初始化完成，共 {} 个模板", generated);
+    }
+
+    // ==================== 地块数据回填 ====================
+
+    private void backfillLandPlotData() {
+        long totalRecords = landPlotMapper.selectCount(
+            new LambdaQueryWrapper<LandPlot>().eq(LandPlot::getIsDeleted, 0)
+        );
+        if (totalRecords >= 20) {
+            log.info("[数据回填] 地块数据已存在（{}条），跳过回填", totalRecords);
+            return;
+        }
+
+        log.info("[数据回填] 开始生成地块数据...");
+        String[] regions = {"南宁市", "柳州市", "桂林市", "梧州市", "北海市", "玉林市", "百色市", "河池市"};
+        String[] counties = {"武鸣区", "柳江县", "临桂区", "苍梧县", "合浦县", "玉州区", "右江区", "金城江区"};
+        String[] townships = {"城厢镇", "拉堡镇", "临桂镇", "龙圩镇", "廉州镇", "茂林镇", "百城街道", "六甲镇"};
+        String[] owners = {"张三", "李四", "王五", "赵六", "钱七", "孙八", "周九", "吴十"};
+        String[] landTypes = {"耕地", "园地", "林地", "建设用地"};
+        String[] landUses = {"水稻种植", "果园", "经济林", "蔬菜大棚", "住宅用地"};
+        String[] soilTypes = {"红壤", "水稻土", "石灰土", "黄壤", "紫色土"};
+        String[] irrigationTypes = {"灌溉", "旱作", "滴灌", "漫灌"};
+        double[] lats = {22.82, 24.33, 25.27, 23.48, 21.48, 22.63, 23.90, 24.70};
+        double[] lngs = {108.37, 109.42, 110.29, 111.34, 109.12, 110.15, 106.62, 108.06};
+
+        int generated = 0;
+        for (int i = 0; i < 24; i++) {
+            int idx = i % regions.length;
+            double gpsArea = 5.0 + random.nextDouble() * 95.0;
+            double registeredArea = gpsArea * (0.95 + random.nextDouble() * 0.1);
+
+            LandPlot plot = new LandPlot();
+            plot.setPlotCode("LP-" + String.format("%04d", i + 1));
+            plot.setPlotName(regions[idx] + counties[idx] + townships[idx] + "地块" + (i / 8 + 1));
+            plot.setOwner(owners[random.nextInt(owners.length)]);
+            plot.setLandType(landTypes[i % landTypes.length]);
+            plot.setLandUse(landUses[i % landUses.length]);
+            plot.setGpsArea(Math.round(gpsArea * 100.0) / 100.0);
+            plot.setRegisteredArea(Math.round(registeredArea * 100.0) / 100.0);
+            plot.setAreaDiff(Math.round((gpsArea - registeredArea) * 100.0) / 100.0);
+            plot.setStatus(random.nextInt(10) > 1 ? "NORMAL" : "REVIEW");
+            plot.setRegion(regions[idx]);
+            plot.setProvince("广西壮族自治区");
+            plot.setCity(regions[idx]);
+            plot.setCounty(counties[idx]);
+            plot.setTownship(townships[idx]);
+            plot.setVillage(townships[idx] + "村");
+            plot.setCenterLat(lats[idx] + (random.nextDouble() - 0.5) * 0.1);
+            plot.setCenterLng(lngs[idx] + (random.nextDouble() - 0.5) * 0.1);
+            plot.setBoundaryGeoJson("{\"type\":\"Polygon\",\"coordinates\":[[[" + (lngs[idx] - 0.01) + "," + (lats[idx] - 0.01) + "],[" + (lngs[idx] + 0.01) + "," + (lats[idx] - 0.01) + "],[" + (lngs[idx] + 0.01) + "," + (lats[idx] + 0.01) + "],[" + (lngs[idx] - 0.01) + "," + (lats[idx] + 0.01) + "],[" + (lngs[idx] - 0.01) + "," + (lats[idx] - 0.01) + "]]]}");
+            plot.setSoilType(soilTypes[i % soilTypes.length]);
+            plot.setFertilityLevel((double) (2 + random.nextInt(3)));
+            plot.setIrrigationType(irrigationTypes[i % irrigationTypes.length]);
+            plot.setRemark("自动化测绘登记地块");
+            plot.setIsDeleted(0);
+            landPlotMapper.insert(plot);
+            generated++;
+        }
+        log.info("[数据回填] 地块数据生成完成，共 {} 条", generated);
+    }
+
+    // ==================== 土质分类数据回填 ====================
+
+    private void backfillSoilClassificationData() {
+        long totalRecords = soilClassificationMapper.selectCount(
+            new LambdaQueryWrapper<SoilClassification>().eq(SoilClassification::getIsDeleted, 0)
+        );
+        if (totalRecords >= 15) {
+            log.info("[数据回填] 土质分类数据已存在（{}条），跳过回填", totalRecords);
+            return;
+        }
+
+        log.info("[数据回填] 开始生成土质分类数据...");
+        String[] soilTypes = {"PADDY_SOIL", "RED_SOIL", "LIMESTONE_SOIL", "YELLOW_BROWN_EARTH", "PURPLE_SOIL", "ALLUVIAL_SOIL"};
+        String[] soilSubtypes = {"潴育型水稻土", "典型红壤", "棕色石灰土", "黄棕壤", "酸性紫色土", "冲积土"};
+        String[] textures = {"黏质", "壤质", "砂质", "粉质"};
+        String[] structures = {"团粒结构", "块状结构", "柱状结构", "片状结构"};
+        String[] colors = {"棕黄色", "红棕色", "灰棕色", "黄棕色", "紫红色"};
+        String[] parentMaterials = {"花岗岩风化物", "石灰岩风化物", "砂页岩风化物", "第四纪红土", "河流冲积物"};
+        String[] vegetations = {"水稻", "玉米", "甘蔗", "果园", "桉树", "蔬菜"};
+        String[] regions = {"南宁市", "柳州市", "桂林市", "梧州市", "玉林市", "百色市"};
+
+        int generated = 0;
+        for (int i = 0; i < 18; i++) {
+            int typeIdx = i % soilTypes.length;
+            double ph = 4.5 + random.nextDouble() * 4.0;
+            double om = 0.8 + random.nextDouble() * 4.0;
+            double moisture = 12 + random.nextDouble() * 28;
+            double nitrogen = 0.5 + random.nextDouble() * 2.5;
+            double phosphorus = 0.2 + random.nextDouble() * 1.5;
+            double potassium = 0.5 + random.nextDouble() * 2.0;
+
+            SoilClassification sc = new SoilClassification();
+            sc.setAnalysisCode("SC-" + String.format("%04d", i + 1));
+            sc.setMissionId(7000L + i);
+            sc.setMissionCode("ZRS-2026-" + String.format("%03d", 100 + i));
+            sc.setAnalysisName(regions[i % regions.length] + "土壤分类分析" + (i + 1));
+            sc.setSampleCount(3 + random.nextInt(8));
+            sc.setSoilType(soilTypes[typeIdx]);
+            sc.setSoilSubtype(soilSubtypes[typeIdx]);
+            sc.setConfidence(0.78 + random.nextDouble() * 0.2);
+            sc.setDescription("基于多源遥感与采样数据的土壤类型分类分析");
+            sc.setPhValue(Math.round(ph * 100.0) / 100.0);
+            sc.setOrganicMatter(Math.round(om * 100.0) / 100.0);
+            sc.setMoisture(Math.round(moisture * 100.0) / 100.0);
+            sc.setNitrogen(Math.round(nitrogen * 100.0) / 100.0);
+            sc.setPhosphorus(Math.round(phosphorus * 100.0) / 100.0);
+            sc.setPotassium(Math.round(potassium * 100.0) / 100.0);
+            sc.setTexture(textures[i % textures.length]);
+            sc.setStructure(structures[i % structures.length]);
+            sc.setColor(colors[i % colors.length]);
+            sc.setDepth(20.0 + random.nextDouble() * 60.0);
+            sc.setParentMaterial(parentMaterials[i % parentMaterials.length]);
+            sc.setVegetation(vegetations[i % vegetations.length]);
+            sc.setAiAnalysis("基于CNN模型识别，土壤类型为" + soilSubtypes[typeIdx] + "，置信度" + String.format("%.1f%%", (0.78 + random.nextDouble() * 0.2) * 100));
+            sc.setAiSuggestion("建议针对" + soilSubtypes[typeIdx] + "特性调整施肥方案，pH值" + String.format("%.1f", ph) + (ph < 5.5 ? "偏酸，建议施用石灰改良" : "适宜"));
+            sc.setStatus("COMPLETED");
+            sc.setAnalyst("系统自动分析");
+            sc.setAnalysisTime(LocalDateTime.now().minusDays(i));
+            sc.setRemark("AI辅助土壤分类");
+            sc.setIsDeleted(0);
+            soilClassificationMapper.insert(sc);
+            generated++;
+        }
+        log.info("[数据回填] 土质分类数据生成完成，共 {} 条", generated);
+    }
+
+    // ==================== 岩层分析数据回填 ====================
+
+    private void backfillRockStratumAnalysisData() {
+        long totalRecords = rockStratumAnalysisMapper.selectCount(
+            new LambdaQueryWrapper<RockStratumAnalysis>().eq(RockStratumAnalysis::getIsDeleted, 0)
+        );
+        if (totalRecords >= 12) {
+            log.info("[数据回填] 岩层分析数据已存在（{}条），跳过回填", totalRecords);
+            return;
+        }
+
+        log.info("[数据回填] 开始生成岩层分析数据...");
+        String[] projectNames = {"南宁地铁5号线地质勘察", "柳州跨江大桥基础工程", "桂林旅游快速通道隧道", "梧州港区地基处理", "北海海上风电基础", "玉林水利枢纽工程", "百色矿山边坡稳定", "河池地下硐室工程", "来宾高层建筑地基", "崇左边境公路边坡"};
+        String[] locations = {"南宁市西乡塘区", "柳州市城中区", "桂林市象山区", "梧州市万秀区", "北海市银海区", "玉林市玉州区", "百色市右江区", "河池市金城江区", "来宾市兴宾区", "崇左市江州区"};
+        String[] analysisTypes = {"COMPREHENSIVE", "BOREHOLE", "GEOPHYSICAL", "GPR", "SAMPLING"};
+        String[] aiAlgorithms = {"CNN", "TRANSFORMER", "RANDOM_FOREST", "ENSEMBLE", "DEEP_LEARNING"};
+        String[] riskLevels = {"LOW", "MEDIUM", "HIGH", "VERY_HIGH"};
+        double[] lats = {22.82, 24.33, 25.27, 23.48, 21.48, 22.63, 23.90, 24.70, 23.74, 22.37};
+        double[] lngs = {108.37, 109.42, 110.29, 111.34, 109.12, 110.15, 106.62, 108.06, 109.23, 107.37};
+
+        int generated = 0;
+        for (int i = 0; i < 15; i++) {
+            int boreholeCount = 5 + random.nextInt(20);
+            double maxDepth = 15 + random.nextDouble() * 85;
+            int stratumCount = 3 + random.nextInt(8);
+            double aiConfidence = 0.78 + random.nextDouble() * 0.2;
+            String riskLevel = riskLevels[random.nextInt(riskLevels.length)];
+
+            RockStratumAnalysis ra = new RockStratumAnalysis();
+            ra.setAnalysisCode("RSA-" + String.format("%04d", i + 1));
+            ra.setMissionId(6000L + i);
+            ra.setMissionCode("ZRS-2026-" + String.format("%03d", 200 + i));
+            ra.setProjectName(projectNames[i % projectNames.length]);
+            ra.setLocation(locations[i % locations.length]);
+            ra.setLatitude(lats[i % lats.length]);
+            ra.setLongitude(lngs[i % lngs.length]);
+            ra.setElevation(30 + random.nextDouble() * 200);
+            ra.setAnalysisType(analysisTypes[i % analysisTypes.length]);
+            ra.setDataSource("钻孔取样+地质雷达+物探");
+            ra.setBoreholeCount(boreholeCount);
+            ra.setMaxDepth(Math.round(maxDepth * 100.0) / 100.0);
+            ra.setStratumCount(stratumCount);
+            ra.setStratumData("[{\"layer\":1,\"name\":\"素填土\",\"thickness\":\"2.5m\"},{\"layer\":2,\"name\":\"粉质黏土\",\"thickness\":\"5.8m\"},{\"layer\":3,\"name\":\"强风化泥岩\",\"thickness\":\"8.2m\"},{\"layer\":4,\"name\":\"中风化灰岩\",\"thickness\":\"15.6m\"}]");
+            ra.setLithologyData("[{\"name\":\"黏土\",\"color\":\"黄褐色\",\"state\":\"可塑\"},{\"name\":\"泥岩\",\"color\":\"灰黑色\",\"state\":\"强风化\"},{\"name\":\"灰岩\",\"color\":\"灰白色\",\"state\":\"中风化\"}]");
+            ra.setStructureData("{\"dip\":\"N30°E\",\"dipAngle\":\"35°\",\"jointCount\":4}");
+            ra.setFaultData("{\"hasFault\":false,\"fractureZone\":\"无\"}");
+            ra.setAiAlgorithm(aiAlgorithms[i % aiAlgorithms.length]);
+            ra.setAiModelVersion("v2.1.0");
+            ra.setAiConfidence(aiConfidence);
+            ra.setAiSummary("基于" + boreholeCount + "个钻孔及物探数据，识别出" + stratumCount + "个岩层，整体稳定性" + (riskLevel.equals("LOW") ? "良好" : riskLevel.equals("MEDIUM") ? "一般" : "较差"));
+            ra.setAiDetail("综合分析显示，场地主要地层为填土、黏土、泥岩、灰岩。基岩埋深" + String.format("%.1f", maxDepth * 0.6) + "m，承载力特征值约" + (200 + random.nextInt(400)) + "kPa。建议采用" + (maxDepth > 50 ? "桩基础" : "扩展基础") + "。");
+            ra.setRiskLevel(riskLevel);
+            ra.setSuggestion(riskLevel.equals("LOW") ? "场地稳定，可按常规设计施工" : riskLevel.equals("MEDIUM") ? "需加强支护，注意地下水影响" : "存在较高风险，建议进行专项支护设计并加强监测");
+            ra.setAnalyst("系统自动分析");
+            ra.setAnalysisTime(LocalDateTime.now().minusDays(i));
+            ra.setReportTime(LocalDateTime.now().minusDays(i).plusHours(2));
+            ra.setStatus("COMPLETED");
+            ra.setRemark("AI辅助岩层结构分析");
+            ra.setIsDeleted(0);
+            rockStratumAnalysisMapper.insert(ra);
+            generated++;
+        }
+        log.info("[数据回填] 岩层分析数据生成完成，共 {} 条", generated);
     }
 }
