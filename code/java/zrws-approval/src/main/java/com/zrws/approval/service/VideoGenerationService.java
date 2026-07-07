@@ -6,6 +6,7 @@ import com.zrws.approval.domain.entity.VideoTask;
 import com.zrws.approval.dto.VideoGenerateRequest;
 import com.zrws.approval.mapper.VideoTaskMapper;
 import cn.hutool.core.date.DateUtil;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
