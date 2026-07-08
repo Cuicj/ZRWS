@@ -19,8 +19,8 @@ echo ""
 echo "=== 部署启动 ==="
 cp zrws-approval/target/zrws-approval.jar /root/workspace/app.jar
 systemctl start zrws.service
-echo "等待120秒让历史数据回填..."
-sleep 120
+echo "等待180秒让历史数据回填..."
+sleep 180
 echo ""
 echo "=== 健康检查 ==="
 curl -s http://localhost:5571/approval/actuator/health
@@ -35,6 +35,21 @@ echo ""
 echo "=== 灾害风险数据 ==="
 mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total, SUM(CASE WHEN disaster_type='SOIL_EROSION' THEN 1 ELSE 0 END) as soil_erosion FROM zrws_disaster_risk WHERE is_deleted=0;" 2>&1 | grep -v Warning
 echo ""
+echo "=== GPS航迹点数据 ==="
+mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total, COUNT(DISTINCT mission_id) as tracks FROM zrws_gps_track_point WHERE is_deleted=0;" 2>&1 | grep -v Warning
+echo ""
+echo "=== 报告模板数据 ==="
+mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total FROM zrws_report_template WHERE is_deleted=0;" 2>&1 | grep -v Warning
+echo ""
+echo "=== 地块数据 ==="
+mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total FROM zrws_land_plot WHERE is_deleted=0;" 2>&1 | grep -v Warning
+echo ""
+echo "=== 土质分类数据 ==="
+mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total FROM zrws_soil_classification WHERE is_deleted=0;" 2>&1 | grep -v Warning
+echo ""
+echo "=== 岩层分析数据 ==="
+mysql -u test_admin -p'Test_admin' -h rm-bp1g8sw85a5z9e8gzeo.mysql.rds.aliyuncs.com zrws_approval -e "SELECT COUNT(*) as total FROM zrws_rock_stratum_analysis WHERE is_deleted=0;" 2>&1 | grep -v Warning
+echo ""
 echo "=== 气候变暖趋势API ==="
 curl -s "http://localhost:5571/approval/api/v1/climate-warming/trend" | head -c 300
 echo ""
@@ -45,6 +60,18 @@ echo ""
 echo ""
 echo "=== 灾害风险统计API ==="
 curl -s "http://localhost:5571/approval/api/v1/disaster-risk/stats" | head -c 300
+echo ""
+echo ""
+echo "=== GPS航迹列表API ==="
+curl -s "http://localhost:5571/approval/api/v1/gps-track/list" | head -c 300
+echo ""
+echo ""
+echo "=== 地块列表API ==="
+curl -s "http://localhost:5571/approval/api/v1/land-plot/list?pageNum=1&pageSize=3" | head -c 300
+echo ""
+echo ""
+echo "=== 岩层分析列表API ==="
+curl -s "http://localhost:5571/approval/api/v1/rock-stratum/analyses?pageNum=1&pageSize=3" | head -c 300
 echo ""
 `;
   conn.exec(cmd, (err, stream) => {
