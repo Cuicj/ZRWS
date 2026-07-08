@@ -33,7 +33,7 @@ export function request(options) {
       success: (res) => {
         const { statusCode, data: resp } = res
         if (statusCode === 200) {
-          if (resp && resp.code === 0) {
+          if (resp && (resp.code === 200 || resp.success === true)) {
             resolve(resp.data)
           } else if (resp && resp.code === 401) {
             uni.showToast({ title: '请先登录', icon: 'none' })

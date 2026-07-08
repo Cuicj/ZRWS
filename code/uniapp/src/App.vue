@@ -2,14 +2,23 @@
   export default {
     onLaunch: function() {
       console.log('智壤卫士 App Launch')
-      // 初始化登录态
+      // 启动检查登录态，未登录则跳转登录页
       try {
+        const token = uni.getStorageSync('token')
         const userInfo = uni.getStorageSync('userInfo')
-        if (userInfo) {
+        if (token && userInfo) {
           console.log('已登录用户:', userInfo.name)
+        } else {
+          // 未登录，跳转登录页
+          setTimeout(() => {
+            uni.reLaunch({ url: '/pages/login/login' })
+          }, 100)
         }
       } catch (e) {
-        console.error('读取本地存储失败:', e)
+        console.error('启动登录检查失败:', e)
+        setTimeout(() => {
+          uni.reLaunch({ url: '/pages/login/login' })
+        }, 100)
       }
     },
     onShow: function() {

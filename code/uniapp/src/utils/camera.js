@@ -73,7 +73,7 @@ export function uploadImage(path, url) {
       success: (res) => {
         try {
           const data = JSON.parse(res.data)
-          if (data.code === 0) {
+          if (data.code === 200 || data.success === true) {
             resolve(data.data)
           } else {
             reject(data)
