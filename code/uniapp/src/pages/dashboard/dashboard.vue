@@ -167,10 +167,10 @@
     nav.to('/pages/mission/detail?id=' + m.id)
   }
 
-  function gotoMission() { nav.to('/pages/mission/list') }
-  function gotoApproval() { nav.to('/pages/approval/list') }
+  function gotoMission() { nav.tab('/pages/mission/list') }
+  function gotoApproval() { nav.tab('/pages/approval/list') }
   function gotoSoil() { nav.to('/pages/soil/sample') }
-  function gotoFlight() { nav.to('/pages/flight/control') }
+  function gotoFlight() { nav.tab('/pages/flight/control') }
 </script>
 
 <style lang="scss" scoped>

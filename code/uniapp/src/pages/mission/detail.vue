@@ -114,7 +114,8 @@
     loading.value = true
     try {
       const res = await missionApi.detail(missionId)
-      mission.value = res
+      // detail 接口复用列表接口，pickList 返回数组，取第一项作为详情
+      mission.value = Array.isArray(res) ? (res[0] || null) : res
     } catch (e) {
       // 错误提示已在 request 封装中处理
     } finally {
@@ -130,7 +131,8 @@
   }
 
   function goFlight() {
-    nav.to('/pages/flight/control?missionId=' + missionId)
+    // flight/control 是 tabBar 页面，必须用 switchTab 跳转（不支持参数传递，missionId 已在 store 中）
+    nav.tab('/pages/flight/control')
   }
   function goGps() {
     nav.to('/pages/gps/track?missionId=' + missionId)

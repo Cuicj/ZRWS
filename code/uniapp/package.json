@@ -13,10 +13,11 @@
   },
   "dependencies": {
     "@dcloudio/uni-app": "3.0.0-alpha-5010420260626001",
+    "@dcloudio/uni-app-plus": "3.0.0-alpha-5010420260626001",
     "@dcloudio/uni-components": "3.0.0-alpha-5010420260626001",
     "@dcloudio/uni-h5": "3.0.0-alpha-5010420260626001",
     "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5010420260626001",
-    "vue": "^3.4.0",
+    "vue": "3.4.21",
     "pinia": "^2.1.7"
   },
   "devDependencies": {
@@ -25,5 +26,11 @@
     "@dcloudio/vite-plugin-uni": "3.0.0-alpha-5010420260626001",
     "sass": "^1.69.5",
     "vite": "^5.0.0"
+  },
+  "overrides": {
+    "vue": "3.4.21",
+    "@vue/runtime-core": "3.4.21",
+    "@vue/runtime-dom": "3.4.21",
+    "@vue/shared": "3.4.21"
   }
 }

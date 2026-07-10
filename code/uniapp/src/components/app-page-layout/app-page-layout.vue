@@ -114,12 +114,8 @@
     const url = urlMap[page]
     if (!url) return
     if (page === currentTab.value) return
-    uni.redirectTo({
-      url,
-      fail: () => {
-        uni.navigateTo({ url })
-      }
-    })
+    // 这 5 个都是 tabBar 页面，必须用 switchTab 跳转
+    uni.switchTab({ url })
   }
 
   function onRefresh() {

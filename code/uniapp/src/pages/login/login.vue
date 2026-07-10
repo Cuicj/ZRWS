@@ -27,8 +27,31 @@
           password
           placeholder="请输入密码"
           placeholder-class="placeholder"
-          confirm-type="done"
-          @confirm="doLogin" />
+          confirm-type="next" />
+      </view>
+
+      <view class="form-item">
+        <text class="form-label">验证码</text>
+        <view class="captcha-row">
+          <input
+            class="form-input captcha-input"
+            type="text"
+            v-model="form.captcha"
+            placeholder="请输入验证码"
+            placeholder-class="placeholder"
+            confirm-type="done"
+            maxlength="4"
+            @confirm="doLogin" />
+          <image
+            v-if="captchaImage"
+            :src="captchaImage"
+            class="captcha-img"
+            mode="aspectFill"
+            @tap="refreshCaptcha" />
+          <view v-else class="captcha-placeholder" @tap="refreshCaptcha">
+            <text class="captcha-placeholder-text">点击获取</text>
+          </view>
+        </view>
       </view>
 
       <view class="form-extra">
@@ -59,8 +82,25 @@
   const form = reactive({
     username: 'zrws',
     password: '123456',
+    captcha: '',
     remember: true
   })
+  const captchaUuid = ref('')
+  const captchaImage = ref('')
+
+  async function refreshCaptcha() {
+    try {
+      const res = await loginApi.getCaptcha()
+      const img = res && res.image ? res.image : ''
+      captchaUuid.value = (res && res.uuid) ? res.uuid : ''
+      captchaImage.value = img
+      form.captcha = ''
+      console.log('验证码已加载 uuid=', captchaUuid.value, 'imgLen=', img.length)
+    } catch (e) {
+      console.error('获取验证码失败:', e)
+      captchaImage.value = ''
+    }
+  }
 
   onMounted(() => {
     // 自动读取缓存
@@ -71,10 +111,13 @@
       }
     } catch (e) {}
 
-    // 已登录则直接跳转
+    // 始终获取验证码，保证登录页可用
+    refreshCaptcha()
+
+    // 已登录则直接跳转（dashboard 是 tabBar 页面，必须用 switchTab）
     if (checkLogin()) {
       setTimeout(() => {
-        nav.replace('/pages/dashboard/dashboard')
+        nav.tab('/pages/dashboard/dashboard')
       }, 300)
     }
   })
@@ -88,11 +131,15 @@
       toast.info('密码至少6位')
       return
     }
+    if (!form.captcha) {
+      toast.info('请输入验证码')
+      return
+    }
 
     loading.value = true
 
     try {
-      const res = await loginApi.login(form.username, form.password)
+      const res = await loginApi.login(form.username, form.password, captchaUuid.value, form.captcha)
       const userData = {
         name: res?.name || res?.username || form.username,
         role: res?.role || '外业操作员',
@@ -111,11 +158,13 @@
 
       toast.success('登录成功')
 
+      // dashboard 是 tabBar 页面，必须用 switchTab 跳转（redirectTo 无法跳到 tabBar 页）
       setTimeout(() => {
-        nav.replace('/pages/dashboard/dashboard')
+        nav.tab('/pages/dashboard/dashboard')
       }, 600)
     } catch (e) {
-      // 错误提示已在 request 封装中处理
+      // 登录失败刷新验证码
+      refreshCaptcha()
     } finally {
       loading.value = false
     }
@@ -187,6 +236,33 @@
     color: $zrws-text-primary;
   }
   .placeholder {
+    color: $zrws-text-tertiary;
+  }
+  .captcha-row {
+    display: flex;
+    align-items: center;
+    gap: 16rpx;
+  }
+  .captcha-input {
+    flex: 1;
+  }
+  .captcha-img {
+    width: 180rpx;
+    height: 88rpx;
+    border-radius: $zrws-radius-md;
+    background: $zrws-bg-tertiary;
+  }
+  .captcha-placeholder {
+    width: 180rpx;
+    height: 88rpx;
+    border-radius: $zrws-radius-md;
+    background: $zrws-bg-tertiary;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .captcha-placeholder-text {
+    font-size: 24rpx;
     color: $zrws-text-tertiary;
   }
   .form-extra {

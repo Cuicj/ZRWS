@@ -175,25 +175,40 @@
         stats.flightHours = res.flightHours || 0
         stats.samples = res.soilSamples || res.totalSamples || 0
         stats.area = (res.totalArea || res.area || 0) + '亩'
-      }
-      // 更新审批badge
-      const pendingApproval = stats.pendingApproval || 0
-      if (pendingApproval > 0) {
-        taskMenus[5].badge = String(pendingApproval)
+
+        // 从接口响应读取待审批数，更新"审批记录"角标
+        const pendingApproval = res.pendingApproval || res.pendingCount || 0
+        if (pendingApproval > 0) {
+          taskMenus[5].badge = String(pendingApproval)
+        }
       }
     } catch (e) {
       // 错误提示已在 request 封装中处理
     }
   }
 
+  // tabBar 页面路径集合（这些页面只能用 switchTab 跳转）
+  const TAB_PAGES = [
+    '/pages/dashboard/dashboard',
+    '/pages/mission/list',
+    '/pages/flight/control',
+    '/pages/approval/list',
+    '/pages/mine/mine'
+  ]
+
   function goTo(url) {
     if (!url) return
-    uni.navigateTo({
-      url,
-      fail: () => {
-        uni.redirectTo({ url })
-      }
-    })
+    // tabBar 页面必须用 switchTab，否则跳转失败
+    if (TAB_PAGES.includes(url)) {
+      uni.switchTab({ url })
+    } else {
+      uni.navigateTo({
+        url,
+        fail: () => {
+          uni.redirectTo({ url })
+        }
+      })
+    }
   }
 
   function doSetting(m) {
