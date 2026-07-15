@@ -26,6 +26,7 @@
 
 <script setup>
   import { ref } from 'vue'
+  import { isTabPage } from '@/utils/index.js'
 
   const props = defineProps({
     title: { type: String, default: '智壤卫士' },
@@ -47,7 +48,12 @@
 
   function onLeftTap() {
     if (props.backUrl) {
-      uni.redirectTo({ url: props.backUrl })
+      // tabBar 页面必须用 switchTab，否则跳转失败
+      if (isTabPage(props.backUrl)) {
+        uni.switchTab({ url: props.backUrl.split('?')[0] })
+      } else {
+        uni.redirectTo({ url: props.backUrl })
+      }
     } else {
       uni.navigateBack({
         fail: () => {

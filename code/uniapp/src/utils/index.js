@@ -69,12 +69,36 @@ export const toast = {
   hide: () => uni.hideLoading()
 }
 
+// tabBar 页面列表（与 pages.json 保持一致，只能用 switchTab 跳转）
+const TAB_PAGES = [
+  '/pages/dashboard/dashboard',
+  '/pages/mission/list',
+  '/pages/flight/control',
+  '/pages/approval/list',
+  '/pages/mine/mine'
+]
+
+// 判断是否为 tabBar 页面（忽略 query string）
+export function isTabPage(url) {
+  if (!url) return false
+  const path = url.split('?')[0]
+  return TAB_PAGES.some(p => path === p || path === p.replace(/^\//, '') || '/' + path === p)
+}
+
 // 路由跳转
 export const nav = {
   to: (url) => uni.navigateTo({ url }),
   back: () => uni.navigateBack(),
   replace: (url) => uni.redirectTo({ url }),
-  tab: (url) => uni.switchTab({ url })
+  tab: (url) => uni.switchTab({ url }),
+  // 智能跳转：tabBar 页面用 switchTab，普通页面用 navigateTo
+  go: (url) => {
+    if (isTabPage(url)) {
+      uni.switchTab({ url: url.split('?')[0] })
+    } else {
+      uni.navigateTo({ url })
+    }
+  }
 }
 
 // 确认对话框

@@ -156,7 +156,7 @@
       'mine': '/pages/mine/mine'
     }
     if (urlMap[item.key]) {
-      nav.to(urlMap[item.key])
+      nav.go(urlMap[item.key])
     } else {
       toast.info('功能开发中')
     }

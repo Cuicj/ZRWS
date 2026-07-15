@@ -73,6 +73,17 @@ export const mockDisasterSummary = [
   { type: '土壤盐碱化', level: '中风险', levelColor: 'warning', area: 6.5, desc: '西侧局部区域EC值偏高', action: '建议水利改良，增加排灌设施' }
 ]
 
+export const mockQualityCheck = {
+  list: [
+    { id: 'QC-2026-0709-001', missionId: 'ZRS-2026-0618-001', area: '望城区乔口镇田心村1号地块', status: 'completed', result: 'pass', score: 92, items: { coverage: 86.4, overlap: 78, sharpness: 'A' }, checker: '张工', checkTime: '2026-07-09 10:30', note: '航摄成果质量良好' },
+    { id: 'QC-2026-0709-002', missionId: 'ZRS-2026-0618-002', area: '望城区乔口镇田心村2号地块', status: 'processing', result: 'pending', score: 0, items: { coverage: 72.3, overlap: 65, sharpness: 'B' }, checker: '李工', checkTime: '', note: '重叠度偏低，复检中' },
+    { id: 'QC-2026-0708-005', missionId: 'ZRS-2026-0617-005', area: '宁乡市花明楼镇3号地块', status: 'completed', result: 'pass', score: 96, items: { coverage: 95.8, overlap: 82, sharpness: 'A+' }, checker: '王工', checkTime: '2026-07-08 16:00', note: '优质成果' },
+    { id: 'QC-2026-0708-004', missionId: 'ZRS-2026-0617-004', area: '宁乡市花明楼镇2号地块', status: 'completed', result: 'fail', score: 58, items: { coverage: 68.2, overlap: 55, sharpness: 'C' }, checker: '陈工', checkTime: '2026-07-08 11:20', note: '重叠度不足，需补摄' },
+    { id: 'QC-2026-0707-003', missionId: 'ZRS-2026-0616-003', area: '岳麓区含浦街道土壤调查', status: 'pending', result: 'pending', score: 0, items: { coverage: 45.6, overlap: 0, sharpness: '-' }, checker: '', checkTime: '', note: '待校验' }
+  ],
+  stats: { total: 5, completed: 4, passRate: 75 }
+}
+
 export default {
   mockMissions,
   mockTelemetry,
@@ -80,5 +91,6 @@ export default {
   mockSoilSamples,
   mockPlotAreas,
   mockApprovals,
-  mockDisasterSummary
+  mockDisasterSummary,
+  mockQualityCheck
 }

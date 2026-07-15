@@ -67,6 +67,7 @@
   import { ref, reactive, onMounted } from 'vue'
   import { qualityCheckApi } from '@/api/index.js'
   import { nav } from '@/utils/index.js'
+  import { mockQualityCheck } from '@/utils/mock.js'
 
   const statusTabs = [
     { label: '全部', value: '' },
@@ -95,16 +96,25 @@
         qualityCheckApi.stats().catch(() => null)
       ])
 
+      // 后端暂无 QualityCheckController，接口 404 时用 mock 数据兜底
+      const mock = mockQualityCheck
+      let allList = mock.list
       if (listRes) {
-        list.value = listRes.list || listRes.records || listRes || []
+        allList = listRes.list || listRes.records || (Array.isArray(listRes) ? listRes : mock.list)
+      }
+      // 按状态筛选
+      if (activeStatus.value) {
+        list.value = allList.filter(item => item.status === activeStatus.value)
+      } else {
+        list.value = allList
       }
 
-      if (statsRes) {
-        stats.total = statsRes.total || 0
-        stats.completed = statsRes.completed || 0
-        stats.passRate = statsRes.passRate || 0
-      }
+      const s = statsRes || mock.stats
+      stats.total = s.total || 0
+      stats.completed = s.completed || 0
+      stats.passRate = s.passRate || 0
     } catch (e) {
+      // 错误提示已在 request 封装中处理
     } finally {
       loading.value = false
     }

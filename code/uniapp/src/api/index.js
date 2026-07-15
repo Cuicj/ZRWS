@@ -21,10 +21,25 @@ export function request(options) {
   return new Promise((resolve, reject) => {
     const { url, method = 'GET', data = {}, header = {} } = options
 
+    // GET/DELETE 请求：手动拼接 query string（App webview 下 uni.request 不会自动转换）
+    let finalUrl = url.startsWith('http') ? url : BASE_URL + url
+    let finalData = data
+    const upperMethod = (method || 'GET').toUpperCase()
+    if ((upperMethod === 'GET' || upperMethod === 'DELETE') && data && Object.keys(data).length > 0) {
+      const qs = Object.entries(data)
+        .filter(([, v]) => v !== undefined && v !== null && v !== '')
+        .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
+        .join('&')
+      if (qs) {
+        finalUrl += (finalUrl.includes('?') ? '&' : '?') + qs
+        finalData = {}
+      }
+    }
+
     uni.request({
-      url: url.startsWith('http') ? url : BASE_URL + url,
+      url: finalUrl,
       method,
-      data,
+      data: finalData,
       timeout: TIMEOUT,
       header: {
         'Content-Type': 'application/json',
